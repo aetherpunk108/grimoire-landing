@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merlin Agent — Terminal Tutorial (Windows &amp; Linux) | Epinoia Horizon</title>
+  <meta name="description" content="The complete guide to running Merlin Agent in your terminal: install on Windows & Linux, first-run setup, daily commands, token-saving habits, and troubleshooting.">
+  <link rel="canonical" href="https://epinoiahorizon.com/docs/tutorial-merlin-terminal-en.html">
+  <style>
+    :root {
+      --bg: #002b36; --bg2: #073642; --fg: #fdf6e3; --dim: #93a1a1; --dimmer: #657b83;
+      --gold: #e6c04a; --violet: #d33682; --cyan: #2aa198; --blue: #268bd2; --border: #586e75;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--fg); font-family: 'Segoe UI', 'Plus Jakarta Sans', system-ui, sans-serif; line-height: 1.7; }
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { color: var(--gold); }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+    header.top { border-bottom: 1px solid var(--border); padding: 1.1rem 0; background: var(--bg2); position: sticky; top: 0; z-index: 10; }
+    header.top .wrap { padding: 0 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+    .brand { font-weight: 700; letter-spacing: .08em; color: var(--fg); font-size: .95rem; }
+    .brand span { color: var(--gold); }
+    h1 { font-size: clamp(1.7rem, 4vw, 2.6rem); margin: 2.2rem 0 .4rem; color: var(--gold); }
+    .lede { color: var(--dim); font-size: 1.06rem; margin-bottom: 2rem; }
+    .updated { color: var(--dimmer); font-size: .8rem; font-family: ui-monospace, monospace; }
+    h2 { font-size: 1.45rem; margin: 2.6rem 0 .8rem; padding-top: 1.4rem; border-top: 1px solid #0e4550; color: var(--fg); }
+    h2 .no { color: var(--violet); font-family: ui-monospace, monospace; margin-right: .5rem; }
+    h3 { font-size: 1.08rem; margin: 1.6rem 0 .5rem; color: var(--gold); }
+    p { margin: .7rem 0; }
+    code { background: var(--bg2); border: 1px solid #0e4550; padding: .1rem .4rem; border-radius: 5px; font-size: .88em; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; color: var(--gold); }
+    pre { background: var(--bg2); border: 1px solid #0e4550; border-left: 3px solid var(--cyan); padding: 1rem 1.1rem; border-radius: 8px; overflow-x: auto; margin: .9rem 0; }
+    pre code { background: none; border: none; padding: 0; color: #eee8d5; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .93rem; }
+    th { text-align: left; color: var(--gold); border-bottom: 1px solid var(--border); padding: .5rem .6rem; }
+    td { border-bottom: 1px solid #0e4550; padding: .5rem .6rem; vertical-align: top; }
+    tr td:first-child { color: var(--cyan); font-family: ui-monospace, monospace; font-size: .86rem; white-space: nowrap; }
+    .note { background: rgba(42,161,152,.08); border: 1px solid rgba(42,161,152,.35); border-radius: 8px; padding: .9rem 1.1rem; margin: 1rem 0; font-size: .93rem; }
+    .note b { color: var(--cyan); }
+    .warn { background: rgba(203,75,22,.1); border: 1px solid rgba(203,75,22,.45); border-radius: 8px; padding: .9rem 1.1rem; margin: 1rem 0; font-size: .93rem; }
+    .warn b { color: #cb4b16; }
+    .toc { background: var(--bg2); border: 1px solid #0e4550; border-radius: 10px; padding: 1.1rem 1.4rem; margin: 1.6rem 0; }
+    .toc b { color: var(--gold); }
+    .toc ol { margin: .5rem 0 0 1.2rem; }
+    .toc a { color: var(--dim); }
+    .toc a:hover { color: var(--gold); }
+    footer { border-top: 1px solid var(--border); margin-top: 4rem; padding-top: 1.4rem; color: var(--dimmer); font-size: .82rem; }
+    .kicker { display: inline-block; background: rgba(211,54,129,.14); color: var(--violet); border: 1px solid rgba(211,54,129,.4); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; padding: .25rem .7rem; border-radius: 6px; margin-bottom: .9rem; font-family: ui-monospace, monospace; }
+    .lang { float: right; font-size: .85rem; }
+  </style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">EPINOIA <span>HORIZON</span></a>
+    <a href="/#merlin" style="font-size:.85rem;">← Home</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <a class="lang" href="/docs/tutorial-merlin-terminal.html">Bahasa Indonesia</a>
+  <span class="kicker">Tutorial</span>
+  <h1>Merlin Agent in Your Terminal</h1>
+  <p class="lede">From zero to a working agent — install on Windows &amp; Linux, first-run setup, everyday commands, token-saving habits, and quick fixes for common problems.</p>
+  <p class="updated">Last updated: October 2026 · applies to Merlin Agent public main</p>
+
+  <nav class="toc">
+    <b>Contents</b>
+    <ol>
+      <li><a href="#what">What is Merlin Agent?</a></li>
+      <li><a href="#install">Install — Windows / Linux / WSL</a></li>
+      <li><a href="#setup">First-run setup (2 minutes)</a></li>
+      <li><a href="#daily">Everyday use</a></li>
+      <li><a href="#core">Core capabilities</a></li>
+      <li><a href="#tokens">Saving tokens</a></li>
+      <li><a href="#config">Config &amp; file locations</a></li>
+      <li><a href="#telegram">Bonus: Telegram bot</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="what"><span class="no">1.</span>What is Merlin Agent?</h2>
+  <p>Merlin is an AI agent that lives in your terminal. It reads and writes files, runs commands, searches the web, remembers context across sessions, and improves through a <em>skills</em> system. One agent, many surfaces: terminal (CLI/TUI), Telegram, Discord, and more.</p>
+  <p>What sets it apart from a plain chatbot: Merlin <strong>works</strong> — it uses tools, not just words.</p>
+
+  <h2 id="install"><span class="no">2.</span>Install</h2>
+
+  <h3>Windows (PowerShell)</h3>
+  <pre><code>irm https://epinoiahorizon.com/install.ps1 | iex</code></pre>
+  <p>The installer sets up Python and dependencies, wires the <code>merlin</code> launcher, and creates its home at <code>%LOCALAPPDATA%\merlin</code>. When it finishes, <strong>close and reopen your terminal</strong>, then check:</p>
+  <pre><code>merlin --version</code></pre>
+  <div class="note"><b>Quick fixes:</b> <code>merlin</code> not recognized → close every terminal window and reopen; still not → run the installer once more (it repairs non-admin PATH). Antivirus flags it → allow it; the installer comes from the public repo <a href="https://github.com/epinoiahorizon/Merlin-Agent">epinoiahorizon/Merlin-Agent</a>.</div>
+
+  <h3>Linux / WSL</h3>
+  <pre><code>curl -fsSL https://epinoiahorizon.com/install.sh | bash
+source ~/.bashrc        # or open a new terminal
+merlin --version</code></pre>
+  <div class="note"><b>On Windows but want the Linux experience too?</b> Run <code>wsl --install</code> in PowerShell, reboot, then run the Linux installer inside WSL. Native-Windows Merlin and WSL Merlin coexist fine — separate homes.</div>
+  <p><strong>Requirements:</strong> Python 3.10+ (installed automatically if missing) and internet. Everything else is handled by the installer.</p>
+
+  <h2 id="setup"><span class="no">3.</span>First-run setup (2 minutes)</h2>
+  <pre><code>merlin setup</code></pre>
+  <p>The wizard asks for your <strong>provider &amp; model</strong> (Z.AI, OpenRouter, Anthropic, local Ollama, and more), then your <strong>API key</strong> — stored at <code>~/.merlin/.env</code> (Windows: <code>%LOCALAPPDATA%\merlin\.env</code>) and never sent anywhere except your provider.</p>
+  <pre><code>merlin doctor     # health check
+merlin model      # switch models anytime</code></pre>
+
+  <h2 id="daily"><span class="no">4.</span>Everyday use</h2>
+  <pre><code>merlin            # interactive chat (exit: /exit or Ctrl+C)
+merlin chat -q "explain port 443 in one paragraph"   # one-shot question
+merlin --continue # resume the most recent session
+merlin --resume &lt;session-id&gt;   # resume a specific session</code></pre>
+  <p>Key in-session commands:</p>
+  <table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td>/help</td><td>list every command</td></tr>
+    <tr><td>/model</td><td>switch models mid-session</td></tr>
+    <tr><td>/compact</td><td>compress context when the session gets heavy (saves tokens)</td></tr>
+    <tr><td>/sessions</td><td>list past sessions</td></tr>
+    <tr><td>/skills</td><td>list loadable skills</td></tr>
+    <tr><td>/skin</td><td>change the theme</td></tr>
+    <tr><td>/exit</td><td>quit</td></tr>
+  </table>
+
+  <h2 id="core"><span class="no">5.</span>Core capabilities</h2>
+  <p><strong>Coding</strong> — "review <code>app.py</code>, find bugs, fix them, run the tests": Merlin reads, edits, executes the tests, and reports back.</p>
+  <p><strong>Web research</strong> — "find the official docs for X, summarize in 5 points with links" (web toolset).</p>
+  <p><strong>Automation</strong> — schedule cron jobs from inside the session, e.g. a daily data-integrity check.</p>
+  <p><strong>Persistent memory</strong> — "remember: my main repo lives at Y" — stored and recalled in later sessions.</p>
+  <p><strong>Skills</strong> — on-demand add-ons; the <code>caveman</code> skill, for example, compresses answers to save tokens while keeping numbers, paths, and code intact.</p>
+
+  <h2 id="tokens"><span class="no">6.</span>Saving tokens</h2>
+  <table>
+    <tr><th>Habit</th><th>Effect</th></tr>
+    <tr><td>Fresh session per topic</td><td>biggest lever — long sessions re-send the whole history every turn</td></tr>
+    <tr><td>/compact</td><td>compress a long session you must keep going</td></tr>
+    <tr><td>Right model per task</td><td>small/flash models for routine work, big ones for heavy lifting</td></tr>
+    <tr><td>caveman skill</td><td>compressed replies (numbers, paths, code stay verbatim)</td></tr>
+    <tr><td>no-agent cron</td><td>scheduled tasks without an LLM = zero tokens</td></tr>
+  </table>
+
+  <h2 id="config"><span class="no">7.</span>Config &amp; file locations</h2>
+  <table>
+    <tr><th>What</th><th>Linux / WSL</th><th>Windows</th></tr>
+    <tr><td>Config</td><td><code>~/.merlin/config.yaml</code></td><td><code>%LOCALAPPDATA%\merlin\config.yaml</code></td></tr>
+    <tr><td>API keys</td><td><code>~/.merlin/.env</code></td><td><code>%LOCALAPPDATA%\merlin\.env</code></td></tr>
+    <tr><td>Skills</td><td><code>~/.merlin/skills/</code></td><td><code>%LOCALAPPDATA%\merlin\skills\</code></td></tr>
+    <tr><td>Memory</td><td><code>~/.merlin/memories/</code></td><td><code>%LOCALAPPDATA%\merlin\memories\</code></td></tr>
+    <tr><td>Session history</td><td><code>~/.merlin/state.db</code></td><td><code>%LOCALAPPDATA%\merlin\state.db</code></td></tr>
+  </table>
+  <div class="warn"><b>Don't hand-edit config.yaml unless you're sure</b> — one bad indent can break it. Use <code>merlin config set &lt;key&gt; &lt;value&gt;</code>. Update Merlin with <code>merlin update</code>.</div>
+
+  <h2 id="telegram"><span class="no">8.</span>Bonus: Merlin on Telegram</h2>
+  <pre><code># 1) create a bot via @BotFather on Telegram, keep the token
+merlin config set channels.telegram.token &lt;TOKEN&gt;
+merlin config set channels.telegram.enabled true
+merlin gateway run</code></pre>
+  <p>Needs an always-on machine (a VPS or your own PC). Full docs: <a href="https://merlin-agent.epinoiahorizon.com/docs/">official documentation</a>.</p>
+
+  <h2 id="trouble"><span class="no">9.</span>Troubleshooting</h2>
+  <table>
+    <tr><th>Symptom</th><th>Fix</th></tr>
+    <tr><td><code>command not found: merlin</code></td><td>open a new terminal; Linux: make sure <code>~/.local/bin</code> is on PATH</td></tr>
+    <tr><td>401/403 from provider</td><td>bad/expired API key → redo <code>merlin setup</code></td></tr>
+    <tr><td>429 rate limit</td><td>quota exhausted — wait, switch models, or upgrade your plan</td></tr>
+    <tr><td>Chat "forgets" things</td><td>session too long → <code>/compact</code> or start a fresh one</td></tr>
+    <tr><td>Broken emoji / glyphs</td><td>use Windows Terminal / a Nerd Font</td></tr>
+  </table>
+  <p>Bugs &amp; feature requests: <a href="https://github.com/epinoiahorizon/Merlin-Agent/issues">github.com/epinoiahorizon/Merlin-Agent/issues</a></p>
+
+  <footer>Built by the Epinoia Horizon community · Merlin Agent is open source (MIT) · <a href="https://github.com/epinoiahorizon/Merlin-Agent">GitHub</a> · <a href="/">Home</a></footer>
+</div>
+</body>
+</html>
