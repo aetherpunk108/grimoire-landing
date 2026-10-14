@@ -286,49 +286,97 @@ function buildArtifact(a, i, anchor){
   const emissive = new THREE.MeshStandardMaterial({ color:0x06232b, roughness:.3, metalness:.6,
     emissive:a.color, emissiveIntensity:.55 });
 
-  if (a.id === "harness"){                       // monolith with glowing edge
-    const mono = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.6, .5), emissive); g.add(mono);
-    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(mono.geometry),
-      new THREE.LineBasicMaterial({ color:a.color })); g.add(edges);
-  } else if (a.id === "install"){                // terminal slab
-    const slab = new THREE.Mesh(new THREE.BoxGeometry(2.3, 1.45, .22), emissive); g.add(slab);
-    const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.05, 1.2),
-      new THREE.MeshBasicMaterial({ color:0x0a2f26 }));
-    screen.position.z = .125; g.add(screen);
-    for (let l=0;l<4;l++){
-      const line = new THREE.Mesh(new THREE.PlaneGeometry(1.5-l*.28, .05),
+  if (a.id === "harness"){
+    // SIMPUL TORUS — loop yang merujuk dirinya sendiri: self-improving harness
+    const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(.62, .17, 128, 20, 2, 3), emissive);
+    g.add(knot);
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.3, 1),
+      new THREE.MeshStandardMaterial({ color:0x06232b, emissive:0x2aa198, emissiveIntensity:1.1 }));
+    g.add(core);
+    g.userData.animate = (t) => { knot.rotation.x = t*.32; knot.rotation.z = t*.21; core.rotation.y = t*.8; };
+  } else if (a.id === "install"){
+    // JENDELA TERMINAL — chrome 3-dot, baris kode, kursor berkedip: konteks satu-perintah
+    const win = new THREE.Mesh(new THREE.BoxGeometry(2.3, 1.5, .18), emissive); g.add(win);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 1.32),
+      new THREE.MeshBasicMaterial({ color:0x031a14 }));
+    screen.position.z = .1; g.add(screen);
+    [0xdc322f, 0xb58900, 0x859900].forEach((c, k) => {
+      const d = new THREE.Mesh(new THREE.CircleGeometry(.045, 12), new THREE.MeshBasicMaterial({ color:c }));
+      d.position.set(-.9 + k*.14, .56, .11); g.add(d);
+    });
+    for (let l=0;l<3;l++){
+      const line = new THREE.Mesh(new THREE.PlaneGeometry(1.6-l*.3, .05),
         new THREE.MeshBasicMaterial({ color:0x859900 }));
-      line.position.set(-.72, .42-l*.24, .13); g.add(line);
+      line.position.set(-.65, .3-l*.22, .11); g.add(line);
     }
-  } else if (a.id === "skills"){                 // floating grimoire
-    const book = new THREE.Mesh(new THREE.BoxGeometry(1.5, .3, 1.9), emissive); g.add(book);
-    const rune = new THREE.Mesh(new THREE.TorusGeometry(.42, .05, 12, 40),
-      new THREE.MeshBasicMaterial({ color:a.color })); rune.position.set(0,.22,0);
-    rune.rotation.x = Math.PI/2; g.add(rune);
-  } else if (a.id === "tools"){                  // nucleus + orbiting gems
-    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.5, 0), emissive); g.add(core);
-    for (let k=0;k<8;k++){
-      const gem = new THREE.Mesh(new THREE.OctahedronGeometry(.11, 0),
+    const prompt = new THREE.Mesh(new THREE.PlaneGeometry(.12, .05),
+      new THREE.MeshBasicMaterial({ color:0xeee8d5, transparent:true }));
+    prompt.position.set(-.72, -.42, .11); g.add(prompt);
+    g.userData.animate = (t) => { prompt.material.opacity = Math.sin(t*5) > 0 ? 1 : .08; };
+  } else if (a.id === "skills"){
+    // GRIMOIRE TERBUKA — halaman terbuka + rune melayang: spellbook yang menulis dirinya
+    const cover = new THREE.Mesh(new THREE.BoxGeometry(1.9, .12, 1.5), emissive);
+    cover.position.y = -.12; g.add(cover);
+    const pgL = new THREE.Mesh(new THREE.BoxGeometry(.86, .05, 1.3),
+      new THREE.MeshStandardMaterial({ color:0x0b2f30, emissive:a.color, emissiveIntensity:.22 }));
+    pgL.position.set(-.44, .02, 0); pgL.rotation.z = .16; g.add(pgL);
+    const pgR = pgL.clone(); pgR.position.x = .44; pgR.rotation.z = -.16; g.add(pgR);
+    const spine = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, 1.5),
+      new THREE.MeshBasicMaterial({ color:a.color })); g.add(spine);
+    for (let k=0;k<6;k++){
+      const glyph = new THREE.Mesh(new THREE.OctahedronGeometry(.06, 0),
         new THREE.MeshBasicMaterial({ color:a.color }));
-      const t = k/8*Math.PI*2;
-      gem.userData.orbit = { r:1.15, t, sp:.55 + (k%3)*.16, y:(k%2? .5:-.5) };
+      glyph.userData.orbit = { r:.55 + (k%3)*.16, t:k/6*Math.PI*2, sp:.5 + (k%2)*.3, y:.42 + (k%2)*.18 };
+      g.add(glyph);
+    }
+  } else if (a.id === "tools"){
+    // ORBIT ALAT — inti + 12 permata beda bentuk pada 2 piringan orbit: 24 tools
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.48, 0), emissive); g.add(core);
+    for (const [rr, tilt] of [[.95, .4], [1.35, -.35]]){
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(rr, .012, 8, 80),
+        new THREE.MeshBasicMaterial({ color:a.color, transparent:true, opacity:.4 }));
+      ring.rotation.x = Math.PI/2 + tilt; g.add(ring);
+    }
+    const shapes = [THREE.TetrahedronGeometry, THREE.OctahedronGeometry, THREE.IcosahedronGeometry];
+    for (let k=0;k<12;k++){
+      const gem = new THREE.Mesh(new shapes[k%3](.1, 0), new THREE.MeshBasicMaterial({ color:a.color }));
+      gem.userData.orbit = { r: k%2 ? .95 : 1.35, t: k/12*Math.PI*2, sp:.5 + (k%3)*.2, y:(k%3-1)*.3, selfspin: 1 + (k%4)*.6 };
       g.add(gem);
     }
-    g.userData.spinners = true;
-  } else if (a.id === "studio"){                 // portal
+    g.userData.animate = (t) => { core.rotation.y = t*.7; };
+  } else if (a.id === "studio"){
+    // PORTAL DUNIA — bola wireframe berputar di dalam cincin: WebGL worlds
     const torus = new THREE.Mesh(new THREE.TorusGeometry(1.05, .07, 14, 60),
       new THREE.MeshBasicMaterial({ color:a.color })); g.add(torus);
     const inner = new THREE.Mesh(new THREE.CircleGeometry(.95, 48),
-      new THREE.MeshBasicMaterial({ color:0x072a33, transparent:true, opacity:.9,
-        side:THREE.DoubleSide })); g.add(inner);
-    const gem = new THREE.Mesh(new THREE.TetrahedronGeometry(.3, 0),
-      new THREE.MeshStandardMaterial({ color:0x06232b, emissive:0x2aa198, emissiveIntensity:.9 }));
-    gem.position.z = .25; g.add(gem); g.userData.spinners = true; g.userData.spinner = gem;
-  } else {                                       // summon — beaming sigil
-    const sigil = new THREE.Mesh(new THREE.IcosahedronGeometry(.8, 1), emissive); g.add(sigil);
-    const halo = new THREE.Mesh(new THREE.TorusGeometry(1.2, .025, 10, 60),
-      new THREE.MeshBasicMaterial({ color:0xeee8d5, transparent:true, opacity:.7 }));
-    halo.rotation.x = Math.PI/2.4; g.add(halo); g.userData.spinners = true; g.userData.spinner = sigil;
+      new THREE.MeshBasicMaterial({ color:0x072a33, transparent:true, opacity:.85, side:THREE.DoubleSide }));
+    g.add(inner);
+    const world = new THREE.Mesh(new THREE.IcosahedronGeometry(.5, 1),
+      new THREE.MeshBasicMaterial({ color:0xeee8d5, wireframe:true, transparent:true, opacity:.9 }));
+    g.add(world); g.userData.spinner = world; g.userData.spinners = true;
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(.09, 12, 12),
+      new THREE.MeshBasicMaterial({ color:a.color }));
+    moon.userData.orbit = { r:.85, t:1.2, sp:.8, y:.25 };
+    g.add(moon);
+  } else {
+    // SUAR PANGGILAN — berkas cahaya menegak + sigil kembar berdenyut: your move
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.05, .22, 3.4, 20, 1, true),
+      new THREE.MeshBasicMaterial({ color:0xeee8d5, transparent:true, opacity:.28, side:THREE.DoubleSide }));
+    beam.position.y = 1.5; g.add(beam);
+    const core = new THREE.Mesh(new THREE.OctahedronGeometry(.34, 0),
+      new THREE.MeshStandardMaterial({ color:0x06232b, emissive:0xeee8d5, emissiveIntensity:.9 }));
+    g.add(core);
+    const r1 = new THREE.Mesh(new THREE.TorusGeometry(.72, .025, 10, 60),
+      new THREE.MeshBasicMaterial({ color:0xeee8d5, transparent:true, opacity:.8 }));
+    g.add(r1);
+    const r2 = r1.clone(); r2.rotation.x = Math.PI/2; g.add(r2);
+    g.userData.animate = (t) => {
+      r1.rotation.y = t*1.1; r1.rotation.x = Math.sin(t*.7)*.7;
+      r2.rotation.z = t*.9;
+      core.rotation.y = t*1.4;
+      beam.material.opacity = .22 + Math.sin(t*2.2)*.1;
+      core.scale.setScalar(1 + Math.sin(t*2.2)*.06);
+    };
   }
   return g;
 }
@@ -392,12 +440,16 @@ function loop(){
   if (motionOn){
     groups.forEach((g, i) => {
       g.position.y = artifactAnchors[i].y + Math.sin(t*.9 + i*1.7)*.16;
+      // grup selalu menghadap kamera (baseAngle) + sway halus
       g.rotation.y = (g.userData.baseAngle || 0) + Math.sin(t*.6 + i*1.3)*.22;
+      // animasi internal artefak (knot, kursor, suar, dsb.)
+      if (g.userData.animate) g.userData.animate(t, dt);
       if (g.userData.spinners && g.userData.spinner) g.userData.spinner.rotation.x = t*1.3;
-      if (g.userData.spinners) g.children.forEach(ch => {
+      g.children.forEach(ch => {
         if (ch.userData.orbit){
           const o = ch.userData.orbit; o.t += o.sp*dt;
           ch.position.set(Math.cos(o.t)*o.r, o.y + Math.sin(o.t*1.6)*.14, Math.sin(o.t)*o.r);
+          if (o.selfspin) ch.rotation.y = t*o.selfspin;
         }
       });
     });
