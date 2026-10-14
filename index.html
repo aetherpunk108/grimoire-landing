@@ -33,26 +33,9 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Tailwind: original compiled asset didn't reach the repo (404 fix) —
-       Play CDN JIT + inline solarized config reproduces the exact palette -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            solar: {
-              base03: '#002b36', base02: '#073642', base01: '#586e75', base00: '#657b83',
-              base0: '#839496', base1: '#93a1a1', base2: '#eee8d5', base3: '#fdf6e3',
-              yellow: '#b58900', orange: '#cb4b16', red: '#dc322f',
-              magenta: '#d33682', violet: '#6c71c4', blue: '#268bd2',
-              cyan: '#2aa198', green: '#859900',
-            },
-          },
-        },
-      },
-    };
-  </script>
+  <!-- Tailwind: compiled statically (v3.4.17) — solar palette identik dengan config Play CDN lama.
+       Rebuild: npx tailwindcss -c tailwind-build/tailwind.config.js -i tailwind-build/input.css -o assets/tw.min.css --minify (dari root repo) -->
+  <link rel="stylesheet" href="/assets/tw.min.css">
 
   <!-- Three.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
