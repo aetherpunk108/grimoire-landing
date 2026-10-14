@@ -249,7 +249,7 @@ function buildWorld(){
   for (let i=0;i<N;i++){ p[i*3]=(Math.random()-.5)*46; p[i*3+1]=Math.random()*11; p[i*3+2]=(Math.random()-.5)*46; }
   dustGeo = new THREE.BufferGeometry();
   dustGeo.setAttribute("position", new THREE.BufferAttribute(p, 3));
-  scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ color:0x93a1a1, size:.035, transparent:true, opacity:.5 })));
+  scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ color:0x93a1a1, size:2.2, sizeAttenuation:false, transparent:true, opacity:.45 })));
 
   // artifacts in a circle
   const R = 8.4;
@@ -273,7 +273,8 @@ function buildWorld(){
   });
 
   camTarget.copy(offsetFor(0));
-  lookCur.copy(artifactAnchors[0]);
+  const out0 = new THREE.Vector3(artifactAnchors[0].x, 0, artifactAnchors[0].z).normalize();
+  lookCur.copy(artifactAnchors[0]).addScaledVector(new THREE.Vector3(out0.z, 0, -out0.x), 1.5);
   loop();
 }
 
@@ -337,16 +338,20 @@ function goto(i, instant){
   if (busy) return;
   cur = (i + ARTIFACTS.length) % ARTIFACTS.length;
   busy = true;
-  camTarget.copy(artifactAnchors[cur]).add(offsetFor(cur));
-  lookTarget.copy(artifactAnchors[cur]);
+  const off = offsetFor(cur);
+  camTarget.copy(off);
+  // titik pandang digeser ke kanan artefak -> artefak jatuh di sepertiga KIRI frame (panel di kanan)
+  const out = new THREE.Vector3(artifactAnchors[cur].x, 0, artifactAnchors[cur].z).normalize();
+  const rightDir = new THREE.Vector3(out.z, 0, -out.x);
+  lookTarget.copy(artifactAnchors[cur]).addScaledVector(rightDir, 1.5);
   showPanel(cur);
   blip(520 + cur*40);
   setTimeout(() => busy = false, instant ? 0 : 750);
 }
 function offsetFor(i){
   const a = artifactAnchors[i];
-  const out = new THREE.Vector3(a.x, a.y + .3, a.z).normalize();
-  return out.multiplyScalar(4.6).setY(2.1);
+  const out = new THREE.Vector3(a.x, 0, a.z).normalize();   // arah keluar ring
+  return new THREE.Vector3(a.x + out.x*6.2, 2.6, a.z + out.z*6.2);  // kamera DI LUAR, agak tinggi
 }
 
 /* ================= PANEL ================= */
