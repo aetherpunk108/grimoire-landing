@@ -38,29 +38,19 @@ body{background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',monospac
 .tg.off b{color:var(--faint)}
 .tg:hover{border-color:var(--cyan)}
 
-/* ---------- gate ---------- */
-#gate{position:fixed;inset:0;z-index:100;background:radial-gradient(1200px 700px at 50% 42%,#02222c 0%,#00141b 62%,#000d12 100%);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  transition:opacity 1.1s ease,visibility 1.1s}
-#gate.away{opacity:0;visibility:hidden;pointer-events:none}
-#gate .mark{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(40px,9vw,96px);letter-spacing:.14em;color:var(--ink);
-  text-shadow:0 0 60px rgba(42,161,152,.25)}
-#gate .sub{margin-top:14px;font-size:clamp(13px,2.4vw,20px);font-weight:700;letter-spacing:.34em;
-  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--magenta));
-  -webkit-background-clip:text;background-clip:text;color:transparent}
-#gate .rule{width:min(320px,60vw);height:1px;margin:34px 0 44px;
-  background:linear-gradient(90deg,transparent,var(--cyan),var(--magenta),transparent)}
-.coin{position:relative;font:700 13px/1 'JetBrains Mono',monospace;letter-spacing:.3em;color:var(--yellow);
-  background:rgba(2,26,34,.6);border:1px solid rgba(181,137,0,.55);border-radius:999px;
-  padding:19px 44px;cursor:pointer;transition:all .25s;animation:breathe 2.6s ease-in-out infinite}
-.coin:hover{color:#00212a;background:var(--yellow);box-shadow:0 0 44px rgba(181,137,0,.45);animation:none}
-@keyframes breathe{0%,100%{box-shadow:0 0 18px rgba(181,137,0,.18)}50%{box-shadow:0 0 34px rgba(181,137,0,.4)}}
-.coin::before{content:"";position:absolute;inset:-7px;border:1px solid rgba(181,137,0,.35);border-radius:999px;animation:ring 2.6s ease-out infinite}
-@keyframes ring{0%{transform:scale(.94);opacity:0}45%{opacity:.9}100%{transform:scale(1.12);opacity:0}}
-#gate .hint{margin-top:22px;font-size:11px;letter-spacing:.26em;color:var(--faint)}
-#gate .caret{display:inline-block;width:9px;height:16px;background:var(--cyan);vertical-align:-2px;margin-left:6px;animation:blink 1.1s steps(1) infinite}
+/* ---------- brandmark (logo gate) ---------- */
+#brandmark{position:fixed;left:0;right:0;top:78%;z-index:45;text-align:center;pointer-events:none;transition:opacity .9s ease}
+body:not(.gate) #brandmark{opacity:0}
+.bm-line{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(30px,5.6vw,60px);letter-spacing:.44em;text-indent:.44em;
+  background:linear-gradient(180deg,#f6e3a1 0%,#d9b64e 55%,#a8823a 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 50px rgba(217,182,78,.18)}
+.bm-sub{margin-top:8px;font-size:clamp(11px,1.6vw,15px);letter-spacing:.95em;text-indent:.95em;color:#9fb8c4}
+.bm-hint{margin-top:36px;font-size:11px;letter-spacing:.3em;color:var(--faint)}
+.bm-caret{display:inline-block;width:9px;height:15px;background:var(--cyan);vertical-align:-2px;margin-left:7px;animation:blink 1.1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
-#gate .foot{position:absolute;bottom:26px;font-size:11px;letter-spacing:.2em;color:var(--faint)}
+body.gate .topbar, body.gate .navarrow, body.gate .dots, body.gate .hud-art, body.gate #panel{opacity:0 !important;pointer-events:none}
+.topbar,.navarrow,.dots,.hud-art{transition:opacity .7s ease}
 
 /* ---------- HUD ---------- */
 .hud-art{position:fixed;left:26px;bottom:24px;z-index:40;font-size:11px;letter-spacing:.24em;color:var(--faint)}
@@ -105,20 +95,17 @@ body{background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',monospac
   .hud-art{display:none}
 }
 @media (prefers-reduced-motion:reduce){
-  .coin,.coin::before,#gate .caret{animation:none}
+  .bm-caret{animation:none}
 }
 </style>
 </head>
 <body>
 
-<!-- ======== GATE ======== -->
-<div id="gate">
-  <div class="mark">EPINOIA<span style="color:var(--cyan)">·</span>HORIZON</div>
-  <div class="sub">THE ARCANE TERMINAL</div>
-  <div class="rule"></div>
-  <button class="coin" id="coin">⟡ SUMMON</button>
-  <div class="hint">enter the sanctum<span class="caret"></span></div>
-  <div class="foot">MERLIN AGENT — AN OPEN-SOURCE AI HARNESS · SOUND OFF BY DEFAULT</div>
+<!-- ======== BRANDMARK GATE ======== -->
+<div id="brandmark">
+  <div class="bm-line">EPINOIA</div>
+  <div class="bm-sub">HORIZON</div>
+  <div class="bm-hint">SCROLL TO ENTER<span class="bm-caret"></span></div>
 </div>
 
 <!-- ======== WORLD ======== -->
@@ -241,20 +228,20 @@ function buildWorld(){
   const rimC = new THREE.DirectionalLight(0x2aa198, .5); rimC.position.set(-7, 4, -5); scene.add(rimC);
   const rimM = new THREE.DirectionalLight(0xd33682, .35); rimM.position.set(6, 3, 7); scene.add(rimM);
 
-  // environment map prosedural — yang membuat material PBR/metalik terlihat "dirender"
+  // environment map prosedural — hangat & redup (emas tetap emas, bukan hijau)
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
-  envScene.background = new THREE.Color(0x0a1e26);
+  envScene.background = new THREE.Color(0x04141a);
   const panel = (hex, x, y, z, w, h, ry) => {
     const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h),
       new THREE.MeshBasicMaterial({ color:hex }));
     p.position.set(x, y, z); p.rotation.y = ry; envScene.add(p);
   };
-  panel(0xcfe8e4,  0, 6,  0, 14, 6, 0);          // softbox atas (putih-cyan)
+  panel(0xfff1d8,  0, 6,  0, 14, 6, 0);          // softbox atas hangat
   envScene.children[0].rotation.x = Math.PI/2;
-  panel(0x2aa198, -8, 2,  0, 10, 4,  Math.PI/2);  // dinding cyan
-  panel(0xd33682,  8, 2,  0, 10, 4, -Math.PI/2);  // dinding magenta
-  panel(0xb58900,  0, 2, -8, 12, 4,  0);          // dinding belakang hangat
+  panel(0x1a5f57, -8, 2,  0, 10, 4,  Math.PI/2);  // cyan redup
+  panel(0x6e2a48,  8, 2,  0, 10, 4, -Math.PI/2);  // magenta redup
+  panel(0x8a6a2a,  0, 2, -8, 12, 4,  0);          // belakang emas gelap
   scene.environment = pmrem.fromScene(envScene, 0.06).texture;
   pmrem.dispose();
 
@@ -549,14 +536,22 @@ function loop(){
 /* ================= INPUT ================= */
 let wheelLock = 0;
 addEventListener("wheel", e => {
-  if (gateOpen || busy) return;
+  if (mode === "logo"){
+    if (e.deltaY > 8) enterLobby();
+    return;
+  }
+  if (mode !== "lobby" || busy) return;
   const now = performance.now();
   if (now - wheelLock < 900 || Math.abs(e.deltaY) < 12) return;
   wheelLock = now;
-  goto(cur + (e.deltaY > 0 ? 1 : -1));
+  const next = cur + (e.deltaY > 0 ? 1 : -1);
+  if (next < 0){ backToLogo(); return; }   // scroll-up di kategori pertama → kembali ke logo
+  goto(next);
 }, { passive:true });
 addEventListener("keydown", e => {
-  if (gateOpen) return;
+  if (e.key === "Escape"){ backToLogo(); return; }
+  if (mode === "logo"){ if (e.key !== "F5" && e.key !== "F12") enterLobby(); return; }
+  if (mode !== "lobby") return;
   if (e.key === "ArrowDown" || e.key === "ArrowRight") goto(cur+1);
   if (e.key === "ArrowUp" || e.key === "ArrowLeft") goto(cur-1);
 });
@@ -572,7 +567,7 @@ stage.addEventListener("pointermove", e => {
   if (Math.abs(e.clientX-px) + Math.abs(e.clientY-py) > 8) dragged = true;
 });
 stage.addEventListener("pointerup", e => {
-  if (dragged || gateOpen) return;
+  if (dragged || mode !== "lobby") return;
   const m = new THREE.Vector2((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
   raycaster.setFromCamera(m, camera);
   const hit = raycaster.intersectObjects(groups, true);
@@ -602,19 +597,108 @@ tgMotion.addEventListener("click", () => {
   tgMotion.innerHTML = `MOTION <b>${motionOn?"ON":"OFF"}</b>`;
 });
 
-/* ================= GATE ================= */
-let gateOpen = true, worldBuilt = false;
-function summon(){
-  if (!worldBuilt){ buildWorld(); worldBuilt = true; showPanel(0); }
-  document.getElementById("gate").classList.add("away");
-  gateOpen = false;
-  blip(660);
+/* ================= LOGO 3D (brandmark) ================= */
+let logoGroup = null, logoTargetY = 7.5, logoTargetScale = 1.0;
+function buildLogo(){
+  logoGroup = new THREE.Group();
+
+  // — berlian: gradasi ungu→biru via vertex colors —
+  const gemMat = new THREE.MeshPhysicalMaterial({
+    vertexColors: true, metalness: .05, roughness: .22,
+    clearcoat: .6, clearcoatRoughness: .15, envMapIntensity: .45,
+    side: THREE.DoubleSide
+  });
+  const cPurple = new THREE.Color(0x9d6cf0), cMid = new THREE.Color(0x6b82ec), cBlue = new THREE.Color(0x3fb2f0);
+  const mkDiamond = (radius, height, yBase, flip) => {
+    const geo = new THREE.ConeGeometry(radius, height, 4);
+    const pos = geo.attributes.position;
+    const colors = new Float32Array(pos.count * 3);
+    const apexY = flip ? yBase - height/2 : yBase + height/2;
+    const tmp = new THREE.Color();
+    for (let i = 0; i < pos.count; i++){
+      const t = Math.min(1, Math.max(0, Math.abs(pos.getY(i) - apexY) / height));
+      tmp.copy(cPurple).lerp(flip ? cMid : cBlue, t);
+      colors[i*3] = tmp.r; colors[i*3+1] = tmp.g; colors[i*3+2] = tmp.b;
+    }
+    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, gemMat);
+    m.rotation.y = Math.PI/4;
+    m.position.y = yBase;
+    return m;
+  };
+  logoGroup.add(mkDiamond(1.4, 2.45, .58, false));
+  logoGroup.add(mkDiamond(1.4, 1.6, -.92, true));
+
+  // outline berlian dalam
+  const inner = new THREE.Mesh(
+    new THREE.ConeGeometry(.68, .9, 4),
+    new THREE.MeshBasicMaterial({ color:0xeaf7ff, transparent:true, opacity:.9, wireframe:true })
+  );
+  inner.position.y = -.6; inner.rotation.y = Math.PI/4;
+  logoGroup.add(inner);
+
+  // — 6 kelopak emas: fan simetris via pivot sub-group —
+  const petalGeo = new THREE.SphereGeometry(1, 16, 12);
+  const gold = new THREE.MeshStandardMaterial({
+    color: 0xd4af37, metalness: .85, roughness: .3, envMapIntensity: .7, side: THREE.DoubleSide
+  });
+  for (let s = -1; s <= 1; s += 2){
+    for (let k = 0; k < 3; k++){
+      const pivot = new THREE.Group();
+      const petal = new THREE.Mesh(petalGeo, gold);
+      petal.scale.set(1.35 - k*.22, .42 - k*.06, .16);
+      petal.position.x = s * (1.15 + k*.28);
+      pivot.add(petal);
+      pivot.position.set(0, -1.05 - k*.22, -.05);
+      pivot.rotation.z = s * (-.12 - k*.3);        // fan: miring turun keluar
+      logoGroup.add(pivot);
+    }
+  }
+
+  logoGroup.position.set(0, logoTargetY, 0);
+  logoGroup.scale.setScalar(logoTargetScale);
+  scene.add(logoGroup);
 }
-document.getElementById("coin").addEventListener("click", summon);
-addEventListener("keydown", e => { if (gateOpen && e.key !== "F5" && e.key !== "F12") summon(); }, { once:false });
+
+/* ================= MODE: logo → terbang → lobby ================= */
+let mode = "logo";            // logo | fly | lobby
+const flyAnim = { t: 0, from: new THREE.Vector3(), fromLook: new THREE.Vector3() };
+
+function enterLobby(){
+  if (mode !== "logo") return;
+  mode = "fly";
+  document.body.classList.remove("gate");
+  blip(660);
+  // kamera terbang menuju artefak pertama (lerp di loop yang menggerakkan)
+  cur = 0;
+  camTarget.copy(offsetFor(0));
+  const out = new THREE.Vector3(artifactAnchors[0].x, 0, artifactAnchors[0].z).normalize();
+  lookTarget.copy(artifactAnchors[0]).addScaledVector(new THREE.Vector3(out.z, 0, -out.x), 1.5);
+  setTimeout(() => { mode = "lobby"; showPanel(0); }, 1700);
+}
+function backToLogo(){
+  if (mode !== "lobby") return;
+  mode = "fly";
+  camTarget.set(0, 4.7, 7.4);
+  lookTarget.set(0, 5.2, 0);
+  panel.classList.remove("show");
+  document.getElementById("hudart").innerHTML = "";
+  document.querySelectorAll("#dots span").forEach(d => d.classList.remove("on"));
+  blip(440);
+  setTimeout(() => { mode = "logo"; document.body.classList.add("gate"); }, 1500);
+}
+
+/* ================= INIT ================= */
+buildWorld();
+buildLogo();
+camera.position.set(0, 6.4, 9.6);   // kamera mulai di depan logo
+camTarget.set(0, 6.4, 9.6);
+lookCur.set(0, 6.2, 0);
+lookTarget.set(0, 6.2, 0);
+document.body.classList.add("gate");
 
 addEventListener("resize", () => {
-  if (!worldBuilt) return;
   camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
