@@ -39,7 +39,7 @@ body{background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',monospac
 .tg:hover{border-color:var(--cyan)}
 
 /* ---------- brandmark (logo gate) ---------- */
-#brandmark{position:fixed;left:0;right:0;top:78%;z-index:45;text-align:center;pointer-events:none;transition:opacity .9s ease}
+#brandmark{position:fixed;left:0;right:0;top:73%;z-index:45;text-align:center;pointer-events:none;transition:opacity .9s ease}
 body:not(.gate) #brandmark{opacity:0}
 .bm-line{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(30px,5.6vw,60px);letter-spacing:.44em;text-indent:.44em;
   background:linear-gradient(180deg,#f6e3a1 0%,#d9b64e 55%,#a8823a 100%);
@@ -598,7 +598,7 @@ tgMotion.addEventListener("click", () => {
 });
 
 /* ================= LOGO 3D (brandmark) ================= */
-let logoGroup = null, logoTargetY = 7.5, logoTargetScale = 1.0;
+let logoGroup = null, logoTargetY = 6.35, logoTargetScale = .78;
 function buildLogo(){
   logoGroup = new THREE.Group();
 
