@@ -1,281 +1,93 @@
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Docs — Epinoia Horizon | Merlin Arcane Fleet</title>
-  <meta name="description" content="Documentation hub: run Merlin Agent in your terminal on Windows & Linux, first-run setup, everyday commands, and troubleshooting.">
+  <meta name="description" content="Documentation hub for Merlin Agent: install on Windows &amp; Linux, first-run setup, everyday commands, and troubleshooting.">
   <link rel="canonical" href="https://epinoiahorizon.com/docs/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/assets/tw2.min.css">
-  <style>
-    body { background-color:#030208; color:#f1f5f9; font-family:'Inter',sans-serif; overflow-x:hidden; }
-    .glass-panel {
-      background: rgba(8,6,20,.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(234,179,8,.25);
-      box-shadow: 0 16px 45px 0 rgba(0,0,0,.9), inset 0 0 25px rgba(139,92,246,.12);
-    }
-    .glass-panel-hover { transition: all .4s cubic-bezier(.16,1,.3,1); }
-    .glass-panel-hover:hover {
-      border-color: rgba(6,182,212,.55);
-      box-shadow: 0 16px 50px 0 rgba(139,92,246,.3), inset 0 0 35px rgba(6,182,212,.2);
-      transform: translateY(-2px);
-    }
-    .glow-gold {
-      color: #facc15;
-      text-shadow: 0 0 22px rgba(234,179,8,.8), 0 0 45px rgba(202,138,4,.5);
-    }
-    .glow-cyan {
-      color: #38bdf8;
-      text-shadow: 0 0 18px rgba(6,182,212,.85), 0 0 38px rgba(6,182,212,.45);
-    }
-    ::-webkit-scrollbar { width:6px; }
-    ::-webkit-scrollbar-track { background:#030208; }
-    ::-webkit-scrollbar-thumb { background:#1c1138; border:1px solid rgba(234,179,8,.3); border-radius:3px; }
-    ::-webkit-scrollbar-thumb:hover { background:#8b5cf6; }
-  </style>
+  <link rel="stylesheet" href="/assets/docs.css?v=3">
 </head>
-<body class="selection:bg-purple-900 selection:text-gold-300 min-h-screen flex flex-col justify-between">
+<body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="bg-glow" aria-hidden="true"></div>
 
-
-  <!-- 3D Canvas Background -->
-  <div id="canvas-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script>
-    (function() {
-      const container = document.getElementById('canvas-container');
-      if (!container || typeof THREE === 'undefined') return;
-
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x030208, 0.04);
-
-      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 0, 10);
-
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      container.appendChild(renderer.domElement);
-
-      // Lights
-      scene.add(new THREE.AmbientLight(0x2d1e4e, 1.5));
-      const cyanLight = new THREE.PointLight(0x06b6d4, 2.5, 25);
-      cyanLight.position.set(-8, 6, 2);
-      scene.add(cyanLight);
-      const goldLight = new THREE.PointLight(0xeab308, 2, 25);
-      goldLight.position.set(8, -6, 2);
-      scene.add(goldLight);
-
-      // Subtle Background Geometric Rune (jauh di belakang, tidak tabrakan dengan card)
-      const runeGroup = new THREE.Group();
-      const shellGeo = new THREE.IcosahedronGeometry(3.5, 1);
-      const shellMat = new THREE.MeshBasicMaterial({
-        color: 0x38bdf8,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.12
-      });
-      runeGroup.add(new THREE.Mesh(shellGeo, shellMat));
-
-      const ringGeo = new THREE.TorusGeometry(4.8, 0.015, 16, 100);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0xeab308, transparent: true, opacity: 0.18 });
-      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-      ringMesh.rotation.x = Math.PI / 3;
-      runeGroup.add(ringMesh);
-
-      scene.add(runeGroup);
-      runeGroup.position.set(0, 0, -6);
-
-      // Ambient Arcane Particles
-      const count = 1200;
-      const geo = new THREE.BufferGeometry();
-      const pos = new Float32Array(count * 3);
-      const col = new Float32Array(count * 3);
-      const palette = [new THREE.Color(0x8b5cf6), new THREE.Color(0x06b6d4), new THREE.Color(0xeab308)];
-
-      for(let i = 0; i < count * 3; i += 3) {
-        pos[i] = (Math.random() - 0.5) * 45;
-        pos[i+1] = (Math.random() - 0.5) * 45;
-        pos[i+2] = (Math.random() - 0.5) * 30;
-        const c = palette[Math.floor(Math.random() * palette.length)];
-        col[i] = c.r; col[i+1] = c.g; col[i+2] = c.b;
-      }
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-
-      const mat = new THREE.PointsMaterial({
-        size: 0.08,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.7,
-        blending: THREE.AdditiveBlending
-      });
-      const particles = new THREE.Points(geo, mat);
-      scene.add(particles);
-
-      let mouseX = 0, mouseY = 0;
-      window.addEventListener('mousemove', function(e) {
-        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-      });
-
-      const clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        const t = clock.getElapsedTime();
-        runeGroup.rotation.y = t * 0.08;
-        runeGroup.rotation.x = t * 0.05;
-        particles.rotation.y = t * 0.015;
-        camera.position.x += (mouseX * 0.2 - camera.position.x) * 0.04;
-        camera.position.y += (-mouseY * 0.2 - camera.position.y) * 0.04;
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      window.addEventListener('resize', function() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-    })();
-  </script>
-
-<!-- Header (identik apex, fixed dengan frosted backdrop dan padding aman) -->
-<header class="fixed top-0 left-0 w-full z-50 px-4 py-3 md:px-8 md:py-4 pointer-events-none" style="background:rgba(3,2,8,0.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(234,179,8,0.18);">
-  <div class="max-w-7xl mx-auto flex justify-between items-center">
-    <!-- Brand Logo -->
-    <a href="/" class="pointer-events-auto flex items-center gap-3 group">
-      <div class="w-10 h-10 rounded-lg bg-horizon-card/90 border border-gold-500/50 flex items-center justify-center text-gold-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] group-hover:border-gold-300 transition-all">
-        <i class="fas fa-eye text-lg"></i>
-      </div>
-      <div class="flex flex-col">
-        <span class="font-title text-base md:text-xl text-gold-300 tracking-wider glow-gold leading-none">EPINOIA HORIZON</span>
-        <span class="font-mono text-[9px] md:text-[10px] text-cyan-400 tracking-widest uppercase mt-0.5">Merlin Arcane Fleet</span>
-      </div>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand" aria-label="Epinoia Horizon home">
+      <span class="brand-icon"><i class="fas fa-eye"></i></span>
+      <span class="brand-text">
+        <span class="brand-name">EPINOIA HORIZON</span>
+        <span class="brand-sub">Merlin Arcane Fleet</span>
+      </span>
     </a>
-
-    <!-- Navigation Links -->
-    <nav class="hidden md:flex gap-6 pointer-events-auto glass-panel px-7 py-2.5 rounded-full border border-gold-500/30">
-      <a href="/#hero" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Sanctum</a>
-      <a href="/#architecture" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Architecture</a>
-      <a href="/#showcase" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Spells</a>
-      <a href="/docs/" class="font-heading text-xs text-gold-400 uppercase tracking-widest border-b border-gold-400/60 pb-0.5">Docs</a>
-      <a href="/blog/" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Blog</a>
-      <a href="/#store" class="font-heading text-xs text-gold-400 hover:text-gold-300 transition-colors uppercase tracking-widest flex items-center gap-1.5"><i class="fas fa-sparkles text-[10px]"></i> Vault Store</a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/#hero">Sanctum</a>
+      <a href="/#architecture">Architecture</a>
+      <a href="/#showcase">Spells</a>
+      <a href="/docs/" class="active" aria-current="page">Docs</a>
+      <a href="/blog/">Blog</a>
+      <a href="/#store" class="store"><i class="fas fa-wand-sparkles"></i>Vault Store</a>
     </nav>
-
-    <!-- Right Controls: Sanctum / Home Button -->
-    <div class="pointer-events-auto flex items-center gap-3">
-      <a href="/" class="glass-panel px-4 py-2 rounded-full text-gold-300 hover:text-white transition-all border border-gold-500/40 flex items-center gap-2 font-heading text-xs uppercase tracking-wider">
-        <i class="fas fa-arrow-left text-xs text-gold-400"></i>
-        <span>Sanctum</span>
-      </a>
-    </div>
+    <a href="/" class="pill-btn"><i class="fas fa-arrow-left"></i><span>Sanctum</span></a>
   </div>
 </header>
 
-
-<!-- Main Content Area: Padding atas besar (pt-36 md:pt-44) agar bebas dari fixed header -->
-<main class="relative z-10 max-w-3xl mx-auto px-6 pt-36 md:pt-44 pb-20 w-full flex-grow">
-
-  <!-- Satu Container Utama: Solid, Rapi, Tanpa Overlap Header -->
-  <div class="w-full glass-panel p-8 sm:p-12 rounded-3xl border border-gold-500/30 space-y-8 shadow-[0_0_60px_rgba(0,0,0,0.95)]">
-
-    <!-- Header Section -->
-    <div class="space-y-4">
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-mono text-[11px] uppercase tracking-widest">
-        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-        Epinoia Knowledge Grimoire
-      </div>
-      <h1 class="font-title text-4xl sm:text-6xl text-gold-300 glow-gold tracking-wide leading-none pt-2">
-        THE DOCS
-      </h1>
-      <p class="text-gray-300 text-sm sm:text-base leading-relaxed font-body">
-        Operator manuals for summoning, configuring, and deploying Merlin Agent in your terminal.
-      </p>
-    </div>
-
-    <!-- Featured Guide Link -->
-    <div class="pt-2">
-      <a href="/docs/tutorial-merlin-terminal-en.html" class="block p-6 sm:p-8 rounded-2xl bg-[#05030c]/85 border border-cyan-500/35 glass-panel-hover group">
-        <div class="flex items-start justify-between gap-4">
-          <div class="space-y-3 flex-grow">
-            <div class="flex items-center gap-2.5">
-              <span class="w-9 h-9 rounded-lg bg-cyan-950/90 border border-cyan-400/50 flex items-center justify-center text-cyan-300 text-sm shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-                <i class="fas fa-terminal"></i>
-              </span>
-              <span class="font-mono text-[10px] text-cyan-300 px-2.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 uppercase tracking-wider">Complete Guide · English</span>
-            </div>
-            <h2 class="font-heading text-xl sm:text-2xl text-white group-hover:text-cyan-200 transition-colors">
-              Merlin Agent in Your Terminal
-            </h2>
-            <p class="text-xs sm:text-sm text-gray-400 leading-relaxed font-body">
-              Install on Windows &amp; Linux, first-run setup wizard, everyday operator commands, token-saving habits, and troubleshooting — the zero-to-working operator manual.
-            </p>
-          </div>
-          <span class="mt-2 text-cyan-400 group-hover:text-gold-300 group-hover:translate-x-1.5 transition-all text-lg">
-            <i class="fas fa-arrow-right"></i>
-          </span>
-        </div>
-
-        <div class="mt-5 pt-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-400 font-mono">
-          <div class="flex items-center gap-4">
-            <span class="flex items-center gap-1.5"><i class="fas fa-bolt text-cyan-400 text-[10px]"></i> One command</span>
-            <span class="flex items-center gap-1.5"><i class="fas fa-sliders text-gold-400 text-[10px]"></i> Operator commands</span>
-            <span class="flex items-center gap-1.5"><i class="fas fa-shield text-purple-400 text-[10px]"></i> Troubleshooting</span>
-          </div>
-          <span class="text-cyan-300 group-hover:text-gold-300 font-heading tracking-wider uppercase text-[11px]">Read Guide &rarr;</span>
-        </div>
-      </a>
-    </div>
-
-    <!-- Quick Summon Box -->
-    <div class="p-5 rounded-2xl bg-horizon-bg/60 border border-gold-500/25 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-gold-950/80 border border-gold-500/40 flex items-center justify-center text-gold-400 text-sm">
-          <i class="fas fa-wand-magic-sparkles"></i>
-        </div>
-        <div>
-          <div class="font-heading text-xs text-gray-200 uppercase tracking-wider">Quick Summon</div>
-          <div class="font-mono text-[11px] text-gray-400">Not installed yet? Run in your shell:</div>
-        </div>
-      </div>
-      <div class="flex items-center gap-2 w-full sm:w-auto">
-        <code id="cmd-install" class="font-mono text-xs text-cyan-300 bg-black/70 border border-cyan-500/30 rounded-lg px-3.5 py-2 select-all flex-grow sm:flex-grow-0">curl -fsSL https://epinoiahorizon.com/install.sh | bash</code>
-        <button id="copy-btn" class="px-3 py-2 rounded-lg border border-gold-500/40 bg-gold-950/60 hover:bg-gold-900/80 text-gold-300 font-mono text-xs transition-colors whitespace-nowrap">copy</button>
-      </div>
-    </div>
-
+<main class="page">
+  <div class="hero">
+    <span class="badge"><span class="dot"></span>Epinoia Knowledge Grimoire</span>
+    <h1 class="title">THE DOCS</h1>
+    <p class="lede">Operator manuals for summoning, configuring, and deploying Merlin Agent in your terminal.</p>
   </div>
 
+  <a href="/docs/tutorial-merlin-terminal-en.html" class="panel guide-card">
+    <div class="guide-top">
+      <span class="icon-box"><i class="fas fa-terminal"></i></span>
+      <span class="tag">Complete Guide · English</span>
+      <i class="fas fa-arrow-right guide-arrow"></i>
+    </div>
+    <h2 class="guide-title">Merlin Agent in Your Terminal</h2>
+    <p class="guide-desc">Install on Windows &amp; Linux, first-run setup, everyday operator commands, token-saving habits, and troubleshooting — the zero-to-working operator manual.</p>
+    <div class="guide-foot">
+      <ul class="chips">
+        <li><i class="fas fa-bolt c-cyan"></i>One command</li>
+        <li><i class="fas fa-sliders c-gold"></i>Operator commands</li>
+        <li><i class="fas fa-shield-halved c-purple"></i>Troubleshooting</li>
+      </ul>
+      <span class="cta">Read the guide &rarr;</span>
+    </div>
+  </a>
+
+  <div class="panel summon">
+    <div class="summon-head">
+      <span class="icon-box gold"><i class="fas fa-wand-magic-sparkles"></i></span>
+      <div>
+        <div class="summon-title">Quick Summon</div>
+        <div class="summon-sub">Not installed yet? Run this in your shell:</div>
+      </div>
+    </div>
+    <div class="cmd">
+      <code><span class="prompt">$</span><span id="cmd-install">curl -fsSL https://epinoiahorizon.com/install.sh | bash</span></code>
+      <button type="button" class="btn-copy" data-copy="cmd-install" aria-label="Copy install command">copy</button>
+    </div>
+  </div>
 </main>
 
-<footer class="relative z-10 border-t border-gold-500/20 py-8 text-center text-xs text-gray-400 font-mono space-y-2">
-  <div class="flex flex-wrap justify-center gap-x-6 gap-y-1">
-    <a href="/" class="hover:text-gold-400 transition-colors">SANCTUM</a>
-    <a href="/docs/" class="hover:text-gold-400 transition-colors">DOCS HUB</a>
-    <a href="/blog/" class="hover:text-gold-400 transition-colors">BLOG</a>
-    <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="hover:text-gold-400 transition-colors">GITHUB</a>
+<footer class="site-footer">
+  <div class="foot-links">
+    <a href="/">SANCTUM</a>
+    <a href="/docs/">DOCS</a>
+    <a href="/blog/">BLOG</a>
+    <a href="https://github.com/epinoiahorizon/Merlin-Agent">GITHUB</a>
   </div>
   <p>© 2026 EPINOIA HORIZON INC. ALL RIGHTS RESERVED.</p>
 </footer>
 
-<script>
-  document.getElementById('copy-btn')?.addEventListener('click', function() {
-    const cmd = document.getElementById('cmd-install').textContent;
-    navigator.clipboard.writeText(cmd).then(() => {
-      const b = document.getElementById('copy-btn');
-      b.textContent = 'copied ✓';
-      setTimeout(() => b.textContent = 'copy', 1400);
-    });
-  });
-</script>
+<script src="/assets/docs.js?v=3" defer></script>
 </body>
 </html>
