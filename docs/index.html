@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,15 +7,16 @@
   <meta name="description" content="Documentation hub: run Merlin Agent in your terminal on Windows & Linux, first-run setup, everyday commands, and troubleshooting.">
   <link rel="canonical" href="https://epinoiahorizon.com/docs/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/assets/tw2.min.css">
   <style>
-    body { background-color:#030208; color:#f1f5f9; font-family:'Inter',sans-serif; }
+    body { background-color:#030208; color:#f1f5f9; font-family:'Inter',sans-serif; overflow-x:hidden; }
     .glass-panel {
-      background: rgba(8,6,20,.72);
+      background: rgba(8,6,20,.78);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border: 1px solid rgba(234,179,8,.22);
@@ -25,34 +26,130 @@
     .glass-panel-hover:hover {
       border-color: rgba(6,182,212,.55);
       box-shadow: 0 14px 50px 0 rgba(139,92,246,.3), inset 0 0 35px rgba(6,182,212,.2);
-      transform: translateY(-3px);
+      transform: translateY(-2px);
     }
-    .glow-gold { text-shadow:0 0 18px rgba(234,179,8,.65),0 0 35px rgba(202,138,4,.35); }
-    .stars {
-      position:fixed;inset:0;z-index:0;pointer-events:none;
-      background-image:
-        radial-gradient(1px 1px at 12% 22%, rgba(139,92,246,.8) 50%, transparent 51%),
-        radial-gradient(1px 1px at 34% 68%, rgba(6,182,212,.7) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 58% 14%, rgba(234,179,8,.6) 50%, transparent 51%),
-        radial-gradient(1px 1px at 72% 48%, rgba(139,92,246,.6) 50%, transparent 51%),
-        radial-gradient(1px 1px at 86% 78%, rgba(6,182,212,.5) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 24% 88%, rgba(234,179,8,.45) 50%, transparent 51%),
-        radial-gradient(1px 1px at 46% 38%, rgba(148,163,184,.5) 50%, transparent 51%),
-        radial-gradient(1px 1px at 92% 26%, rgba(148,163,184,.4) 50%, transparent 51%);
-      animation: drift 60s linear infinite;
+    .glow-gold {
+      color: #facc15;
+      text-shadow: 0 0 20px rgba(234,179,8,.75), 0 0 40px rgba(202,138,4,.45);
     }
-    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-200px)}}
-    ::-webkit-scrollbar{width:6px}
-    ::-webkit-scrollbar-track{background:#030208}
-    ::-webkit-scrollbar-thumb{background:#1c1138;border:1px solid rgba(234,179,8,.3);border-radius:3px}
-    ::-webkit-scrollbar-thumb:hover{background:#8b5cf6}
+    .glow-cyan {
+      color: #38bdf8;
+      text-shadow: 0 0 18px rgba(6,182,212,.85), 0 0 38px rgba(6,182,212,.45);
+    }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:#030208; }
+    ::-webkit-scrollbar-thumb { background:#1c1138; border:1px solid rgba(234,179,8,.3); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:#8b5cf6; }
   </style>
 </head>
-<body class="selection:bg-purple-900 selection:text-gold-300">
-<div class="stars"></div>
+<body class="selection:bg-purple-900 selection:text-gold-300 min-h-screen flex flex-col justify-between">
+
+
+  <!-- 3D Canvas Background -->
+  <div id="canvas-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    (function() {
+      const container = document.getElementById('canvas-container');
+      if (!container || typeof THREE === 'undefined') return;
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x030208, 0.035);
+
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 8);
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0x2d1e4e, 1.8));
+      const cyanLight = new THREE.PointLight(0x06b6d4, 3, 20);
+      cyanLight.position.set(0, 2, 2);
+      scene.add(cyanLight);
+      const goldLight = new THREE.PointLight(0xeab308, 2.5, 20);
+      goldLight.position.set(6, -4, 2);
+      scene.add(goldLight);
+
+      // Wireframe Icosahedron Geometry
+      const orbGroup = new THREE.Group();
+      const shellGeo = new THREE.IcosahedronGeometry(2, 2);
+      const shellMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.22
+      });
+      orbGroup.add(new THREE.Mesh(shellGeo, shellMat));
+
+      const ringGeo = new THREE.TorusGeometry(2.5, 0.02, 16, 100);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xeab308, transparent: true, opacity: 0.45 });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = Math.PI / 3;
+      orbGroup.add(ringMesh);
+
+      scene.add(orbGroup);
+      orbGroup.position.set(5.5, 1, -2);
+
+      // Ambient Particles
+      const count = 1400;
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(count * 3);
+      const col = new Float32Array(count * 3);
+      const palette = [new THREE.Color(0x8b5cf6), new THREE.Color(0x06b6d4), new THREE.Color(0xeab308)];
+
+      for(let i = 0; i < count * 3; i += 3) {
+        pos[i] = (Math.random() - 0.5) * 36;
+        pos[i+1] = (Math.random() - 0.5) * 36;
+        pos[i+2] = (Math.random() - 0.5) * 36;
+        const c = palette[Math.floor(Math.random() * palette.length)];
+        col[i] = c.r; col[i+1] = c.g; col[i+2] = c.b;
+      }
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.07,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+      const particles = new THREE.Points(geo, mat);
+      scene.add(particles);
+
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener('mousemove', function(e) {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const t = clock.getElapsedTime();
+        orbGroup.rotation.y = t * 0.15;
+        orbGroup.rotation.x = t * 0.08;
+        particles.rotation.y = t * 0.02;
+        camera.position.x += (mouseX * 0.3 - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY * 0.3 - camera.position.y) * 0.05;
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    })();
+  </script>
+
 
 <!-- Header (identik apex) -->
-<header class="fixed top-0 left-0 w-full z-40 p-4 md:p-6 pointer-events-none" style="background:linear-gradient(180deg, rgba(3,2,8,.92) 0%, rgba(3,2,8,0) 100%);">
+<header class="fixed top-0 left-0 w-full z-40 p-4 md:p-6 pointer-events-none" style="background:linear-gradient(180deg, rgba(3,2,8,.94) 0%, rgba(3,2,8,0) 100%);">
   <div class="max-w-7xl mx-auto flex justify-between items-center">
     <a href="/" class="pointer-events-auto flex items-center gap-3 group">
       <div class="w-10 h-10 rounded-lg bg-horizon-card/90 border border-gold-500/50 flex items-center justify-center text-gold-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] group-hover:border-gold-300 transition-all">
@@ -75,76 +172,76 @@
   </div>
 </header>
 
-<main class="relative z-10 max-w-4xl mx-auto px-6 pt-40 pb-24">
+<main class="relative z-10 max-w-3xl mx-auto px-6 pt-32 pb-20 w-full flex-grow flex items-center">
 
-  <!-- Heading -->
-  <div class="text-center space-y-4 mb-12">
-    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel border border-cyan-500/40 text-cyan-300 font-mono text-xs uppercase tracking-widest">
-      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-      Epinoia Knowledge Grimoire
+  <!-- Satu Container Utama: Solid, Rapi, Tanpa Kotak Bertumpuk -->
+  <div class="w-full glass-panel p-8 sm:p-12 rounded-3xl border border-gold-500/30 space-y-8 shadow-[0_0_60px_rgba(0,0,0,0.95)]">
+
+    <!-- Header Section -->
+    <div class="space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 font-mono text-[11px] uppercase tracking-widest">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        Epinoia Knowledge Grimoire
+      </div>
+      <h1 class="font-title text-4xl sm:text-6xl text-gold-300 glow-gold tracking-wide leading-none">
+        THE DOCS
+      </h1>
+      <p class="text-gray-300 text-sm sm:text-base leading-relaxed font-body">
+        Operator manuals for summoning, configuring, and deploying Merlin Agent in your terminal.
+      </p>
     </div>
-    <h1 class="font-title text-4xl sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-purple-400 glow-gold tracking-wide">THE DOCS</h1>
-    <p class="text-gray-400 max-w-xl mx-auto text-sm sm:text-base font-body">
-      Operator manuals for summoning, configuring, and deploying Merlin Agent in your terminal.
-    </p>
-  </div>
 
-  <!-- Featured Guide Card -->
-  <div class="max-w-2xl mx-auto">
-    <a href="/docs/tutorial-merlin-terminal-en.html" hreflang="en" class="glass-panel glass-panel-hover p-8 sm:p-10 rounded-2xl block group relative overflow-hidden">
-      <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="space-y-5">
-        <div class="flex items-center justify-between">
-          <div class="w-14 h-14 rounded-xl bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center text-cyan-400 text-2xl shadow-[0_0_25px_rgba(6,182,212,0.4)]">
-            <i class="fas fa-terminal"></i>
+    <!-- Featured Guide Link -->
+    <div class="pt-2">
+      <a href="/docs/tutorial-merlin-terminal-en.html" class="block p-6 sm:p-7 rounded-2xl bg-[#05030c]/80 border border-cyan-500/30 glass-panel-hover group">
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-3 flex-grow">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-lg bg-cyan-950/90 border border-cyan-400/50 flex items-center justify-center text-cyan-300 text-sm shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                <i class="fas fa-terminal"></i>
+              </span>
+              <span class="font-mono text-[10px] text-cyan-300 px-2.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 uppercase tracking-wider">Complete Guide · English</span>
+            </div>
+            <h2 class="font-heading text-xl sm:text-2xl text-white group-hover:text-cyan-200 transition-colors">
+              Merlin Agent in Your Terminal
+            </h2>
+            <p class="text-xs sm:text-sm text-gray-400 leading-relaxed font-body">
+              Install on Windows &amp; Linux, first-run setup wizard, everyday operator commands, token-saving habits, and troubleshooting — the zero-to-working operator manual.
+            </p>
           </div>
-          <span class="font-mono text-[10px] text-cyan-300 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 uppercase tracking-wider">Complete Guide</span>
-        </div>
-        
-        <div>
-          <h2 class="font-heading text-2xl sm:text-3xl text-white group-hover:text-cyan-200 transition-colors">Merlin Agent in Your Terminal</h2>
-          <p class="text-sm text-gray-300 leading-relaxed font-body mt-2">
-            Install on Windows &amp; Linux, first-run setup wizard, everyday commands, token-saving rituals, and troubleshooting fixes — the complete zero-to-working operator manual.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          <div class="flex items-center gap-2 text-xs text-gray-300">
-            <i class="fas fa-bolt text-cyan-400 text-xs"></i>
-            <span>One command setup</span>
-          </div>
-          <div class="flex items-center gap-2 text-xs text-gray-300">
-            <i class="fas fa-sliders text-cyan-400 text-xs"></i>
-            <span>Operator commands</span>
-          </div>
-          <div class="flex items-center gap-2 text-xs text-gray-300">
-            <i class="fas fa-shield-halved text-cyan-400 text-xs"></i>
-            <span>Troubleshooting</span>
-          </div>
-        </div>
-
-        <div class="pt-4 flex items-center justify-between border-t border-white/5">
-          <span class="font-mono text-xs text-gray-500">English Edition</span>
-          <span class="inline-flex items-center gap-2 font-heading text-xs text-cyan-300 uppercase tracking-widest group-hover:gap-3 transition-all">
-            Read The Guide <i class="fas fa-arrow-right text-xs"></i>
+          <span class="mt-2 text-cyan-400 group-hover:text-gold-300 group-hover:translate-x-1.5 transition-all text-lg">
+            <i class="fas fa-arrow-right"></i>
           </span>
         </div>
-      </div>
-    </a>
-  </div>
 
-  <!-- Quick Summon Bar -->
-  <div class="mt-10 max-w-2xl mx-auto glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gold-950/60 border border-gold-500/40 flex items-center justify-center text-gold-400">
-        <i class="fas fa-wand-magic-sparkles"></i>
+        <div class="mt-4 pt-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs text-gray-400 font-mono">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1.5"><i class="fas fa-bolt text-cyan-400 text-[10px]"></i> One command</span>
+            <span class="flex items-center gap-1.5"><i class="fas fa-sliders text-gold-400 text-[10px]"></i> Operator commands</span>
+            <span class="flex items-center gap-1.5"><i class="fas fa-shield text-purple-400 text-[10px]"></i> Troubleshooting</span>
+          </div>
+          <span class="text-cyan-300 group-hover:text-gold-300 font-heading tracking-wider uppercase text-[11px]">Read Guide &rarr;</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Quick Summon Box -->
+    <div class="p-5 rounded-2xl bg-horizon-bg/60 border border-gold-500/25 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-gold-950/80 border border-gold-500/40 flex items-center justify-center text-gold-400 text-sm">
+          <i class="fas fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <div class="font-heading text-xs text-gray-200 uppercase tracking-wider">Quick Summon</div>
+          <div class="font-mono text-[11px] text-gray-400">Not installed yet? Run in your shell:</div>
+        </div>
       </div>
-      <div>
-        <div class="font-heading text-xs sm:text-sm text-gray-200 uppercase tracking-wider">Quick Summon</div>
-        <div class="font-mono text-[11px] text-gray-400">Not installed yet? One command summon.</div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <code id="cmd-install" class="font-mono text-xs text-cyan-300 bg-black/70 border border-cyan-500/30 rounded-lg px-3.5 py-2 select-all flex-grow sm:flex-grow-0">curl -fsSL https://epinoiahorizon.com/install.sh | bash</code>
+        <button id="copy-btn" class="px-3 py-2 rounded-lg border border-gold-500/40 bg-gold-950/60 hover:bg-gold-900/80 text-gold-300 font-mono text-xs transition-colors whitespace-nowrap">copy</button>
       </div>
     </div>
-    <code class="font-mono text-xs text-cyan-300 bg-black/60 border border-cyan-500/30 rounded-lg px-4 py-2.5 select-all">curl -fsSL https://epinoiahorizon.com/install.sh | bash</code>
+
   </div>
 
 </main>
@@ -152,11 +249,22 @@
 <footer class="relative z-10 border-t border-gold-500/20 py-8 text-center text-xs text-gray-400 font-mono space-y-2">
   <div class="flex flex-wrap justify-center gap-x-6 gap-y-1">
     <a href="/" class="hover:text-gold-400 transition-colors">SANCTUM</a>
+    <a href="/docs/" class="hover:text-gold-400 transition-colors">DOCS HUB</a>
     <a href="/blog/" class="hover:text-gold-400 transition-colors">BLOG</a>
     <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="hover:text-gold-400 transition-colors">GITHUB</a>
-    <a href="/main-site/" class="hover:text-gold-400 transition-colors">STUDIO</a>
   </div>
-  <p>© 2026 EPI NOIA HORIZON INC. ALL RIGHTS RESERVED.</p>
+  <p>© 2026 EPINOIA HORIZON INC. ALL RIGHTS RESERVED.</p>
 </footer>
+
+<script>
+  document.getElementById('copy-btn')?.addEventListener('click', function() {
+    const cmd = document.getElementById('cmd-install').textContent;
+    navigator.clipboard.writeText(cmd).then(() => {
+      const b = document.getElementById('copy-btn');
+      b.textContent = 'copied ✓';
+      setTimeout(() => b.textContent = 'copy', 1400);
+    });
+  });
+</script>
 </body>
 </html>

@@ -3,69 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Merlin Agent — Terminal Tutorial (Windows & Linux) | Epinoia Horizon</title>
+  <title>Merlin Agent in Your Terminal — Tutorial | Epinoia Horizon</title>
   <meta name="description" content="The complete guide to running Merlin Agent in your terminal: install on Windows & Linux, first-run setup, daily commands, token-saving habits, and troubleshooting.">
   <link rel="canonical" href="https://epinoiahorizon.com/docs/tutorial-merlin-terminal-en.html">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <!-- Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Tailwind CSS -->
   <link rel="stylesheet" href="/assets/tw2.min.css">
   <style>
-    body { background-color:#030208; color:#f1f5f9; font-family:'Inter',sans-serif; }
+    body { background-color:#030208; color:#f1f5f9; font-family:'Inter',sans-serif; overflow-x:hidden; }
     .glass-panel {
-      background: rgba(8,6,20,.72);
+      background: rgba(8,6,20,.78);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border: 1px solid rgba(234,179,8,.22);
       box-shadow: 0 12px 40px 0 rgba(0,0,0,.85), inset 0 0 25px rgba(139,92,246,.15);
     }
-    .glow-gold { text-shadow:0 0 18px rgba(234,179,8,.65),0 0 35px rgba(202,138,4,.35); }
-    .stars {
-      position:fixed;inset:0;z-index:0;pointer-events:none;
-      background-image:
-        radial-gradient(1px 1px at 12% 22%, rgba(139,92,246,.8) 50%, transparent 51%),
-        radial-gradient(1px 1px at 34% 68%, rgba(6,182,212,.7) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 58% 14%, rgba(234,179,8,.6) 50%, transparent 51%),
-        radial-gradient(1px 1px at 72% 48%, rgba(139,92,246,.6) 50%, transparent 51%),
-        radial-gradient(1px 1px at 86% 78%, rgba(6,182,212,.5) 50%, transparent 51%),
-        radial-gradient(1.5px 1.5px at 24% 88%, rgba(234,179,8,.45) 50%, transparent 51%),
-        radial-gradient(1px 1px at 46% 38%, rgba(148,163,184,.5) 50%, transparent 51%),
-        radial-gradient(1px 1px at 92% 26%, rgba(148,163,184,.4) 50%, transparent 51%);
-      animation: drift 60s linear infinite;
+    .glow-gold {
+      color: #facc15;
+      text-shadow: 0 0 20px rgba(234,179,8,.75), 0 0 40px rgba(202,138,4,.45);
     }
-    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-200px)}}
-    ::-webkit-scrollbar{width:6px}
-    ::-webkit-scrollbar-track{background:#030208}
-    ::-webkit-scrollbar-thumb{background:#1c1138;border:1px solid rgba(234,179,8,.3);border-radius:3px}
-    ::-webkit-scrollbar-thumb:hover{background:#8b5cf6}
+    .glow-cyan {
+      color: #38bdf8;
+      text-shadow: 0 0 18px rgba(6,182,212,.85), 0 0 38px rgba(6,182,212,.45);
+    }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:#030208; }
+    ::-webkit-scrollbar-thumb { background:#1c1138; border:1px solid rgba(234,179,8,.3); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:#8b5cf6; }
 
-    /* Code & Callouts */
+    /* Copy Button */
     .cb-wrap { position: relative; }
     .cb-btn {
       position: absolute; top: .65rem; right: .65rem;
-      background: rgba(8,6,20,.85); color: #94a3b8;
-      border: 1px solid rgba(6,182,212,.35); border-radius: 6px;
+      background: rgba(8,6,20,.9); color: #94a3b8;
+      border: 1px solid rgba(6,182,212,.4); border-radius: 6px;
       font-size: .72rem; font-family: 'JetBrains Mono', monospace;
       padding: .28rem .65rem; cursor: pointer;
       display: inline-flex; align-items: center; gap: .35rem;
       transition: all .2s ease;
       backdrop-filter: blur(10px);
     }
-    .cb-btn:hover { color: #facc15; border-color: rgba(234,179,8,.6); }
+    .cb-btn:hover { color: #facc15; border-color: rgba(234,179,8,.7); }
     .cb-btn.copied { color: #22d3ee; border-color: #22d3ee; }
     .cb-btn svg { width: .85rem; height: .85rem; stroke: currentColor; fill: none; stroke-width: 2; }
   </style>
 </head>
-<body class="selection:bg-purple-900 selection:text-gold-300">
-<div class="stars"></div>
+<body class="selection:bg-purple-900 selection:text-gold-300 min-h-screen flex flex-col justify-between">
+
+
+  <!-- 3D Canvas Background -->
+  <div id="canvas-container" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    (function() {
+      const container = document.getElementById('canvas-container');
+      if (!container || typeof THREE === 'undefined') return;
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x030208, 0.035);
+
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 8);
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0x2d1e4e, 1.8));
+      const cyanLight = new THREE.PointLight(0x06b6d4, 3, 20);
+      cyanLight.position.set(0, 2, 2);
+      scene.add(cyanLight);
+      const goldLight = new THREE.PointLight(0xeab308, 2.5, 20);
+      goldLight.position.set(6, -4, 2);
+      scene.add(goldLight);
+
+      // Wireframe Icosahedron Geometry
+      const orbGroup = new THREE.Group();
+      const shellGeo = new THREE.IcosahedronGeometry(2, 2);
+      const shellMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.22
+      });
+      orbGroup.add(new THREE.Mesh(shellGeo, shellMat));
+
+      const ringGeo = new THREE.TorusGeometry(2.5, 0.02, 16, 100);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xeab308, transparent: true, opacity: 0.45 });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = Math.PI / 3;
+      orbGroup.add(ringMesh);
+
+      scene.add(orbGroup);
+      orbGroup.position.set(5.5, 1, -2);
+
+      // Ambient Particles
+      const count = 1400;
+      const geo = new THREE.BufferGeometry();
+      const pos = new Float32Array(count * 3);
+      const col = new Float32Array(count * 3);
+      const palette = [new THREE.Color(0x8b5cf6), new THREE.Color(0x06b6d4), new THREE.Color(0xeab308)];
+
+      for(let i = 0; i < count * 3; i += 3) {
+        pos[i] = (Math.random() - 0.5) * 36;
+        pos[i+1] = (Math.random() - 0.5) * 36;
+        pos[i+2] = (Math.random() - 0.5) * 36;
+        const c = palette[Math.floor(Math.random() * palette.length)];
+        col[i] = c.r; col[i+1] = c.g; col[i+2] = c.b;
+      }
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.07,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+      const particles = new THREE.Points(geo, mat);
+      scene.add(particles);
+
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener('mousemove', function(e) {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
+
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const t = clock.getElapsedTime();
+        orbGroup.rotation.y = t * 0.15;
+        orbGroup.rotation.x = t * 0.08;
+        particles.rotation.y = t * 0.02;
+        camera.position.x += (mouseX * 0.3 - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY * 0.3 - camera.position.y) * 0.05;
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    })();
+  </script>
+
 
 <!-- Header (identik apex) -->
-<header class="fixed top-0 left-0 w-full z-40 p-4 md:p-6 pointer-events-none" style="background:linear-gradient(180deg, rgba(3,2,8,.92) 0%, rgba(3,2,8,0) 100%);">
+<header class="fixed top-0 left-0 w-full z-40 p-4 md:p-6 pointer-events-none" style="background:linear-gradient(180deg, rgba(3,2,8,.94) 0%, rgba(3,2,8,0) 100%);">
   <div class="max-w-7xl mx-auto flex justify-between items-center">
     <a href="/" class="pointer-events-auto flex items-center gap-3 group">
       <div class="w-10 h-10 rounded-lg bg-horizon-card/90 border border-gold-500/50 flex items-center justify-center text-gold-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] group-hover:border-gold-300 transition-all">
@@ -88,293 +182,299 @@
   </div>
 </header>
 
-<main class="relative z-10 max-w-4xl mx-auto px-6 pt-36 pb-24">
+<main class="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 w-full flex-grow">
 
-  <!-- Breadcrumbs & Meta -->
-  <div class="flex items-center gap-2 mb-4">
-    <a href="/docs/" class="font-mono text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1.5 transition-colors">
-      <i class="fas fa-arrow-left text-[10px]"></i> Docs Hub
-    </a>
-    <span class="text-gray-600">/</span>
-    <span class="font-mono text-xs text-cyan-400 uppercase tracking-wider">Tutorial</span>
-  </div>
+  <!-- Satu Container Utama: Solid, Rapi, Reading Focus -->
+  <div class="glass-panel p-8 sm:p-14 rounded-3xl border border-gold-500/30 space-y-8 shadow-[0_0_60px_rgba(0,0,0,0.95)]">
 
-  <h1 class="font-title text-3xl sm:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-purple-400 glow-gold tracking-wide leading-tight mb-4">
-    Merlin Agent in Your Terminal
-  </h1>
-  <p class="text-gray-300 text-sm sm:text-base font-body max-w-3xl leading-relaxed mb-4">
-    The complete guide to running Merlin Agent in your terminal: install on Windows &amp; Linux, first-run setup, daily commands, token-saving habits, and troubleshooting.
-  </p>
-  <div class="font-mono text-xs text-gray-500 mb-10 flex items-center gap-3">
-    <span>Updated October 2026</span>
-    <span>·</span>
-    <span>Epinoia Arcane Fleet</span>
-    <span>·</span>
-    <span class="text-cyan-400/80">MIT License</span>
-  </div>
-
-  <!-- TOC -->
-  <div class="glass-panel p-6 sm:p-7 rounded-2xl mb-12">
-    <div class="font-heading text-xs sm:text-sm text-gold-300 uppercase tracking-widest mb-4 flex items-center gap-2">
-      <i class="fas fa-list-ul text-cyan-400"></i> Table of Contents
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-body">
-      <a href="#what" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">1.</span> What is Merlin Agent?
-      </a>
-      <a href="#install" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">2.</span> Install (one command)
-      </a>
-      <a href="#setup" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">3.</span> First-run setup (2 minutes)
-      </a>
-      <a href="#daily" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">4.</span> Everyday use
-      </a>
-      <a href="#core" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">5.</span> Core capabilities
-      </a>
-      <a href="#tokens" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">6.</span> Saving tokens
-      </a>
-      <a href="#config" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">7.</span> Config &amp; file locations
-      </a>
-      <a href="#telegram" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
-        <span class="font-mono text-cyan-400/70">8.</span> Bonus: Merlin on Telegram
-      </a>
-      <a href="#trouble" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2 sm:col-span-2">
-        <span class="font-mono text-cyan-400/70">9.</span> Troubleshooting
-      </a>
-    </div>
-  </div>
-
-  <!-- Content Sections -->
-  <article class="space-y-6 text-sm sm:text-base text-gray-300 leading-relaxed font-body">
-
-    <!-- Section 1 -->
-    <section>
-      <h2 id="what" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">1.</span>
-        What is Merlin Agent?
-      </h2>
-      <p>
-        Merlin is a terminal-native, extensible AI agent harness. It runs entirely on your machine, talks to the LLM provider you choose (Z.AI, OpenRouter, Anthropic, Ollama, etc.), and executes real actions: edit files, run shell commands, search the web, schedule automated cron jobs, and carry memories across conversations.
+    <!-- Breadcrumb & Title -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <a href="/docs/" class="font-mono text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1.5 transition-colors">
+          <i class="fas fa-arrow-left text-[10px]"></i> Docs Hub
+        </a>
+        <span class="text-gray-600">/</span>
+        <span class="font-mono text-xs text-cyan-400 uppercase tracking-wider">Tutorial</span>
+      </div>
+      <h1 class="font-title text-3xl sm:text-5xl text-gold-300 glow-gold leading-tight tracking-wide">
+        Merlin Agent in Your Terminal
+      </h1>
+      <p class="text-gray-300 text-sm sm:text-base font-body leading-relaxed mt-3">
+        The complete guide to running Merlin Agent in your terminal: install on Windows &amp; Linux, first-run setup, daily commands, token-saving habits, and troubleshooting.
       </p>
-      <p>
-        Built by Epinoia Horizon, 100% open source under the MIT license.
-      </p>
-    </section>
-
-    <!-- Section 2 -->
-    <section>
-      <h2 id="install" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">2.</span>
-        Install (one command)
-      </h2>
-
-      <h3 class="font-heading text-base sm:text-lg text-cyan-300 mt-6 mb-2">Windows (PowerShell)</h3>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code>irm https://epinoiahorizon.com/install.ps1 | iex</code></pre>
+      <div class="font-mono text-xs text-gray-500 mt-4 flex items-center gap-3">
+        <span>Updated October 2026</span>
+        <span>·</span>
+        <span>Epinoia Arcane Fleet</span>
+        <span>·</span>
+        <span class="text-cyan-400/80">MIT License</span>
       </div>
-      <p class="text-xs text-gray-400">Close and reopen PowerShell, then verify:</p>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin --version</code></pre>
-      </div>
+    </div>
 
-      <div class="glass-panel rounded-xl p-4 my-4 border border-cyan-500/40 bg-cyan-950/20 text-cyan-100 text-xs sm:text-sm leading-relaxed">
-        <b class="text-cyan-300 font-semibold">Quick fixes:</b> <code>merlin</code> not recognized &rarr; close every terminal window and reopen; still not &rarr; run the installer once more (it repairs non-admin PATH). Antivirus flags it &rarr; allow it; the installer comes from the public repo <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="text-gold-400 hover:text-gold-300 underline">epinoiahorizon/Merlin-Agent</a>.
+    <!-- Table of Contents -->
+    <div class="p-6 rounded-2xl bg-[#05030c]/80 border border-gold-500/20">
+      <div class="font-heading text-xs sm:text-sm text-gold-300 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <i class="fas fa-list-ul text-cyan-400"></i> Table of Contents
       </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-body">
+        <a href="#what" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">1.</span> What is Merlin Agent?
+        </a>
+        <a href="#install" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">2.</span> Install (one command)
+        </a>
+        <a href="#setup" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">3.</span> First-run setup (2 minutes)
+        </a>
+        <a href="#daily" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">4.</span> Everyday use
+        </a>
+        <a href="#core" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">5.</span> Core capabilities
+        </a>
+        <a href="#tokens" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">6.</span> Saving tokens
+        </a>
+        <a href="#config" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">7.</span> Config &amp; file locations
+        </a>
+        <a href="#telegram" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2">
+          <span class="font-mono text-cyan-400/70">8.</span> Bonus: Merlin on Telegram
+        </a>
+        <a href="#trouble" class="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-2 sm:col-span-2">
+          <span class="font-mono text-cyan-400/70">9.</span> Troubleshooting
+        </a>
+      </div>
+    </div>
 
-      <h3 class="font-heading text-base sm:text-lg text-cyan-300 mt-6 mb-2">Linux / WSL</h3>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code>curl -fsSL https://epinoiahorizon.com/install.sh | bash
+    <!-- Article Content -->
+    <article class="space-y-6 text-sm sm:text-base text-gray-300 leading-relaxed font-body">
+
+      <!-- Section 1 -->
+      <section>
+        <h2 id="what" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">1.</span>
+          What is Merlin Agent?
+        </h2>
+        <p>
+          Merlin is a terminal-native, extensible AI agent harness. It runs entirely on your machine, talks to the LLM provider you choose (Z.AI, OpenRouter, Anthropic, Ollama, etc.), and executes real actions: edit files, run shell commands, search the web, schedule automated cron jobs, and carry memories across conversations.
+        </p>
+        <p>
+          Built by Epinoia Horizon, 100% open source under the MIT license.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section>
+        <h2 id="install" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">2.</span>
+          Install (one command)
+        </h2>
+
+        <h3 class="font-heading text-base sm:text-lg text-cyan-300 mt-6 mb-2">Windows (PowerShell)</h3>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code>irm https://epinoiahorizon.com/install.ps1 | iex</code></pre>
+        </div>
+        <p class="text-xs text-gray-400">Close and reopen PowerShell, then verify:</p>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin --version</code></pre>
+        </div>
+
+        <div class="rounded-xl p-4 my-4 border border-cyan-500/40 bg-cyan-950/20 text-cyan-100 text-xs sm:text-sm leading-relaxed">
+          <b class="text-cyan-300 font-semibold">Quick fixes:</b> <code>merlin</code> not recognized &rarr; close every terminal window and reopen; still not &rarr; run the installer once more (it repairs non-admin PATH). Antivirus flags it &rarr; allow it; the installer comes from the public repo <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="text-gold-400 hover:text-gold-300 underline">epinoiahorizon/Merlin-Agent</a>.
+        </div>
+
+        <h3 class="font-heading text-base sm:text-lg text-cyan-300 mt-6 mb-2">Linux / WSL</h3>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code>curl -fsSL https://epinoiahorizon.com/install.sh | bash
 source ~/.bashrc        # or open a new terminal
 merlin --version</code></pre>
-      </div>
+        </div>
 
-      <div class="glass-panel rounded-xl p-4 my-4 border border-cyan-500/40 bg-cyan-950/20 text-cyan-100 text-xs sm:text-sm leading-relaxed">
-        <b class="text-cyan-300 font-semibold">On Windows but want the Linux experience too?</b> Run <code>wsl --install</code> in PowerShell, reboot, then run the Linux installer inside WSL. Native-Windows Merlin and WSL Merlin coexist fine — separate homes.
-      </div>
+        <div class="rounded-xl p-4 my-4 border border-cyan-500/40 bg-cyan-950/20 text-cyan-100 text-xs sm:text-sm leading-relaxed">
+          <b class="text-cyan-300 font-semibold">On Windows but want the Linux experience too?</b> Run <code>wsl --install</code> in PowerShell, reboot, then run the Linux installer inside WSL. Native-Windows Merlin and WSL Merlin coexist fine — separate homes.
+        </div>
 
-      <p class="text-xs sm:text-sm text-gray-400">
-        <strong class="text-gray-200">Requirements:</strong> Python 3.10+ (installed automatically if missing) and internet. Everything else is handled by the installer.
-      </p>
-    </section>
+        <p class="text-xs sm:text-sm text-gray-400">
+          <strong class="text-gray-200">Requirements:</strong> Python 3.10+ (installed automatically if missing) and internet. Everything else is handled by the installer.
+        </p>
+      </section>
 
-    <!-- Section 3 -->
-    <section>
-      <h2 id="setup" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">3.</span>
-        First-run setup (2 minutes)
-      </h2>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin setup</code></pre>
-      </div>
-      <p>
-        The wizard asks for your <strong class="text-gray-100">provider &amp; model</strong> (Z.AI, OpenRouter, Anthropic, local Ollama, and more), then your <strong class="text-gray-100">API key</strong> — stored at <code>~/.merlin/.env</code> (Windows: <code>%LOCALAPPDATA%\merlin\.env</code>) and never sent anywhere except your provider.
-      </p>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin doctor     # health check
+      <!-- Section 3 -->
+      <section>
+        <h2 id="setup" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">3.</span>
+          First-run setup (2 minutes)
+        </h2>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin setup</code></pre>
+        </div>
+        <p>
+          The wizard asks for your <strong class="text-gray-100">provider &amp; model</strong> (Z.AI, OpenRouter, Anthropic, local Ollama, and more), then your <strong class="text-gray-100">API key</strong> — stored at <code>~/.merlin/.env</code> (Windows: <code>%LOCALAPPDATA%\merlin\.env</code>) and never sent anywhere except your provider.
+        </p>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin doctor     # health check
 merlin model      # switch models anytime</code></pre>
-      </div>
-    </section>
+        </div>
+      </section>
 
-    <!-- Section 4 -->
-    <section>
-      <h2 id="daily" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">4.</span>
-        Everyday use
-      </h2>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin            # interactive chat (exit: /exit or Ctrl+C)
+      <!-- Section 4 -->
+      <section>
+        <h2 id="daily" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">4.</span>
+          Everyday use
+        </h2>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code>merlin            # interactive chat (exit: /exit or Ctrl+C)
 merlin chat -q "explain port 443 in one paragraph"   # one-shot question
 merlin --continue # resume the most recent session
 merlin --resume &lt;session-id&gt;   # resume a specific session</code></pre>
-      </div>
-      <p class="text-xs sm:text-sm text-gray-400 mt-4 mb-2">Key in-session commands:</p>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-400 mt-4 mb-2">Key in-session commands:</p>
 
-      <div class="overflow-x-auto my-4 rounded-xl glass-panel">
-        <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
-          <thead>
-            <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-4">Command</th>
-              <th class="py-3 px-4">What it does</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/help</td><td class="py-2.5 px-4 text-gray-300">list every command</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/model</td><td class="py-2.5 px-4 text-gray-300">switch models mid-session</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/compact</td><td class="py-2.5 px-4 text-gray-300">compress context when the session gets heavy (saves tokens)</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/sessions</td><td class="py-2.5 px-4 text-gray-300">list past sessions</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/skills</td><td class="py-2.5 px-4 text-gray-300">list loadable skills</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/skin</td><td class="py-2.5 px-4 text-gray-300">change the theme</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/exit</td><td class="py-2.5 px-4 text-gray-300">quit</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+        <div class="overflow-x-auto my-4 rounded-xl border border-gold-500/20 bg-[#05030c]/80">
+          <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-4">Command</th>
+                <th class="py-3 px-4">What it does</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/help</td><td class="py-2.5 px-4 text-gray-300">list every command</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/model</td><td class="py-2.5 px-4 text-gray-300">switch models mid-session</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/compact</td><td class="py-2.5 px-4 text-gray-300">compress context when the session gets heavy (saves tokens)</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/sessions</td><td class="py-2.5 px-4 text-gray-300">list past sessions</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/skills</td><td class="py-2.5 px-4 text-gray-300">list loadable skills</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/skin</td><td class="py-2.5 px-4 text-gray-300">change the theme</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/exit</td><td class="py-2.5 px-4 text-gray-300">quit</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-    <!-- Section 5 -->
-    <section>
-      <h2 id="core" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">5.</span>
-        Core capabilities
-      </h2>
-      <div class="space-y-3">
-        <p><strong class="text-gold-300">Coding</strong> — "review <code>app.py</code>, find bugs, fix them, run the tests": Merlin reads, edits, executes the tests, and reports back.</p>
-        <p><strong class="text-gold-300">Web research</strong> — "find the official docs for X, summarize in 5 points with links" (web toolset).</p>
-        <p><strong class="text-gold-300">Automation</strong> — schedule cron jobs from inside the session, e.g. a daily data-integrity check.</p>
-        <p><strong class="text-gold-300">Persistent memory</strong> — "remember: my main repo lives at Y" — stored and recalled in later sessions.</p>
-        <p><strong class="text-gold-300">Skills</strong> — on-demand add-ons; the <code>caveman</code> skill, for example, compresses answers to save tokens while keeping numbers, paths, and code intact.</p>
-      </div>
-    </section>
+      <!-- Section 5 -->
+      <section>
+        <h2 id="core" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">5.</span>
+          Core capabilities
+        </h2>
+        <div class="space-y-3">
+          <p><strong class="text-gold-300">Coding</strong> — "review <code>app.py</code>, find bugs, fix them, run the tests": Merlin reads, edits, executes the tests, and reports back.</p>
+          <p><strong class="text-gold-300">Web research</strong> — "find the official docs for X, summarize in 5 points with links" (web toolset).</p>
+          <p><strong class="text-gold-300">Automation</strong> — schedule cron jobs from inside the session, e.g. a daily data-integrity check.</p>
+          <p><strong class="text-gold-300">Persistent memory</strong> — "remember: my main repo lives at Y" — stored and recalled in later sessions.</p>
+          <p><strong class="text-gold-300">Skills</strong> — on-demand add-ons; the <code>caveman</code> skill, for example, compresses answers to save tokens while keeping numbers, paths, and code intact.</p>
+        </div>
+      </section>
 
-    <!-- Section 6 -->
-    <section>
-      <h2 id="tokens" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">6.</span>
-        Saving tokens
-      </h2>
+      <!-- Section 6 -->
+      <section>
+        <h2 id="tokens" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">6.</span>
+          Saving tokens
+        </h2>
 
-      <div class="overflow-x-auto my-4 rounded-xl glass-panel">
-        <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
-          <thead>
-            <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-4">Habit</th>
-              <th class="py-3 px-4">Effect</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Fresh session per topic</td><td class="py-2.5 px-4 text-gray-300">biggest lever — long sessions re-send the whole history every turn</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/compact</td><td class="py-2.5 px-4 text-gray-300">compress a long session you must keep going</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Right model per task</td><td class="py-2.5 px-4 text-gray-300">small/flash models for routine work, big ones for heavy lifting</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">caveman skill</td><td class="py-2.5 px-4 text-gray-300">compressed replies (numbers, paths, code stay verbatim)</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">no-agent cron</td><td class="py-2.5 px-4 text-gray-300">scheduled tasks without an LLM = zero tokens</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+        <div class="overflow-x-auto my-4 rounded-xl border border-gold-500/20 bg-[#05030c]/80">
+          <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-4">Habit</th>
+                <th class="py-3 px-4">Effect</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Fresh session per topic</td><td class="py-2.5 px-4 text-gray-300">biggest lever — long sessions re-send the whole history every turn</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">/compact</td><td class="py-2.5 px-4 text-gray-300">compress a long session you must keep going</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Right model per task</td><td class="py-2.5 px-4 text-gray-300">small/flash models for routine work, big ones for heavy lifting</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">caveman skill</td><td class="py-2.5 px-4 text-gray-300">compressed replies (numbers, paths, code stay verbatim)</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">no-agent cron</td><td class="py-2.5 px-4 text-gray-300">scheduled tasks without an LLM = zero tokens</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-    <!-- Section 7 -->
-    <section>
-      <h2 id="config" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">7.</span>
-        Config &amp; file locations
-      </h2>
+      <!-- Section 7 -->
+      <section>
+        <h2 id="config" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">7.</span>
+          Config &amp; file locations
+        </h2>
 
-      <div class="overflow-x-auto my-4 rounded-xl glass-panel">
-        <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
-          <thead>
-            <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-4">What</th>
-              <th class="py-3 px-4">Linux / WSL</th>
-              <th class="py-3 px-4">Windows</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Config</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/config.yaml</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\config.yaml</code></td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">API keys</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/.env</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\.env</code></td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Skills</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/skills/</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\skills\</code></td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Memory</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/memories/</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\memories\</code></td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Session history</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/state.db</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\state.db</code></td></tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="overflow-x-auto my-4 rounded-xl border border-gold-500/20 bg-[#05030c]/80">
+          <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-4">What</th>
+                <th class="py-3 px-4">Linux / WSL</th>
+                <th class="py-3 px-4">Windows</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Config</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/config.yaml</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\config.yaml</code></td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">API keys</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/.env</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\.env</code></td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Skills</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/skills/</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\skills\</code></td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Memory</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/memories/</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\memories\</code></td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Session history</td><td class="py-2.5 px-4 text-gray-300"><code>~/.merlin/state.db</code></td><td class="py-2.5 px-4 text-gray-300"><code>%LOCALAPPDATA%\merlin\state.db</code></td></tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div class="glass-panel rounded-xl p-4 my-4 border border-amber-500/40 bg-amber-950/20 text-amber-200 text-xs sm:text-sm leading-relaxed">
-        <b class="text-amber-300 font-semibold">Don't hand-edit config.yaml unless you're sure</b> — one bad indent can break it. Use <code>merlin config set &lt;key&gt; &lt;value&gt;</code>. Update Merlin with <code>merlin update</code>.
-      </div>
-    </section>
+        <div class="rounded-xl p-4 my-4 border border-amber-500/40 bg-amber-950/20 text-amber-200 text-xs sm:text-sm leading-relaxed">
+          <b class="text-amber-300 font-semibold">Don't hand-edit config.yaml unless you're sure</b> — one bad indent can break it. Use <code>merlin config set &lt;key&gt; &lt;value&gt;</code>. Update Merlin with <code>merlin update</code>.
+        </div>
+      </section>
 
-    <!-- Section 8 -->
-    <section>
-      <h2 id="telegram" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">8.</span>
-        Bonus: Merlin on Telegram
-      </h2>
-      <div class="cb-wrap my-3">
-        <pre class="glass-panel rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/90 font-mono text-xs sm:text-sm text-cyan-200"><code># 1) create a bot via @BotFather on Telegram, keep the token
+      <!-- Section 8 -->
+      <section>
+        <h2 id="telegram" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">8.</span>
+          Bonus: Merlin on Telegram
+        </h2>
+        <div class="cb-wrap my-3">
+          <pre class="rounded-xl p-4 overflow-x-auto border border-cyan-500/30 bg-[#060410]/95 font-mono text-xs sm:text-sm text-cyan-200"><code># 1) create a bot via @BotFather on Telegram, keep the token
 merlin config set channels.telegram.token &lt;TOKEN&gt;
 merlin config set channels.telegram.enabled true
 merlin gateway run</code></pre>
-      </div>
-      <p class="text-xs sm:text-sm text-gray-400">
-        Needs an always-on machine (a VPS or your own PC). Full docs: <a href="https://merlin-agent.epinoiahorizon.com/docs/" class="text-cyan-300 hover:text-cyan-200 underline">official documentation</a>.
-      </p>
-    </section>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-400">
+          Needs an always-on machine (a VPS or your own PC). Full docs: <a href="https://merlin-agent.epinoiahorizon.com/docs/" class="text-cyan-300 hover:text-cyan-200 underline">official documentation</a>.
+        </p>
+      </section>
 
-    <!-- Section 9 -->
-    <section>
-      <h2 id="trouble" class="font-heading text-xl sm:text-2xl text-gold-300 mt-10 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
-        <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">9.</span>
-        Troubleshooting
-      </h2>
+      <!-- Section 9 -->
+      <section>
+        <h2 id="trouble" class="font-heading text-xl sm:text-2xl text-gold-300 mt-8 mb-4 pt-6 border-t border-gold-500/20 flex items-center gap-3 scroll-mt-28">
+          <span class="font-mono text-xs text-cyan-400 px-2 py-0.5 rounded bg-cyan-950/70 border border-cyan-500/30">9.</span>
+          Troubleshooting
+        </h2>
 
-      <div class="overflow-x-auto my-4 rounded-xl glass-panel">
-        <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
-          <thead>
-            <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
-              <th class="py-3 px-4">Symptom</th>
-              <th class="py-3 px-4">Fix</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300"><code>command not found: merlin</code></td><td class="py-2.5 px-4 text-gray-300">open a new terminal; Linux: make sure <code>~/.local/bin</code> is on PATH</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">401/403 from provider</td><td class="py-2.5 px-4 text-gray-300">bad/expired API key &rarr; redo <code>merlin setup</code></td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">429 rate limit</td><td class="py-2.5 px-4 text-gray-300">quota exhausted — wait, switch models, or upgrade your plan</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Chat "forgets" things</td><td class="py-2.5 px-4 text-gray-300">session too long &rarr; <code>/compact</code> or start a fresh one</td></tr>
-            <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Broken emoji / glyphs</td><td class="py-2.5 px-4 text-gray-300">use Windows Terminal / a Nerd Font</td></tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="overflow-x-auto my-4 rounded-xl border border-gold-500/20 bg-[#05030c]/80">
+          <table class="w-full text-left font-sans text-xs sm:text-sm border-collapse">
+            <thead>
+              <tr class="bg-black/40 border-b border-gold-500/30 text-gold-300 font-heading text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-4">Symptom</th>
+                <th class="py-3 px-4">Fix</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300"><code>command not found: merlin</code></td><td class="py-2.5 px-4 text-gray-300">open a new terminal; Linux: make sure <code>~/.local/bin</code> is on PATH</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">401/403 from provider</td><td class="py-2.5 px-4 text-gray-300">bad/expired API key &rarr; redo <code>merlin setup</code></td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">429 rate limit</td><td class="py-2.5 px-4 text-gray-300">quota exhausted — wait, switch models, or upgrade your plan</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Chat "forgets" things</td><td class="py-2.5 px-4 text-gray-300">session too long &rarr; <code>/compact</code> or start a fresh one</td></tr>
+              <tr><td class="py-2.5 px-4 font-mono text-cyan-300">Broken emoji / glyphs</td><td class="py-2.5 px-4 text-gray-300">use Windows Terminal / a Nerd Font</td></tr>
+            </tbody>
+          </table>
+        </div>
 
-      <p class="text-xs text-gray-400 mt-4">
-        Bugs &amp; feature requests: <a href="https://github.com/epinoiahorizon/Merlin-Agent/issues" class="text-gold-400 hover:text-gold-300 underline">github.com/epinoiahorizon/Merlin-Agent/issues</a>
-      </p>
-    </section>
+        <p class="text-xs text-gray-400 mt-4">
+          Bugs &amp; feature requests: <a href="https://github.com/epinoiahorizon/Merlin-Agent/issues" class="text-gold-400 hover:text-gold-300 underline">github.com/epinoiahorizon/Merlin-Agent/issues</a>
+        </p>
+      </section>
 
-  </article>
+    </article>
+
+  </div>
 
 </main>
 
@@ -384,9 +484,8 @@ merlin gateway run</code></pre>
     <a href="/docs/" class="hover:text-gold-400 transition-colors">DOCS HUB</a>
     <a href="/blog/" class="hover:text-gold-400 transition-colors">BLOG</a>
     <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="hover:text-gold-400 transition-colors">GITHUB</a>
-    <a href="/main-site/" class="hover:text-gold-400 transition-colors">STUDIO</a>
   </div>
-  <p>© 2026 EPI NOIA HORIZON INC. ALL RIGHTS RESERVED.</p>
+  <p>© 2026 EPINOIA HORIZON INC. ALL RIGHTS RESERVED.</p>
 </footer>
 
 <script>
