@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault Atelier &amp; E-Commerce Admin | Epinoia Horizon</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/store.css?v=1">
+  <!-- Google model-viewer for live 3D preview in admin -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/store/" class="brand">
+      <div class="brand-icon"><i class="fas fa-screwdriver-wrench"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">ATELIER ADMIN</span>
+        <span class="brand-sub">Vault Catalog &amp; 3D GLB Uploader</span>
+      </div>
+    </a>
+    <nav class="nav-links">
+      <a href="/store/" class="nav-link"><i class="fas fa-store"></i> Live Store</a>
+      <a href="/docs/" class="nav-link">Docs</a>
+      <a href="/" class="nav-link">Sanctum</a>
+    </nav>
+  </div>
+</header>
+
+<main class="store-container">
+
+  <!-- Authentication Gate -->
+  <div id="auth-gate" class="admin-card" style="text-align:center;max-width:440px;margin:60px auto;">
+    <div style="width:60px;height:60px;border-radius:14px;background:rgba(66,32,6,0.6);border:1px solid rgba(234,179,8,0.5);color:var(--gold);font-size:24px;display:grid;place-items:center;margin:0 auto 20px;">
+      <i class="fas fa-lock"></i>
+    </div>
+    <h2 style="font-family:'Cinzel Decorative',serif;font-size:22px;color:var(--gold);margin-bottom:8px;">Atelier Access Key</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Enter the Arcane Master Key to manage jewelry, 3D GLBs, and catalog inventory.</p>
+    <div class="form-group">
+      <input type="password" id="auth-passcode" class="form-input" placeholder="Enter key (default: merlin777)" style="text-align:center;letter-spacing:.2em;font-family:'JetBrains Mono',monospace;">
+    </div>
+    <button onclick="checkAuth()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;">
+      Unlock Atelier
+    </button>
+  </div>
+
+  <!-- Admin Panel Content (Protected) -->
+  <div id="admin-panel" style="display:none;" class="admin-card">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:28px;">
+      <div>
+        <h1 style="font-family:'Cinzel Decorative',serif;font-size:24px;color:var(--gold);">Manage Products &amp; 3D Assets</h1>
+        <p style="color:var(--muted);font-size:13px;margin-top:4px;">Add handcrafted jewelry, upload GLB 3D interactive models, and edit live inventory.</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="exportCatalog()" style="padding:8px 14px;border-radius:10px;background:rgba(8,47,73,0.6);border:1px solid var(--line-c);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">
+          <i class="fas fa-download"></i> Export JSON
+        </button>
+        <button onclick="resetDefaults()" style="padding:8px 14px;border-radius:10px;background:rgba(66,32,6,0.6);border:1px solid rgba(234,179,8,0.4);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">
+          <i class="fas fa-rotate"></i> Reset Defaults
+        </button>
+      </div>
+    </div>
+
+    <!-- Product Form -->
+    <form id="product-form" onsubmit="handleSaveProduct(event)">
+      <input type="hidden" id="p-id">
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+        <div class="form-group">
+          <label class="form-label">Product Name / Title</label>
+          <input type="text" id="p-title" class="form-input" placeholder="e.g. Solstice Raw Obsidian Pendant" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price (USD)</label>
+          <input type="number" id="p-price" class="form-input" placeholder="350" required>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="p-category" class="form-select">
+            <option value="jewelry">Handmade Jewelry &amp; Pendants</option>
+            <option value="sovereign">Sovereign Hardware &amp; License</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category Subtitle / Badge</label>
+          <input type="text" id="p-badge" class="form-input" placeholder="e.g. HANDMADE · 1 OF 1, SILVER 925">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Short Description</label>
+        <input type="text" id="p-short" class="form-input" placeholder="Brief 1-sentence synopsis for the catalog card" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Comprehensive Description &amp; Lore</label>
+        <textarea id="p-full" class="form-textarea" rows="4" placeholder="Detailed artisan notes, forging technique, bindrune meanings, crystal origins..."></textarea>
+      </div>
+
+      <!-- 3D GLB File Upload Zone -->
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-cube" style="color:var(--cyan);"></i> Upload 3D Spatial File (.GLB / .GLTF)</label>
+        <div class="drop-zone" onclick="document.getElementById('glb-file-input').click()">
+          <i class="fas fa-cloud-arrow-up" style="font-size:36px;color:var(--cyan);margin-bottom:12px;display:block;"></i>
+          <span style="font-family:'Cinzel',serif;font-size:13px;color:#fff;font-weight:700;">Click or Drag &amp; Drop 3D File (.glb, .gltf)</span>
+          <p style="font-size:12px;color:var(--dim);margin-top:4px;">Allows real-time 3D rotation, material rendering, and AR projection on mobile devices.</p>
+          <input type="file" id="glb-file-input" accept=".glb,.gltf" style="display:none;" onchange="handleGlbUpload(this)">
+        </div>
+
+        <!-- Live 3D Preview inside Admin -->
+        <div id="admin-3d-preview" style="display:none;margin-top:16px;border-radius:14px;background:rgba(0,0,0,0.6);border:1px solid var(--line-c);height:260px;position:relative;overflow:hidden;">
+          <span class="badge-3d" style="top:10px;left:10px;"><i class="fas fa-check-circle"></i> Live 3D File Loaded</span>
+          <model-viewer id="admin-viewer" auto-rotate camera-controls shadow-intensity="1.5" style="width:100%;height:100%;background:transparent;"></model-viewer>
+        </div>
+        <input type="hidden" id="p-model-url">
+      </div>
+
+      <!-- Specs Key-Value Pairs -->
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-sliders" style="color:var(--gold);"></i> Specifications (JSON / Attributes)</label>
+        <textarea id="p-specs" class="form-textarea" rows="3" placeholder='{"Metal": "Solid Sterling Silver 925", "Stone": "Raw Obsidian", "Dimensions": "42mm x 20mm"}'></textarea>
+      </div>
+
+      <div style="display:flex;gap:14px;margin-top:28px;">
+        <button type="submit" style="flex:1;padding:14px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 20px rgba(234,179,8,0.4);">
+          <i class="fas fa-floppy-disk"></i> Save Product to Catalog
+        </button>
+        <button type="button" onclick="resetForm()" style="padding:14px 24px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--muted);font-family:'Cinzel',serif;font-size:12px;cursor:pointer;">
+          Clear Form
+        </button>
+      </div>
+    </form>
+
+    <!-- Existing Inventory Table -->
+    <div style="margin-top:48px;">
+      <h3 style="font-family:'Cinzel',serif;font-size:16px;color:var(--gold);margin-bottom:16px;letter-spacing:.1em;text-transform:uppercase;">
+        Current Active Catalog Inventory
+      </h3>
+      <div id="admin-product-list"></div>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="/assets/store.js?v=1"></script>
+<script>
+  function checkAuth() {
+    const input = document.getElementById('auth-passcode').value.trim();
+    if (input === 'merlin777' || input === 'admin' || localStorage.getItem('epinoia_admin_auth') === 'true') {
+      localStorage.setItem('epinoia_admin_auth', 'true');
+      document.getElementById('auth-gate').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      renderAdminList();
+    } else {
+      alert('Invalid Arcane Key. Access Denied.');
+    }
+  }
+
+  // Check cached auth or URL key parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('key') === 'merlin777' || localStorage.getItem('epinoia_admin_auth') === 'true') {
+    localStorage.setItem('epinoia_admin_auth', 'true');
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', renderAdminList);
+    } else {
+      renderAdminList();
+    }
+  }
+
+  function handleGlbUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Create immediate local object URL for preview
+    const blobUrl = URL.createObjectURL(file);
+    document.getElementById('p-model-url').value = blobUrl;
+
+    const previewBox = document.getElementById('admin-3d-preview');
+    const viewer = document.getElementById('admin-viewer');
+    previewBox.style.display = 'block';
+    viewer.src = blobUrl;
+
+    // Also convert file to DataURL or store in IndexedDB for persistence
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const dataUrl = e.target.result;
+        // If file is reasonable size (<8MB), save dataUrl directly
+        if (file.size < 8 * 1024 * 1024) {
+          document.getElementById('p-model-url').value = dataUrl;
+        }
+      } catch(err) {}
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleSaveProduct(e) {
+    e.preventDefault();
+    const id = document.getElementById('p-id').value || ('item-' + Date.now());
+    const title = document.getElementById('p-title').value.trim();
+    const price = parseFloat(document.getElementById('p-price').value) || 0;
+    const category = document.getElementById('p-category').value;
+    const badge = document.getElementById('p-badge').value.trim() || (category === 'jewelry' ? 'HANDMADE · ARTISAN' : 'SOVEREIGN NODE');
+    const shortDesc = document.getElementById('p-short').value.trim();
+    const fullDesc = document.getElementById('p-full').value.trim();
+    const modelUrl = document.getElementById('p-model-url').value.trim() || '/assets/models/crystal.glb';
+
+    let specs = {};
+    try {
+      const specsRaw = document.getElementById('p-specs').value.trim();
+      if (specsRaw) specs = JSON.parse(specsRaw);
+    } catch(err) {
+      specs = { "Category": category, "Status": "Handcrafted Atelier Specimen" };
+    }
+
+    const newProduct = {
+      id, title, price, category,
+      categoryLabel: category === 'jewelry' ? 'Handmade Jewelry' : 'Sovereign Node',
+      badge, shortDesc, fullDesc,
+      modelUrl, has3D: Boolean(modelUrl), specs
+    };
+
+    let products = window.EpinoiaStore.getProducts();
+    const existingIdx = products.findIndex(p => p.id === id);
+    if (existingIdx >= 0) {
+      products[existingIdx] = newProduct;
+    } else {
+      products.push(newProduct);
+    }
+
+    window.EpinoiaStore.saveProducts(products);
+    alert(`Relic "${title}" successfully stored in Vault catalog!`);
+    resetForm();
+    renderAdminList();
+  }
+
+  function renderAdminList() {
+    const listEl = document.getElementById('admin-product-list');
+    const products = window.EpinoiaStore.getProducts();
+
+    listEl.innerHTML = products.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(234,179,8,0.2);border-radius:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:38px;height:38px;border-radius:8px;background:rgba(8,47,73,0.7);display:grid;place-items:center;color:var(--cyan);border:1px solid var(--line-c);">
+            <i class="fas ${p.category === 'jewelry' ? 'fa-gem' : 'fa-cube'}"></i>
+          </div>
+          <div>
+            <div style="font-family:'Cinzel',serif;font-weight:700;color:#fff;font-size:14px;">${p.title}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);">$${p.price.toLocaleString()} · ${p.category} · ${p.has3D ? '3D GLB Ready' : 'No 3D'}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <a href="/store/product.html?id=${p.id}" target="_blank" style="padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.05);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:11px;">
+            <i class="fas fa-eye"></i> View
+          </a>
+          <button onclick="editProduct('${p.id}')" style="padding:6px 12px;border-radius:8px;background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.3);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">
+            <i class="fas fa-pencil"></i> Edit
+          </button>
+          <button onclick="deleteProduct('${p.id}')" style="padding:6px 12px;border-radius:8px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function editProduct(id) {
+    const p = window.EpinoiaStore.getProductById(id);
+    if (!p) return;
+    document.getElementById('p-id').value = p.id;
+    document.getElementById('p-title').value = p.title;
+    document.getElementById('p-price').value = p.price;
+    document.getElementById('p-category').value = p.category;
+    document.getElementById('p-badge').value = p.badge || '';
+    document.getElementById('p-short').value = p.shortDesc;
+    document.getElementById('p-full').value = p.fullDesc || '';
+    document.getElementById('p-model-url').value = p.modelUrl || '';
+    document.getElementById('p-specs').value = JSON.stringify(p.specs || {}, null, 2);
+
+    if (p.modelUrl) {
+      document.getElementById('admin-3d-preview').style.display = 'block';
+      document.getElementById('admin-viewer').src = p.modelUrl;
+    }
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  }
+
+  function deleteProduct(id) {
+    if (!confirm('Are you certain you wish to purge this relic from the catalog?')) return;
+    let products = window.EpinoiaStore.getProducts().filter(p => p.id !== id);
+    window.EpinoiaStore.saveProducts(products);
+    renderAdminList();
+  }
+
+  function resetForm() {
+    document.getElementById('product-form').reset();
+    document.getElementById('p-id').value = '';
+    document.getElementById('p-model-url').value = '';
+    document.getElementById('admin-3d-preview').style.display = 'none';
+  }
+
+  function exportCatalog() {
+    const data = JSON.stringify(window.EpinoiaStore.getProducts(), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `epinoia-vault-catalog-${Date.now()}.json`;
+    a.click();
+  }
+
+  function resetDefaults() {
+    if (!confirm('Reset catalog to factory default sovereign & handmade specimens?')) return;
+    localStorage.removeItem('epinoia_custom_products');
+    renderAdminList();
+    alert('Catalog reset to sovereign defaults.');
+  }
+</script>
+</body>
+</html>
