@@ -7,50 +7,325 @@
   <meta name="description" content="Merlin Agent open-core pricing: the local harness is free forever. Pro, Fleet, and Enterprise plans add managed relay, fleet sync, LTS updates, RBAC, and audit.">
   <link rel="canonical" href="https://epinoiahorizon.com/pricing/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/assets/docs.css?v=3">
+  <link rel="stylesheet" href="/assets/docs.css?v=4">
   <style>
-    /* pricing-specific, mengikuti docs.css tokens */
-    .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;align-items:stretch}
-    .tier{display:flex;flex-direction:column;position:relative;overflow:hidden}
-    .tier .tagline{font-size:11px;color:var(--dim);margin-top:6px;min-height:32px}
-    .price{display:flex;align-items:baseline;gap:6px;margin:14px 0 4px}
-    .price .num{font-family:'Cinzel',serif;font-size:40px;font-weight:700;color:#fde047}
-    .price .per{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim)}
-    .price .was{font-family:'JetBrains Mono',monospace;font-size:12px;color:#586e75;text-decoration:line-through;margin-left:4px}
-    .tier ul{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:9px;flex:1}
-    .tier ul li{display:flex;gap:10px;font-size:13px;color:#cbd5e1;line-height:1.45}
-    .tier ul li i{color:#06b6d4;margin-top:3px;font-size:11px}
-    .tier ul li.no{color:#64748b}
-    .tier ul li.no i{color:#475569}
-    .tier .cta{margin-top:22px;width:100%;padding:14px;border-radius:14px;text-align:center;
-      font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
-      border:1px solid rgba(234,179,8,.4);color:#fde047;background:rgba(234,179,8,.06);transition:all .25s}
-    .tier .cta:hover{background:rgba(234,179,8,.16);border-color:#eab308;transform:translateY(-2px)}
-    .tier.featured{border-color:rgba(234,179,8,.65);box-shadow:0 0 60px rgba(234,179,8,.14), inset 0 0 25px rgba(139,92,246,.15)}
-    .featured-badge{position:absolute;top:14px;right:-34px;transform:rotate(38deg);background:linear-gradient(90deg,#eab308,#ca8a04);
-      color:#030208;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.14em;
-      padding:5px 40px;text-transform:uppercase}
-    .free-forever{margin-top:26px;border:1px dashed rgba(6,182,212,.4);border-radius:16px;padding:20px 24px;
-      background:rgba(6,182,212,.05)}
-    .free-forever h3{font-family:'Cinzel',serif;color:#67e8f9;font-size:15px;letter-spacing:.06em;margin-bottom:10px;
-      display:flex;align-items:center;gap:10px}
-    .free-forever ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
-    .free-forever li{font-size:12.5px;color:#94a3b8;display:flex;gap:9px;align-items:baseline}
-    .free-forever li i{color:#22d3ee;font-size:10px}
-    .promise{margin-top:18px;font-size:12px;color:#64748b;font-family:'JetBrains Mono',monospace;line-height:1.7}
-    .promise b{color:#94a3b8}
-    .compare{margin-top:14px;text-align:center}
-    .compare a{color:#67e8f9;font-size:12px;font-family:'JetBrains Mono',monospace}
+    /* Premium Arcane Pricing Design System */
+    .pricing-hero {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .pricing-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-weight: 900;
+      font-size: clamp(34px, 5.5vw, 56px);
+      letter-spacing: .04em;
+      margin: 18px 0 14px;
+      color: var(--gold);
+      text-shadow: 0 0 24px rgba(234, 179, 8, .45);
+      background: linear-gradient(92deg, #fef3c7 0%, #facc15 45%, #eab308 70%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .pricing-lede {
+      max-width: 720px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 15.5px;
+      line-height: 1.65;
+    }
+
+    /* Billing Interval Switch */
+    .billing-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(10, 7, 24, 0.85);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px;
+      margin: 28px auto 0;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .switch-btn {
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--dim);
+      font-family: 'Cinzel', serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .25s ease;
+    }
+    .switch-btn.active {
+      background: linear-gradient(135deg, rgba(234,179,8,0.25), rgba(139,92,246,0.25));
+      border: 1px solid rgba(234,179,8,0.55);
+      color: var(--gold-soft);
+      box-shadow: 0 0 15px rgba(234,179,8,0.2);
+    }
+    .discount-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(34,211,238,0.2);
+      border: 1px solid rgba(34,211,238,0.45);
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    /* 4-Column Tiers Grid */
+    .tiers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-top: 36px;
+    }
+    @media (max-width: 1180px) {
+      .tiers-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+    }
+    @media (max-width: 680px) {
+      .tiers-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    /* Tier Card */
+    .tier-card {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding: 30px 24px;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.7), inset 0 0 25px rgba(139,92,246,0.06);
+      transition: transform .3s cubic-bezier(.16,1,.3,1), border-color .3s, box-shadow .3s;
+    }
+    .tier-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(234,179,8,0.5);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 30px rgba(234,179,8,0.15);
+    }
+    .tier-card.featured {
+      border: 1px solid rgba(234,179,8,0.65);
+      background: linear-gradient(180deg, rgba(20,14,46,0.88) 0%, rgba(10,7,24,0.92) 100%);
+      box-shadow: 0 20px 65px rgba(0,0,0,0.85), 0 0 40px rgba(234,179,8,0.22), inset 0 0 30px rgba(234,179,8,0.08);
+    }
+    .tier-card.featured:hover {
+      border-color: rgba(234,179,8,0.9);
+      box-shadow: 0 24px 75px rgba(0,0,0,0.9), 0 0 50px rgba(234,179,8,0.35);
+    }
+
+    /* Top Featured Pill */
+    .featured-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #eab308, #ca8a04);
+      color: #030208;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      align-self: flex-start;
+      box-shadow: 0 0 15px rgba(234,179,8,0.4);
+    }
+
+    /* Card Top Bar */
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .tier-name {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 24px;
+      color: #fff;
+      letter-spacing: .02em;
+      line-height: 1.2;
+    }
+    .tier-tagline {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.5;
+      min-height: 40px;
+      margin-bottom: 14px;
+    }
+
+    /* Price Section */
+    .price-box {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 0;
+      margin-bottom: 18px;
+    }
+    .price-main {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .price-val {
+      font-family: 'Cinzel', serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--gold-soft);
+      line-height: 1;
+    }
+    .price-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--dim);
+    }
+    .price-billed {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--cyan);
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    /* Features List */
+    .features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      flex: 1;
+    }
+    .features-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+    .features-list li i {
+      color: var(--cyan);
+      font-size: 12px;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+    .tier-card.featured .features-list li i {
+      color: var(--gold);
+    }
+    .features-list li b {
+      color: #fff;
+    }
+
+    /* Button Pinned Bottom */
+    .tier-cta {
+      margin-top: auto;
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 11.5px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      border: 1px solid rgba(234, 179, 8, .4);
+      color: #fde047;
+      background: rgba(234, 179, 8, .07);
+      transition: all .25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .tier-cta:hover {
+      background: rgba(234, 179, 8, .18);
+      border-color: #eab308;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(234,179,8,0.25);
+      transform: translateY(-2px);
+    }
+    .tier-card.featured .tier-cta {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+      color: #030208;
+      border-color: transparent;
+      box-shadow: 0 0 25px rgba(234, 179, 8, .35);
+    }
+    .tier-card.featured .tier-cta:hover {
+      background: linear-gradient(135deg, #facc15, #eab308);
+      box-shadow: 0 0 35px rgba(234, 179, 8, .55);
+      transform: translateY(-2px);
+    }
+
+    /* What Stays Free Luxury Box */
+    .free-guarantee {
+      margin-top: 48px;
+      background: rgba(8, 47, 73, 0.22);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      border-radius: 20px;
+      padding: 32px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 35px rgba(6,182,212,0.08);
+    }
+    .free-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px 24px;
+      margin: 20px 0;
+    }
+    .free-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+    }
+    .free-item i {
+      color: var(--cyan);
+      font-size: 12px;
+    }
+    .promise-text {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(34,211,238,0.18);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--dim);
+      line-height: 1.7;
+    }
+    .promise-text b {
+      color: #cbd5e1;
+    }
   </style>
 </head>
 <body>
 <canvas id="bg-canvas" aria-hidden="true"></canvas>
 <div class="bg-glow" aria-hidden="true"></div>
 
+<!-- Header -->
 <header class="site-header">
   <div class="header-inner">
     <a href="/" class="brand" aria-label="Epinoia Horizon home">
@@ -66,123 +341,249 @@
       <a href="/#showcase">Spells</a>
       <a href="/docs/">Docs</a>
       <a href="/blog/">Blog</a>
-      <a href="/#store">Vault Store</a>
+      <a href="/store/" class="store"><i class="fas fa-gem"></i>Vault Store</a>
       <a href="/pricing/" class="active" aria-current="page">Pricing</a>
     </nav>
     <a href="/" class="pill-btn"><i class="fas fa-arrow-left"></i><span>Sanctum</span></a>
   </div>
 </header>
 
-<main class="page">
-  <div class="hero">
-    <span class="badge"><span class="dot"></span>Open Core · The local harness is free, forever</span>
-    <h1 class="title">CHOOSE YOUR TIER</h1>
-    <p class="lede">Everything that runs locally on your machine stays free. Paid tiers add what we operate: managed relay, fleet sync, stable updates, and enterprise controls.</p>
+<main class="page wide" style="max-width:1320px;">
+
+  <!-- Hero Section -->
+  <div class="pricing-hero">
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;background:rgba(8,47,73,0.6);border:1px solid var(--line-c);color:var(--cyan-soft);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;">
+      <span class="dot"></span> Open Core · Local Agent Harness Free Forever
+    </div>
+    <h1 class="pricing-title">CHOOSE YOUR TIER</h1>
+    <p class="pricing-lede">
+      Everything running locally on your hardware is open source, private, and free forever. Paid tiers add managed multi-agent relays, encrypted fleet sync, LTS channels, and sovereign enterprise infrastructure.
+    </p>
+
+    <!-- Billing Interval Switcher -->
+    <div class="billing-switch">
+      <button class="switch-btn active" id="btn-monthly" onclick="setBilling('monthly')">Monthly</button>
+      <button class="switch-btn" id="btn-annual" onclick="setBilling('annual')">
+        Annual <span class="discount-pill">Save 20%</span>
+      </button>
+    </div>
   </div>
 
-  <div class="tiers">
+  <!-- 4-Column Tiers Grid -->
+  <div class="tiers-grid">
 
-    <!-- CORE -->
-    <div class="panel tier">
-      <span class="icon-box"><i class="fas fa-terminal"></i></span>
-      <span class="tag">Open Source · MIT</span>
-      <h2 class="guide-title" style="font-size:22px;margin-top:14px">Core</h2>
-      <p class="tagline">The full local harness for one operator, one machine.</p>
-      <div class="price"><span class="num">FREE</span><span class="per">forever</span></div>
-      <ul>
-        <li><i class="fas fa-check"></i> Terminal TUI + all local tools (shell, code, files)</li>
-        <li><i class="fas fa-check"></i> Memory, skills &amp; cron — unlimited, local</li>
+    <!-- TIER 1: CORE -->
+    <div class="tier-card">
+      <div class="card-top">
+        <span class="icon-box"><i class="fas fa-terminal"></i></span>
+        <span class="tag">OPEN SOURCE · MIT</span>
+      </div>
+      <h2 class="tier-name">Core</h2>
+      <p class="tier-tagline">Full local agent harness for 1 operator, 1 machine.</p>
+
+      <div class="price-box">
+        <div class="price-main">
+          <span class="price-val">FREE</span>
+          <span class="price-sub">forever</span>
+        </div>
+        <div class="price-billed">No credit card required</div>
+      </div>
+
+      <ul class="features-list">
+        <li><i class="fas fa-check"></i> <b>Terminal TUI</b> + all local tools (shell, code, files)</li>
+        <li><i class="fas fa-check"></i> Unlimited local memory, skills, and cron</li>
         <li><i class="fas fa-check"></i> Browser automation &amp; computer use (local)</li>
-        <li><i class="fas fa-check"></i> Multi-agent orchestration — local</li>
-        <li><i class="fas fa-check"></i> Messaging via self-hosted gateway (own keys)</li>
-        <li><i class="fas fa-check"></i> BYOK — bring your own model keys</li>
+        <li><i class="fas fa-check"></i> Multi-agent swarm orchestration — local</li>
+        <li><i class="fas fa-check"></i> Self-hosted messaging gateway (own keys)</li>
+        <li><i class="fas fa-check"></i> BYOK — bring your own LLM model keys</li>
         <li><i class="fas fa-check"></i> Community support (GitHub · Discord)</li>
       </ul>
-      <a class="cta" href="/docs/tutorial-merlin-terminal-en.html"><i class="fas fa-download"></i> Install Free</a>
+
+      <a class="tier-cta" href="/docs/tutorial-merlin-terminal-en.html">
+        <i class="fas fa-download"></i> Install Free Core
+      </a>
     </div>
 
-    <!-- PRO -->
-    <div class="panel tier">
-      <span class="icon-box gold"><i class="fas fa-bolt"></i></span>
-      <span class="tag">For serious operators</span>
-      <h2 class="guide-title" style="font-size:22px;margin-top:14px">Pro</h2>
-      <p class="tagline">Convenience + capacity for one operator, all devices.</p>
-      <div class="price"><span class="num">$29</span><span class="per">/mo</span><span class="was">$290/yr option</span></div>
-      <ul>
-        <li><i class="fas fa-check"></i> <b>Managed Hermes Relay</b> — Telegram/Discord/WhatsApp with zero self-hosting</li>
-        <li><i class="fas fa-check"></i> <b>LTS update channel</b> — tested builds + rollback pinning</li>
-        <li><i class="fas fa-check"></i> Fleet Sync (light) — memory + skills across 3 machines</li>
-        <li><i class="fas fa-check"></i> Optional prepaid model credits (no BYOK needed)</li>
-        <li><i class="fas fa-check"></i> Commercial-use license, 1 operator</li>
-        <li><i class="fas fa-check"></i> Priority issues + email support (48h)</li>
+    <!-- TIER 2: PRO -->
+    <div class="tier-card">
+      <div class="card-top">
+        <span class="icon-box gold"><i class="fas fa-bolt"></i></span>
+        <span class="tag">INDIVIDUAL OPERATOR</span>
+      </div>
+      <h2 class="tier-name">Pro</h2>
+      <p class="tier-tagline">Convenience and power for 1 operator across all devices.</p>
+
+      <div class="price-box">
+        <div class="price-main">
+          <span class="price-val" id="price-pro">$29</span>
+          <span class="price-sub" id="period-pro">/month</span>
+        </div>
+        <div class="price-billed" id="billed-pro">Billed monthly</div>
+      </div>
+
+      <ul class="features-list">
+        <li><i class="fas fa-check"></i> <b>Managed Hermes Relay</b> — Telegram/Discord/WhatsApp without self-hosting</li>
+        <li><i class="fas fa-check"></i> <b>LTS update channel</b> — validated builds + rollback pinning</li>
+        <li><i class="fas fa-check"></i> <b>Fleet Sync (Light)</b> — memory + skills across 3 machines</li>
+        <li><i class="fas fa-check"></i> Optional prepaid model credits (no BYOK required)</li>
+        <li><i class="fas fa-check"></i> Commercial production deployment permit</li>
+        <li><i class="fas fa-check"></i> Priority issues + email support (48h SLA)</li>
       </ul>
-      <a class="cta" href="/#contact"><i class="fas fa-bolt"></i> Join Pro Waitlist</a>
+
+      <a class="tier-cta" href="/#contact">
+        <i class="fas fa-bolt"></i> Join Pro Waitlist
+      </a>
     </div>
 
-    <!-- FLEET -->
-    <div class="panel tier featured">
-      <span class="featured-badge">Best Value</span>
-      <span class="icon-box gold"><i class="fas fa-network-wired"></i></span>
-      <span class="tag">For teams</span>
-      <h2 class="guide-title" style="font-size:22px;margin-top:14px">Fleet</h2>
-      <p class="tagline">Shared brain for your whole team — up to 10 operators.</p>
-      <div class="price"><span class="num">$149</span><span class="per">/mo</span><span class="was">$1,490/yr option</span></div>
-      <ul>
-        <li><i class="fas fa-check"></i> Everything in Pro</li>
-        <li><i class="fas fa-check"></i> <b>Fleet Sync full</b> — unlimited machines, shared team memory &amp; skill library, conflict-free merge</li>
-        <li><i class="fas fa-check"></i> Up to 100 agent slots fleet-wide</li>
-        <li><i class="fas fa-check"></i> <b>RBAC</b> — owner/operator/viewer + per-operator tool policy</li>
-        <li><i class="fas fa-check"></i> <b>Audit log</b> — append-only journal, exportable</li>
-        <li><i class="fas fa-check"></i> SSO (Google Workspace · Entra)</li>
-        <li><i class="fas fa-check"></i> 24h SLA + onboarding call</li>
+    <!-- TIER 3: FLEET (FEATURED) -->
+    <div class="tier-card featured">
+      <div class="featured-pill">
+        <i class="fas fa-crown"></i> POPULAR ARCHITECTURE
+      </div>
+      <div class="card-top">
+        <span class="icon-box gold"><i class="fas fa-network-wired"></i></span>
+        <span class="tag">SWARMS &amp; TEAMS</span>
+      </div>
+      <h2 class="tier-name" style="color:var(--gold);">Fleet</h2>
+      <p class="tier-tagline">Shared synaptic brain for your whole team up to 10 operators.</p>
+
+      <div class="price-box">
+        <div class="price-main">
+          <span class="price-val" id="price-fleet">$149</span>
+          <span class="price-sub" id="period-fleet">/month</span>
+        </div>
+        <div class="price-billed" id="billed-fleet" style="color:var(--gold-soft);">Billed monthly</div>
+      </div>
+
+      <ul class="features-list">
+        <li><i class="fas fa-check"></i> <b>Everything in Pro</b>, scaled for teams</li>
+        <li><i class="fas fa-check"></i> <b>Fleet Sync Full</b> — unlimited machines, shared team memory &amp; skill library</li>
+        <li><i class="fas fa-check"></i> <b>Up to 100 agent slots</b> fleet-wide simultaneously</li>
+        <li><i class="fas fa-check"></i> <b>RBAC &amp; Policy</b> — owner/operator roles + tool enforcement</li>
+        <li><i class="fas fa-check"></i> <b>Immutable Audit Log</b> — cryptographic append-only journal</li>
+        <li><i class="fas fa-check"></i> Enterprise SSO (Google Workspace · Microsoft Entra)</li>
+        <li><i class="fas fa-check"></i> 24h SLA + dedicated engineering onboarding</li>
       </ul>
-      <a class="cta" href="/#contact"><i class="fas fa-network-wired"></i> Join Fleet Waitlist</a>
+
+      <a class="tier-cta" href="/#contact">
+        <i class="fas fa-network-wired"></i> Join Fleet Waitlist
+      </a>
     </div>
 
-    <!-- ENTERPRISE -->
-    <div class="panel tier">
-      <span class="icon-box gold"><i class="fas fa-building-columns"></i></span>
-      <span class="tag">For organizations</span>
-      <h2 class="guide-title" style="font-size:22px;margin-top:14px">Enterprise</h2>
-      <p class="tagline">Sovereign deployment inside your own VPC.</p>
-      <div class="price"><span class="num" style="font-size:26px">from $9,900</span><span class="per">/yr</span></div>
-      <ul>
-        <li><i class="fas fa-check"></i> <b>Self-hosted relay container</b> — our code, your VPC</li>
-        <li><i class="fas fa-check"></i> Unlimited operators &amp; machines</li>
-        <li><i class="fas fa-check"></i> Custom spell/pipeline engineering (scoped)</li>
-        <li><i class="fas fa-check"></i> Security review access · DPA · procurement paperwork</li>
-        <li><i class="fas fa-check"></i> Dedicated channel, 4h SLA</li>
+    <!-- TIER 4: ENTERPRISE -->
+    <div class="tier-card">
+      <div class="card-top">
+        <span class="icon-box gold"><i class="fas fa-building-columns"></i></span>
+        <span class="tag">SOVEREIGN VPC</span>
+      </div>
+      <h2 class="tier-name">Enterprise</h2>
+      <p class="tier-tagline">Dedicated sovereign deployment isolated in your own VPC.</p>
+
+      <div class="price-box">
+        <div class="price-main">
+          <span class="price-val" style="font-size:32px;">$9,900</span>
+          <span class="price-sub">/year</span>
+        </div>
+        <div class="price-billed">Starting custom tier</div>
+      </div>
+
+      <ul class="features-list">
+        <li><i class="fas fa-check"></i> <b>Self-Hosted Relay Container</b> — our code in your air-gapped VPC</li>
+        <li><i class="fas fa-check"></i> Unlimited operators, machines, and agents</li>
+        <li><i class="fas fa-check"></i> Custom spell AST &amp; pipeline compiler engineering</li>
+        <li><i class="fas fa-check"></i> Custom DPA, security audits, and procurement paperwork</li>
+        <li><i class="fas fa-check"></i> Dedicated private Slack/Discord channel (4h SLA)</li>
       </ul>
-      <a class="cta" href="/#contact"><i class="fas fa-building-columns"></i> Talk To Us</a>
+
+      <a class="tier-cta" href="/#contact">
+        <i class="fas fa-building-columns"></i> Consult Sanctum Desk
+      </a>
+    </div>
+
+  </div>
+
+  <!-- What Stays Free Forever Guarantee -->
+  <div class="free-guarantee">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+      <div class="icon-box"><i class="fas fa-shield-halved"></i></div>
+      <div>
+        <h3 style="font-family:'Cinzel',serif;color:var(--cyan);font-size:18px;letter-spacing:.08em;">WHAT STAYS FREE — FOREVER</h3>
+        <p style="font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace;">The Open-Core Sovereign Pledge</p>
+      </div>
+    </div>
+
+    <div class="free-grid">
+      <div class="free-item"><i class="fas fa-check-circle"></i> Full local harness &amp; all local tools</div>
+      <div class="free-item"><i class="fas fa-check-circle"></i> Unlimited local memory palaces &amp; skills</div>
+      <div class="free-item"><i class="fas fa-check-circle"></i> Local cron job scheduler &amp; daemons</div>
+      <div class="free-item"><i class="fas fa-check-circle"></i> Self-hosted messaging gateway path</div>
+      <div class="free-item"><i class="fas fa-check-circle"></i> Zero telemetry, zero accounts, zero nag screens</div>
+      <div class="free-item"><i class="fas fa-check-circle"></i> Security patches ship to Core immediately</div>
+    </div>
+
+    <div class="promise-text">
+      <b>No Rug-Pull Policy:</b> Paid tiers only add capabilities requiring our cloud coordination infrastructure (Hermes relay, encrypted fleet sync, LTS validation, RBAC, audit journals). Nothing that is currently free will ever move behind a paywall.
+      <br><br>
+      <a href="/docs/tutorial-merlin-terminal-en.html" style="color:var(--cyan);text-decoration:underline;">Not ready yet? Install the free Core and experience sovereign agent orchestration today →</a>
     </div>
   </div>
 
-  <!-- free forever promise -->
-  <div class="free-forever">
-    <h3><i class="fas fa-shield-halved"></i> WHAT STAYS FREE — FOREVER</h3>
-    <ul>
-      <li><i class="fas fa-check"></i> Full local harness, all local tools</li>
-      <li><i class="fas fa-check"></i> Local memory &amp; skills, unlimited</li>
-      <li><i class="fas fa-check"></i> Local cron scheduler</li>
-      <li><i class="fas fa-check"></i> Self-hosted messaging gateway path</li>
-      <li><i class="fas fa-check"></i> No account · no telemetry · no nag screens</li>
-      <li><i class="fas fa-check"></i> Security patches ship to free tier immediately</li>
-    </ul>
-    <p class="promise"><b>No rug-pull:</b> paid tiers only add NEW capabilities (managed relay, fleet sync, LTS, RBAC, audit) that require our infrastructure. Nothing currently free moves behind a paywall. Founding members: first 100 Pro signups get 50% off the first year.</p>
-    <p class="compare"><a href="/docs/tutorial-merlin-terminal-en.html">Not sure yet? Install the free Core and judge the craft yourself →</a></p>
-  </div>
 </main>
 
+<!-- Footer -->
 <footer class="site-footer">
   <div class="foot-links">
     <a href="/">SANCTUM</a>
+    <a href="/store/">STORE</a>
     <a href="/docs/">DOCS</a>
     <a href="/blog/">BLOG</a>
+    <a href="/pricing/">PRICING</a>
     <a href="https://github.com/epinoiahorizon/Merlin-Agent">GITHUB</a>
   </div>
   <p>© 2026 EPINOIA HORIZON INC. ALL RIGHTS RESERVED.</p>
 </footer>
 
-<script src="/assets/docs.js?v=3" defer></script>
+<script src="/assets/docs.js?v=4" defer></script>
+<script>
+  let currentBilling = 'monthly';
+
+  function setBilling(interval) {
+    currentBilling = interval;
+    const btnM = document.getElementById('btn-monthly');
+    const btnA = document.getElementById('btn-annual');
+
+    const pricePro = document.getElementById('price-pro');
+    const periodPro = document.getElementById('period-pro');
+    const billedPro = document.getElementById('billed-pro');
+
+    const priceFleet = document.getElementById('price-fleet');
+    const periodFleet = document.getElementById('period-fleet');
+    const billedFleet = document.getElementById('billed-fleet');
+
+    if (interval === 'annual') {
+      btnM.classList.remove('active');
+      btnA.classList.add('active');
+
+      pricePro.textContent = '$24';
+      periodPro.textContent = '/month';
+      billedPro.textContent = 'Billed annually ($290/yr)';
+
+      priceFleet.textContent = '$124';
+      periodFleet.textContent = '/month';
+      billedFleet.textContent = 'Billed annually ($1,490/yr)';
+    } else {
+      btnA.classList.remove('active');
+      btnM.classList.add('active');
+
+      pricePro.textContent = '$29';
+      periodPro.textContent = '/month';
+      billedPro.textContent = 'Billed monthly';
+
+      priceFleet.textContent = '$149';
+      periodFleet.textContent = '/month';
+      billedFleet.textContent = 'Billed monthly';
+    }
+  }
+</script>
 </body>
 </html>
