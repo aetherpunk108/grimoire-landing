@@ -139,6 +139,7 @@
                 <a href="#showcase" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Spells</a>
                 <a href="/docs/" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Docs</a>
                 <a href="/blog/" class="font-heading text-xs text-gray-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Blog</a>
+                <a href="/pricing/" class="font-heading text-xs text-cyan-300 hover:text-gold-400 transition-colors uppercase tracking-widest">Pricing</a>
                 <a href="/store/" class="font-heading text-xs text-gold-400 hover:text-gold-300 transition-colors uppercase tracking-widest flex items-center gap-1.5">
                     <i class="fas fa-gem text-[10px]"></i> Vault Store
                 </a>
@@ -209,125 +210,135 @@
         </section>
 
         <!-- SECTION 2: ABOUT MERLIN ARCHITECTURE -->
-        <section id="architecture" class="min-h-screen flex items-center justify-start px-6 md:px-20 py-24">
-            <div class="max-w-xl glass-panel p-8 md:p-10 rounded-2xl border border-cyan-500/30 space-y-6">
+        <section id="architecture" class="min-h-screen flex items-center justify-center px-6 md:px-12 lg:px-16 py-24">
+            <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                <div class="lg:col-span-7 glass-panel p-8 md:p-10 rounded-2xl border border-cyan-500/30 space-y-6">
 
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-400/50 flex items-center justify-center text-cyan-400 text-xl shadow-[0_0_20px_rgba(6,182,212,0.4)]">
-                        <i class="fas fa-network-wired"></i>
-                    </div>
-                    <div>
-                        <span class="font-mono text-xs text-cyan-400 tracking-widest uppercase">Epinoia Core</span>
-                        <h2 class="font-title text-2xl md:text-3xl text-cyan-200 glow-cyan">Autonomous Agent Fleet</h2>
-                    </div>
-                </div>
-
-                <p class="text-gray-300 text-sm md:text-base leading-relaxed font-body">
-                    Merlin breaks conventional LLM boundaries by deploying self-orchestrating agent swarms across high-fidelity 3D environments. Every neural spell executes in real-time with sub-millisecond latency.
-                </p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div class="p-4 rounded-xl bg-horizon-bg/60 border border-purple-500/20 space-y-1">
-                        <div class="font-heading text-xs text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fas fa-microchip text-purple-400"></i> Multi-Agent Harness
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-400/50 flex items-center justify-center text-cyan-400 text-xl shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                            <i class="fas fa-network-wired"></i>
                         </div>
-                        <p class="text-xs text-gray-400">Parallelized task distribution across specialized wizard agents.</p>
-                    </div>
-                    <div class="p-4 rounded-xl bg-horizon-bg/60 border border-purple-500/20 space-y-1">
-                        <div class="font-heading text-xs text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fas fa-eye text-cyan-400"></i> 3D Previs Pipeline
+                        <div>
+                            <span class="font-mono text-xs text-cyan-400 tracking-widest uppercase">Epinoia Core</span>
+                            <h2 class="font-title text-2xl md:text-3xl text-cyan-200 glow-cyan">Autonomous Agent Fleet</h2>
                         </div>
-                        <p class="text-xs text-gray-400">Real-time spatial render engine compiled directly in WebGL.</p>
+                    </div>
+
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed font-body">
+                        Merlin breaks conventional LLM boundaries by deploying self-orchestrating agent swarms across high-fidelity 3D environments. Every neural spell executes in real-time with sub-millisecond latency.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div class="p-4 rounded-xl bg-horizon-bg/60 border border-purple-500/20 space-y-1">
+                            <div class="font-heading text-xs text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fas fa-microchip text-purple-400"></i> Multi-Agent Harness
+                            </div>
+                            <p class="text-xs text-gray-400">Parallelized task distribution across specialized wizard agents.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-horizon-bg/60 border border-purple-500/20 space-y-1">
+                            <div class="font-heading text-xs text-gold-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fas fa-eye text-cyan-400"></i> 3D Previs Pipeline
+                            </div>
+                            <p class="text-xs text-gray-400">Real-time spatial render engine compiled directly in WebGL.</p>
+                        </div>
+                    </div>
+
+                    <!-- Menu lama: docs + tutorial + github -->
+                    <div class="space-y-2 pt-2">
+                        <a href="/docs/" class="flex items-center justify-between p-3.5 rounded-xl bg-horizon-bg/60 border border-cyan-500/20 hover:border-cyan-400/60 transition-all group">
+                            <span class="flex items-center gap-3">
+                                <i class="fas fa-book-skull text-cyan-400"></i>
+                                <span>
+                                    <span class="block font-heading text-xs text-gray-200 uppercase tracking-wider">Docs & Tutorials</span>
+                                    <span class="block text-[11px] text-gray-500">Terminal install guide (ID/EN) · getting started</span>
+                                </span>
+                            </span>
+                            <i class="fas fa-arrow-right text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                        <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="flex items-center justify-between p-3.5 rounded-xl bg-horizon-bg/60 border border-purple-500/20 hover:border-purple-400/60 transition-all group">
+                            <span class="flex items-center gap-3">
+                                <i class="fab fa-github text-purple-400"></i>
+                                <span>
+                                    <span class="block font-heading text-xs text-gray-200 uppercase tracking-wider">GitHub Source</span>
+                                    <span class="block text-[11px] text-gray-500">epinoiahorizon/Merlin-Agent · open source</span>
+                                </span>
+                            </span>
+                            <i class="fas fa-arrow-right text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+
+                    <div class="pt-2 text-xs font-mono text-cyan-400/80 flex items-center gap-2 border-t border-cyan-500/20 pt-4">
+                        <i class="fas fa-crosshairs"></i> Spatial Canvas: Click anywhere on screen to trigger localized spell energy fields.
                     </div>
                 </div>
 
-                <!-- Menu lama: docs + tutorial + github -->
-                <div class="space-y-2 pt-2">
-                    <a href="/docs/" class="flex items-center justify-between p-3.5 rounded-xl bg-horizon-bg/60 border border-cyan-500/20 hover:border-cyan-400/60 transition-all group">
-                        <span class="flex items-center gap-3">
-                            <i class="fas fa-book-skull text-cyan-400"></i>
-                            <span>
-                                <span class="block font-heading text-xs text-gray-200 uppercase tracking-wider">Docs & Tutorials</span>
-                                <span class="block text-[11px] text-gray-500">Terminal install guide (ID/EN) · getting started</span>
-                            </span>
-                        </span>
-                        <i class="fas fa-arrow-right text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                    <a href="https://github.com/epinoiahorizon/Merlin-Agent" class="flex items-center justify-between p-3.5 rounded-xl bg-horizon-bg/60 border border-purple-500/20 hover:border-purple-400/60 transition-all group">
-                        <span class="flex items-center gap-3">
-                            <i class="fab fa-github text-purple-400"></i>
-                            <span>
-                                <span class="block font-heading text-xs text-gray-200 uppercase tracking-wider">GitHub Source</span>
-                                <span class="block text-[11px] text-gray-500">epinoiahorizon/Merlin-Agent · open source</span>
-                            </span>
-                        </span>
-                        <i class="fas fa-arrow-right text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
-                </div>
-
-                <div class="pt-2 text-xs font-mono text-cyan-400/80 flex items-center gap-2 border-t border-cyan-500/20 pt-4">
-                    <i class="fas fa-crosshairs"></i> Spatial Canvas: Click anywhere on screen to trigger localized spell energy fields.
-                </div>
+                <!-- Spacer / Visual Stage for 3D Scrying Orb -->
+                <div class="hidden lg:flex lg:col-span-5 items-center justify-center pointer-events-none min-h-[380px]"></div>
             </div>
         </section>
 
         <!-- SECTION 3: SPELL ENGINE SHOWCASE -->
-        <section id="showcase" class="min-h-screen flex items-center justify-end px-6 md:px-20 py-24">
-            <div class="max-w-xl glass-panel p-8 md:p-10 rounded-2xl border border-purple-500/30 space-y-6">
+        <section id="showcase" class="min-h-screen flex items-center justify-center px-6 md:px-12 lg:px-16 py-24">
+            <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                <!-- Spacer for 3D Neural Cube -->
+                <div class="hidden lg:flex lg:col-span-5 items-center justify-center pointer-events-none min-h-[380px]"></div>
 
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-400/50 flex items-center justify-center text-purple-400 text-xl shadow-[0_0_20px_rgba(139,92,246,0.4)]">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                    </div>
-                    <div>
-                        <span class="font-mono text-xs text-purple-400 tracking-widest uppercase">Arcane Runtime</span>
-                        <h2 class="font-title text-2xl md:text-3xl text-purple-200 glow-purple">Neural Spell Compiler</h2>
-                    </div>
-                </div>
+                <div class="lg:col-span-7 glass-panel p-8 md:p-10 rounded-2xl border border-purple-500/30 space-y-6">
 
-                <p class="text-gray-300 text-sm md:text-base leading-relaxed">
-                    Trigger Merlin's runtime spell vectors directly into the WebGL viewport. Select a protocol below to reconfigure the ambient 3D particle dust and light fields:
-                </p>
-
-                <!-- Interactive Spell Trigger Buttons -->
-                <div class="space-y-3">
-                    <div onclick="castSpell('fire')" class="p-4 rounded-xl glass-panel border border-amber-500/30 hover:border-amber-400 cursor-pointer transition-all flex items-center justify-between group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-amber-950/80 border border-amber-500/50 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-fire-flame-curved"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-heading text-sm text-amber-300">Ignis Neural Net</h3>
-                                <p class="text-[11px] text-gray-400">High-throughput compute stream emitting solar particle bursts.</p>
-                            </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-400/50 flex items-center justify-center text-purple-400 text-xl shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+                            <i class="fas fa-wand-magic-sparkles"></i>
                         </div>
-                        <i class="fas fa-bolt text-xs text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+                        <div>
+                            <span class="font-mono text-xs text-purple-400 tracking-widest uppercase">Arcane Runtime</span>
+                            <h2 class="font-title text-2xl md:text-3xl text-purple-200 glow-purple">Neural Spell Compiler</h2>
+                        </div>
                     </div>
 
-                    <div onclick="castSpell('frost')" class="p-4 rounded-xl glass-panel border border-cyan-500/30 hover:border-cyan-400 cursor-pointer transition-all flex items-center justify-between group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-snowflake"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-heading text-sm text-cyan-300">Cryo-Lock Protocol</h3>
-                                <p class="text-[11px] text-gray-400">Freezes memory states into crystalline 3D data geometry.</p>
-                            </div>
-                        </div>
-                        <i class="fas fa-bolt text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
-                    </div>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        Trigger Merlin's runtime spell vectors directly into the WebGL viewport. Select a protocol below to reconfigure the ambient 3D particle dust and light fields:
+                    </p>
 
-                    <div onclick="castSpell('void')" class="p-4 rounded-xl glass-panel border border-purple-500/30 hover:border-purple-400 cursor-pointer transition-all flex items-center justify-between group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-purple-950/80 border border-purple-500/50 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
-                                <i class="fas fa-atom"></i>
+                    <!-- Interactive Spell Trigger Buttons -->
+                    <div class="space-y-3">
+                        <div onclick="castSpell('fire')" class="p-4 rounded-xl glass-panel border border-amber-500/30 hover:border-amber-400 cursor-pointer transition-all flex items-center justify-between group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-amber-950/80 border border-amber-500/50 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-fire-flame-curved"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-heading text-sm text-amber-300">Ignis Neural Net</h3>
+                                    <p class="text-[11px] text-gray-400">High-throughput compute stream emitting solar particle bursts.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-heading text-sm text-purple-300">Aether Void Vector</h3>
-                                <p class="text-[11px] text-gray-400">Synthesizes dimensional portals for multi-agent communication.</p>
-                            </div>
+                            <i class="fas fa-bolt text-xs text-amber-400 group-hover:translate-x-1 transition-transform"></i>
                         </div>
-                        <i class="fas fa-bolt text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+
+                        <div onclick="castSpell('frost')" class="p-4 rounded-xl glass-panel border border-cyan-500/30 hover:border-cyan-400 cursor-pointer transition-all flex items-center justify-between group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-cyan-950/80 border border-cyan-500/50 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-snowflake"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-heading text-sm text-cyan-300">Cryo-Lock Protocol</h3>
+                                    <p class="text-[11px] text-gray-400">Freezes memory states into crystalline 3D data geometry.</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-bolt text-xs text-cyan-400 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+
+                        <div onclick="castSpell('void')" class="p-4 rounded-xl glass-panel border border-purple-500/30 hover:border-purple-400 cursor-pointer transition-all flex items-center justify-between group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-purple-950/80 border border-purple-500/50 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-atom"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-heading text-sm text-purple-300">Aether Void Vector</h3>
+                                    <p class="text-[11px] text-gray-400">Synthesizes dimensional portals for multi-agent communication.</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-bolt text-xs text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -714,7 +725,7 @@
         orbGroup.add(ringMesh2);
 
         scene.add(orbGroup);
-        orbGroup.position.set(4.6, 0.4, -1.5);
+        orbGroup.position.set(2.8, 0.3, -1.0);
         orbGroup.scale.setScalar(0.85);
 
         // NEURAL CUBE ARTIFACT
@@ -814,10 +825,10 @@
             }
         });
 
-        mainTL.to(orbGroup.position, { x: 5.4, y: 0, z: 1, duration: 2 }, 0)
+        mainTL.to(orbGroup.position, { x: 2.0, y: 0, z: 0.9, duration: 2 }, 0)
               .to(orbGroup.rotation, { y: Math.PI * 2, x: Math.PI / 3, duration: 2 }, 0)
               .to(orbGroup.position, { x: 8, y: -3, z: -4, duration: 2.5 }, 2)
-              .to(cubeGroup.position, { x: -2.5, y: 0, z: 1, duration: 2.5 }, 2)
+              .to(cubeGroup.position, { x: -2.0, y: 0, z: 0.9, duration: 2.5 }, 2)
               .to(cubeGroup.rotation, { y: Math.PI / 3, x: Math.PI / 4, duration: 2.5 }, 2)
               .to(cubeGroup.position, { x: 0, y: -2, z: -3, duration: 2 }, 4.5)
               .to(orbGroup.position, { x: 2, y: 2.5, z: -3, duration: 2 }, 4.5);
