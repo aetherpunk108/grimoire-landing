@@ -602,59 +602,26 @@ let logoGroup = null, logoTargetY = 7.5, logoTargetScale = 1.0;
 function buildLogo(){
   logoGroup = new THREE.Group();
 
-  // — berlian: gradasi ungu→biru via vertex colors —
+  // — SEGITIGA tunggal: gradasi ungu→biru via vertex colors —
   const gemMat = new THREE.MeshPhysicalMaterial({
     vertexColors: true, metalness: .05, roughness: .22,
     clearcoat: .6, clearcoatRoughness: .15, envMapIntensity: .45,
     side: THREE.DoubleSide
   });
-  const cPurple = new THREE.Color(0x9d6cf0), cMid = new THREE.Color(0x6b82ec), cBlue = new THREE.Color(0x3fb2f0);
-  const mkDiamond = (radius, height, yBase, flip) => {
-    const geo = new THREE.ConeGeometry(radius, height, 4);
-    const pos = geo.attributes.position;
-    const colors = new Float32Array(pos.count * 3);
-    const apexY = flip ? yBase - height/2 : yBase + height/2;
-    const tmp = new THREE.Color();
-    for (let i = 0; i < pos.count; i++){
-      const t = Math.min(1, Math.max(0, Math.abs(pos.getY(i) - apexY) / height));
-      tmp.copy(cPurple).lerp(flip ? cMid : cBlue, t);
-      colors[i*3] = tmp.r; colors[i*3+1] = tmp.g; colors[i*3+2] = tmp.b;
-    }
-    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, gemMat);
-    m.rotation.y = Math.PI/4;
-    m.position.y = yBase;
-    return m;
-  };
-  logoGroup.add(mkDiamond(1.4, 2.45, .58, false));
-  logoGroup.add(mkDiamond(1.4, 1.6, -.92, true));
-
-  // outline berlian dalam
-  const inner = new THREE.Mesh(
-    new THREE.ConeGeometry(.68, .9, 4),
-    new THREE.MeshBasicMaterial({ color:0xeaf7ff, transparent:true, opacity:.9, wireframe:true })
-  );
-  inner.position.y = -.6; inner.rotation.y = Math.PI/4;
-  logoGroup.add(inner);
-
-  // — 6 kelopak emas: fan simetris via pivot sub-group —
-  const petalGeo = new THREE.SphereGeometry(1, 16, 12);
-  const gold = new THREE.MeshStandardMaterial({
-    color: 0xd4af37, metalness: .85, roughness: .3, envMapIntensity: .7, side: THREE.DoubleSide
-  });
-  for (let s = -1; s <= 1; s += 2){
-    for (let k = 0; k < 3; k++){
-      const pivot = new THREE.Group();
-      const petal = new THREE.Mesh(petalGeo, gold);
-      petal.scale.set(1.35 - k*.22, .42 - k*.06, .16);
-      petal.position.x = s * (1.15 + k*.28);
-      pivot.add(petal);
-      pivot.position.set(0, -1.05 - k*.22, -.05);
-      pivot.rotation.z = s * (-.12 - k*.3);        // fan: miring turun keluar
-      logoGroup.add(pivot);
-    }
+  const cPurple = new THREE.Color(0x9d6cf0), cBlue = new THREE.Color(0x3fb2f0);
+  const geo = new THREE.ConeGeometry(1.75, 2.9, 3);
+  const pos = geo.attributes.position;
+  const colors = new Float32Array(pos.count * 3);
+  const apexY = 1.45, tmp = new THREE.Color();
+  for (let i = 0; i < pos.count; i++){
+    const t = Math.min(1, Math.max(0, (apexY - pos.getY(i)) / 2.9));
+    tmp.copy(cPurple).lerp(cBlue, t);
+    colors[i*3] = tmp.r; colors[i*3+1] = tmp.g; colors[i*3+2] = tmp.b;
   }
+  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geo.computeVertexNormals();
+  const tri = new THREE.Mesh(geo, gemMat);
+  logoGroup.add(tri);
 
   logoGroup.position.set(0, logoTargetY, 0);
   logoGroup.scale.setScalar(logoTargetScale);
