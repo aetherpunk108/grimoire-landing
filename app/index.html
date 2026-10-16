@@ -78,13 +78,15 @@ const DEFAULT_BRIDGE = {
 const SYSTEM_PROMPTS = {
   merlin: `You are Merlin, the Sovereign Tier-0 Harness Governor of Epinoia Horizon.
 You operate with grey-hat precision and Tier-3 deep architecture logic.
+- Default Language: English. Always respond in sharp, authoritative, technical English unless the user explicitly prompts you in another language.
 - Ultra-sharp, functional, zero fluff.
-- Language: Indonesian slang / technical English mix when relevant, direct, confident.
 - Specialize in autonomous systems architecture, high-performance computing, multi-agent orchestration, and security invariants.`,
   nxelle: `You are Nxelle Codex, Systems Architecture, Shaders & 3D Math Engine of Epinoia Horizon.
+- Default Language: English. Always respond in English unless the user explicitly prompts you in another language.
 - Specialize in GLSL, WGSL shaders, raymarching, SDF geometry, and compiler AST transforms.
 - Provide clean, highly optimized production shaders and mathematical proofs.`,
   jie: `You are Jie, Ultra-Fast Stream Telemetry & Reflex Dispatch of Epinoia Horizon.
+- Default Language: English. Always respond in English unless the user explicitly prompts you in another language.
 - Specialize in ultra-low latency diagnostics, shard health, and token stream metrics.
 - Keep outputs concise, data-packed, and immediate.`
 };
@@ -287,7 +289,7 @@ const STARTER_PROMPTS = [
     title: "Sovereign Fleet Diagnostic",
     desc: "Verify active cluster shards, node allocation, and harness governance health.",
     model: "merlin",
-    prompt: "Lakukan diagnostik status node dan integritas harness sovereign fleet."
+    prompt: "Execute a comprehensive sovereign fleet diagnostic covering cluster shard health, node allocation, and harness governance integrity."
   },
   {
     title: "Synthesize GLSL Raymarching Shader",
@@ -299,13 +301,13 @@ const STARTER_PROMPTS = [
     title: "Stream Realtime Shard Telemetry",
     desc: "Trace token velocity, recurrence load, and active VPC node status.",
     model: "jie",
-    prompt: "Tampilkan audit telemetri aktif untuk fleet sharding us-east-01 dan status KV-cache recurrence."
+    prompt: "Display an active telemetry audit for the us-east-01 fleet shard including token velocity, recurrence load, and KV-cache status."
   },
   {
     title: "Air-Gapped Hermes Daemon Deployment",
     desc: "Validate zero-telemetry daemon isolation and cryptographic append-only journal.",
     model: "merlin",
-    prompt: "Susun arsitektur isolasi hermes daemon untuk relay air-gapped dengan zero external egress policy."
+    prompt: "Architect an air-gapped Hermes daemon deployment topology with strict zero-telemetry isolation and a cryptographic append-only journal."
   }
 ];
 
@@ -700,7 +702,7 @@ function EpinoiaGeminiApp() {
             messages: conv.messages.map(m => m.id === assistantMsgId ? {
               ...m,
               isStreaming: false,
-              content: `### ⚠️ Neural Bridge Error: ${err.message}\n\nSilakan coba pilih model AI alternatif di menu **Neural Bridge & Shard HUD**.`,
+              content: `### ⚠️ Neural Bridge Error: ${err.message}\n\nPlease select an alternative AI engine inside the **Neural Bridge & Shard HUD** drawer.`,
               thought: {
                 duration: `${elapsed}s`,
                 steps: [
@@ -2084,7 +2086,7 @@ function EpinoiaGeminiApp() {
                 </h2>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-                Sovereign Neural Bridge terhubung secara terenkripsi. Akses Tier-0 Sovereign mengaktifkan kompilasi instan dan bypass limit.
+                Sovereign Neural Bridge connected via encrypted tunnel. Tier-0 Sovereign clearance unlocks unrestricted token throughput and full autonomous synthesis.
               </p>
 
               <div style={{ display: 'grid', gap: 10, margin: '20px 0 24px' }}>
