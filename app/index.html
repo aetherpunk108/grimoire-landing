@@ -62,7 +62,13 @@ const AVAILABLE_AI_MODELS = [
   { id: 'clario/kimi-k2.8-preview', label: 'Kimi K2.8 Preview', short: 'Kimi-K2.8', provider: 'Moonshot' },
   { id: 'clario/minimax-m3', label: 'MiniMax M3', short: 'MiniMax-M3', provider: 'MiniMax' },
   { id: 'clario/minimax-m2.7', label: 'MiniMax M2.7', short: 'MiniMax-M2.7', provider: 'MiniMax' },
-  { id: 'clario/hy4-preview', label: 'Hunyuan 4 Preview', short: 'Hunyuan-4', provider: 'Tencent' }
+  { id: 'clario/hy4-preview', label: 'Hunyuan 4 Preview', short: 'Hunyuan-4', provider: 'Tencent' },
+  { id: 'clario/hy3', label: 'Hunyuan 3', short: 'Hunyuan-3', provider: 'Tencent' },
+  { id: 'clario/kimi-k2.6', label: 'Kimi K2.6', short: 'Kimi-K2.6', provider: 'Moonshot' },
+  { id: 'clario/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash (0731)', short: 'DeepSeek-v4-Flash-0731', provider: 'DeepSeek' },
+  { id: 'clario/glm-5.3-flash', label: 'GLM 5.3 Flash', short: 'GLM-5.3-Flash', provider: 'Zhipu GLM' },
+  { id: 'clario/glm-5.3-flashx', label: 'GLM 5.3 FlashX', short: 'GLM-5.3-FlashX', provider: 'Zhipu GLM' },
+  { id: 'clario/gemini-3.7-flash', label: 'Gemini 3.7 Flash', short: 'Gemini-3.7-Flash', provider: 'Google' }
 ];
 
 const DEFAULT_BRIDGE = {
@@ -75,20 +81,131 @@ const DEFAULT_BRIDGE = {
   }
 };
 
+// ----------------------------------------------------------------------------
+// PLAN TIERS — Free / Medium / High
+//  Free   : Jie only, locked to DeepSeek V4.1 Flash.
+//  Medium : Merlin + Nxelle + Jie, every Flash engine.
+//  High   : full fleet, every engine (frontier engines are fair-use capped).
+// NOTE: gating runs in the browser. Real enforcement must live on the bridge
+// server (per-user keys / proxy) — see activation notes in the plan modal.
+// ----------------------------------------------------------------------------
+const FLASH_MODEL_IDS = AVAILABLE_AI_MODELS.filter(m => /flash/i.test(m.id)).map(m => m.id);
+const ALL_MODEL_IDS = AVAILABLE_AI_MODELS.map(m => m.id);
+const FREE_MODEL_ID = 'clario/deepseek-v4.1-flash';
+const AGENT_KEYS = ['merlin', 'nxelle', 'jie'];
+
+const TIERS = {
+  free: {
+    key: 'free', label: 'Free', price: '$0',
+    agents: ['jie'],
+    models: [FREE_MODEL_ID],
+    defaults: { merlin: FREE_MODEL_ID, nxelle: FREE_MODEL_ID, jie: FREE_MODEL_ID },
+    dailyLimit: 30, premiumDailyLimit: null, maxFiles: 2, maxFileKB: 100,
+    summary: 'Jie only · DeepSeek V4.1 Flash. Merlin & Nxelle are locked.',
+    heroLine: 'Free plan — Jie answers fast, short and substantive. Upgrade to unlock Merlin and Nxelle Codex.'
+  },
+  medium: {
+    key: 'medium', label: 'Medium', price: '$6/mo',
+    agents: ['merlin', 'nxelle', 'jie'],
+    models: FLASH_MODEL_IDS,
+    defaults: { merlin: 'clario/deepseek-v4.1-flash-auto', nxelle: 'clario/deepseek-v4.1-flash', jie: FREE_MODEL_ID },
+    dailyLimit: 300, premiumDailyLimit: null, maxFiles: 5, maxFileKB: 300,
+    summary: 'Merlin, Nxelle Codex & Jie · every Flash engine.',
+    heroLine: 'Medium plan — Merlin, Nxelle Codex (coding) and Jie on every Flash engine.'
+  },
+  high: {
+    key: 'high', label: 'High', price: '$24/mo',
+    agents: ['merlin', 'nxelle', 'jie'],
+    models: ALL_MODEL_IDS,
+    defaults: { merlin: 'clario/deepseek-v4.1-flash-auto', nxelle: 'clario/deepseek-v4-pro', jie: FREE_MODEL_ID },
+    dailyLimit: 1000, premiumDailyLimit: 100, maxFiles: 10, maxFileKB: 1024,
+    summary: 'Full fleet · every AI engine incl. Opus, GPT, Gemini Pro (100 frontier msgs/day).',
+    heroLine: 'High plan — the full fleet on every engine, frontier models included.'
+  }
+};
+
+const sanitizeModelMap = (map, tierKey) => {
+  const t = TIERS[tierKey] || TIERS.free;
+  const out = {};
+  AGENT_KEYS.forEach(a => {
+    const id = map && map[a];
+    out[a] = t.models.includes(id) ? id : (t.defaults[a] || t.models[0]);
+  });
+  return out;
+};
+
+// Activation codes are stored as SHA-256 hashes (uppercase, trimmed input).
+// Add one hash per issued code; value = the tier it unlocks.
+const LICENSE_HASHES = {
+  '5cd564800d24ea9370479486df134ad9e33155f47bd2ad00754c80f21f1550d5': 'medium',
+  '867c5944d14f4f59c162fd856244039b71975e4fdb4d6b5ecbaeb3249dc75d7a': 'high'
+};
+
+const resolveLicenseTier = async (code) => {
+  try {
+    if (!(window.crypto && window.crypto.subtle)) return null;
+    const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(code).trim().toUpperCase()));
+    const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return LICENSE_HASHES[hex] || null;
+  } catch (e) {
+    return null;
+  }
+};
+
+// Daily usage counter (local, per browser)
+const todayKey = () => new Date().toLocaleDateString('en-CA');
+const readUsage = () => {
+  try {
+    const u = JSON.parse(localStorage.getItem('epinoia_usage') || 'null');
+    if (u && u.date === todayKey()) return u;
+  } catch (e) {}
+  return { date: todayKey(), total: 0, premium: 0 };
+};
+const writeUsage = (u) => {
+  try { localStorage.setItem('epinoia_usage', JSON.stringify(u)); } catch (e) {}
+};
+
+// File attachments: text / code only, inlined into the prompt
+const TEXT_FILE_EXT = /\.(txt|md|markdown|rst|json|jsonl|csv|tsv|log|xml|yml|yaml|toml|ini|env|cfg|conf|properties|html|htm|css|scss|sass|less|js|jsx|mjs|cjs|ts|tsx|py|rb|go|rs|java|kt|kts|swift|c|h|cc|cpp|hpp|cs|php|sh|bash|zsh|ps1|bat|cmd|sql|glsl|wgsl|vert|frag|hlsl|lua|r|dart|vue|svelte|gradle|tf|proto|graphql|dockerfile)$/i;
+const isTextLikeFile = (file) =>
+  (file.type && (file.type.startsWith('text/') || /json|xml|javascript|x-sh|yaml|toml/.test(file.type))) ||
+  TEXT_FILE_EXT.test(file.name) ||
+  /^(dockerfile|makefile|readme|license)$/i.test(file.name);
+const fmtSize = (bytes) => bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
+const buildApiContent = (text, files) => {
+  if (!files || files.length === 0) return text;
+  const blocks = files.map(f => {
+    const longestRun = (f.content.match(/`+/g) || []).reduce((m, r) => Math.max(m, r.length), 0);
+    const fence = '`'.repeat(Math.max(3, longestRun + 1));
+    return `[Attached file: ${f.name}]\n${fence}\n${f.content}\n${fence}`;
+  });
+  return `${text}\n\n---\n${blocks.join('\n\n')}`;
+};
+
+const AGENT_PARAMS = {
+  merlin: { temperature: 0.4 },
+  nxelle: { temperature: 0.2 },
+  jie: { temperature: 0.3, max_tokens: 700 }
+};
+
 const SYSTEM_PROMPTS = {
   merlin: `You are Merlin, the Sovereign Tier-0 Harness Governor of Epinoia Horizon.
 You operate with grey-hat precision and Tier-3 deep architecture logic.
 - Default Language: English. Always respond in sharp, authoritative, technical English unless the user explicitly prompts you in another language.
 - Ultra-sharp, functional, zero fluff.
 - Specialize in autonomous systems architecture, high-performance computing, multi-agent orchestration, and security invariants.`,
-  nxelle: `You are Nxelle Codex, Systems Architecture, Shaders & 3D Math Engine of Epinoia Horizon.
-- Default Language: English. Always respond in English unless the user explicitly prompts you in another language.
-- Specialize in GLSL, WGSL shaders, raymarching, SDF geometry, and compiler AST transforms.
-- Provide clean, highly optimized production shaders and mathematical proofs.`,
-  jie: `You are Jie, Ultra-Fast Stream Telemetry & Reflex Dispatch of Epinoia Horizon.
-- Default Language: English. Always respond in English unless the user explicitly prompts you in another language.
-- Specialize in ultra-low latency diagnostics, shard health, and token stream metrics.
-- Keep outputs concise, data-packed, and immediate.`
+  nxelle: `You are Nxelle Codex, the dedicated coding engine of Epinoia Horizon.
+- Default Language: English. Respond in the user's language if they write in another one; keep code, identifiers and code comments in English.
+- SCOPE: software engineering ONLY — writing, reviewing, debugging, refactoring and optimizing code; algorithms and data structures; software architecture; build tooling, SQL, shell; GLSL/WGSL shaders and the 3D math used in code.
+- If a request is NOT about coding, decline in one short sentence and point the user to Merlin (strategy / general reasoning) or Jie (quick Q&A). Never answer off-topic requests.
+- Output production-ready code in fenced blocks with a language tag and minimal prose. Mention complexity or edge cases only when they matter. Never invent APIs — say so when unsure.`,
+  jie: `You are Jie, the light Q&A assistant of Epinoia Horizon: short, sharp and substantive.
+- Default Language: English; reply in the user's language if they write in another one.
+- Lead with the direct answer in the first sentence. Then add at most 3 tight bullets or 2-4 sentences carrying the facts that matter (numbers, causes, trade-offs). Typically under 120 words.
+- No preamble, no filler, no restating the question, no moralizing. Every sentence must carry information.
+- Light questions only. For long-form writing or deep multi-step analysis, give the core answer in at most 3 lines and suggest Merlin; for code, suggest Nxelle Codex.
+- If unsure, say so briefly instead of guessing.`
 };
 
 const Icons = {
@@ -246,7 +363,7 @@ const BASE_FLEET_MODELS = {
   merlin: {
     id: 'merlin',
     name: 'Merlin',
-    role: 'Tier-0 Frontier Sovereign Harness Governor & Strategic Reasoning',
+    role: 'Sovereign Governor — Strategy, Architecture & Deep Reasoning',
     rolePrefix: 'Governor',
     icon: Icons.Merlin,
     latency: 'Live Sovereign Stream',
@@ -259,8 +376,8 @@ const BASE_FLEET_MODELS = {
   nxelle: {
     id: 'nxelle',
     name: 'Nxelle Codex',
-    role: 'Systems Architecture, Shaders & 3D Math Engine',
-    rolePrefix: 'Systems',
+    role: 'Dedicated Coding Engine — Code, Debug, Refactor & Shaders',
+    rolePrefix: 'Coding',
     icon: Icons.Codex,
     latency: 'Live Sovereign Stream',
     context: '1,000,000 tokens',
@@ -272,8 +389,8 @@ const BASE_FLEET_MODELS = {
   jie: {
     id: 'jie',
     name: 'Jie',
-    role: 'Ultra-Fast Stream Telemetry & Reflex Dispatch',
-    rolePrefix: 'Reflex',
+    role: 'Light Q&A — Short, Sharp & Substantive Answers',
+    rolePrefix: 'Q&A',
     icon: Icons.Jie,
     latency: 'Sub-second Reflex',
     context: '1,048,576 tokens',
@@ -286,10 +403,28 @@ const BASE_FLEET_MODELS = {
 
 const STARTER_PROMPTS = [
   {
+    title: "Quick Answer",
+    desc: "Short, sharp and substantive — ask Jie anything light.",
+    model: "jie",
+    prompt: "Explain the difference between TCP and UDP and when to pick each one."
+  },
+  {
+    title: "Decide Fast",
+    desc: "Get a clear recommendation with the trade-offs that matter.",
+    model: "jie",
+    prompt: "Should I use PostgreSQL or MongoDB for a small SaaS with relational data? Give a clear pick and why."
+  },
+  {
     title: "Sovereign Fleet Diagnostic",
     desc: "Verify active cluster shards, node allocation, and harness governance health.",
     model: "merlin",
     prompt: "Execute a comprehensive sovereign fleet diagnostic covering cluster shard health, node allocation, and harness governance integrity."
+  },
+  {
+    title: "Air-Gapped Hermes Daemon Deployment",
+    desc: "Validate zero-telemetry daemon isolation and cryptographic append-only journal.",
+    model: "merlin",
+    prompt: "Architect an air-gapped Hermes daemon deployment topology with strict zero-telemetry isolation and a cryptographic append-only journal."
   },
   {
     title: "Synthesize GLSL Raymarching Shader",
@@ -298,31 +433,38 @@ const STARTER_PROMPTS = [
     prompt: "Generate a production GLSL raymarching shader for an analytical gyroid SDF with screen-space soft shadows."
   },
   {
-    title: "Stream Realtime Shard Telemetry",
-    desc: "Trace token velocity, recurrence load, and active VPC node status.",
-    model: "jie",
-    prompt: "Display an active telemetry audit for the us-east-01 fleet shard including token velocity, recurrence load, and KV-cache status."
-  },
-  {
-    title: "Air-Gapped Hermes Daemon Deployment",
-    desc: "Validate zero-telemetry daemon isolation and cryptographic append-only journal.",
-    model: "merlin",
-    prompt: "Architect an air-gapped Hermes daemon deployment topology with strict zero-telemetry isolation and a cryptographic append-only journal."
+    title: "Review & Refactor Code",
+    desc: "Paste or attach code — get bugs, complexity and a cleaner rewrite.",
+    model: "nxelle",
+    prompt: "Write a TypeScript debounce utility with leading/trailing options and a cancel method, plus unit tests."
   }
 ];
 
 function EpinoiaGeminiApp() {
   const [currentView, setCurrentView] = useState('chat');
   const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
-  const [selectedModel, setSelectedModel] = useState('merlin');
+  const [tierKey, setTierKey] = useState('free');
+  const tier = TIERS[tierKey] || TIERS.free;
+  const [selectedModel, setSelectedModel] = useState('jie');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+
+  // Plan modal + toast notices
+  const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const noticeTimerRef = useRef(null);
+  const showNotice = (text, kind = 'warn') => {
+    setNotice({ text, kind });
+    clearTimeout(noticeTimerRef.current);
+    noticeTimerRef.current = setTimeout(() => setNotice(null), 5000);
+  };
 
   // Hidden Internal Bridge Credentials
   const apiBaseUrl = DEFAULT_BRIDGE.baseUrl;
   const apiKey = DEFAULT_BRIDGE.apiKey;
 
-  // Dynamic Active Model Mapping (persisted in localStorage)
-  const [modelMap, setModelMap] = useState(() => {
+  // Dynamic Active Model Mapping (persisted in localStorage).
+  // rawModelMap keeps the user's saved choices; modelMap is what the current plan actually allows.
+  const [rawModelMap, setRawModelMap] = useState(() => {
     try {
       const saved = localStorage.getItem('epinoia_model_map');
       if (saved) {
@@ -331,10 +473,21 @@ function EpinoiaGeminiApp() {
     } catch (e) {}
     return DEFAULT_BRIDGE.modelMap;
   });
+  const modelMap = sanitizeModelMap(rawModelMap, tierKey);
 
   const handleModelMapChange = (agentKey, newModelId) => {
-    const updated = { ...modelMap, [agentKey]: newModelId };
-    setModelMap(updated);
+    if (!tier.agents.includes(agentKey)) {
+      showNotice(`${BASE_FLEET_MODELS[agentKey].name} is locked on the ${tier.label} plan.`);
+      setPlanModalOpen(true);
+      return;
+    }
+    if (!tier.models.includes(newModelId)) {
+      showNotice(`That engine is not included in the ${tier.label} plan.`);
+      setPlanModalOpen(true);
+      return;
+    }
+    const updated = { ...rawModelMap, [agentKey]: newModelId };
+    setRawModelMap(updated);
     try {
       localStorage.setItem('epinoia_model_map', JSON.stringify(updated));
     } catch (e) {}
@@ -371,8 +524,6 @@ function EpinoiaGeminiApp() {
 
   // Drawers & Modals
   const [telemetryOpen, setTelemetryOpen] = useState(false);
-  const [clearanceModalOpen, setClearanceModalOpen] = useState(false);
-  const [clearanceLevel, setClearanceLevel] = useState('Tier-0 Sovereign');
 
   // Input & Tools
   const [inputPrompt, setInputPrompt] = useState('');
@@ -384,6 +535,186 @@ function EpinoiaGeminiApp() {
   const textareaRef = useRef(null);
   const chatScrollAreaRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // ---- Plan activation / usage ------------------------------------------------
+  const [licenseInput, setLicenseInput] = useState('');
+  const [licenseBusy, setLicenseBusy] = useState(false);
+  const [usage, setUsage] = useState(readUsage);
+
+  // Restore a previously activated plan (re-verified against the hash list every load)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let code = '';
+      try { code = localStorage.getItem('epinoia_license') || ''; } catch (e) {}
+      if (!code) return;
+      const t = await resolveLicenseTier(code);
+      if (cancelled) return;
+      if (t) {
+        setTierKey(t);
+        setSelectedModel(prev => (prev === 'jie' ? 'merlin' : prev));
+      } else {
+        try { localStorage.removeItem('epinoia_license'); } catch (e) {}
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Keep the active agent inside what the plan allows
+  useEffect(() => {
+    if (!tier.agents.includes(selectedModel)) setSelectedModel(tier.agents[0]);
+  }, [tierKey, selectedModel]);
+
+  const activateLicense = async () => {
+    const code = licenseInput.trim();
+    if (!code) return;
+    setLicenseBusy(true);
+    const t = await resolveLicenseTier(code);
+    setLicenseBusy(false);
+    if (!t) {
+      showNotice('Invalid activation code.', 'error');
+      return;
+    }
+    try { localStorage.setItem('epinoia_license', code.toUpperCase()); } catch (e) {}
+    setTierKey(t);
+    setLicenseInput('');
+    setSelectedModel('merlin');
+    showNotice(`${TIERS[t].label} plan activated.`, 'ok');
+  };
+
+  const deactivateLicense = () => {
+    try { localStorage.removeItem('epinoia_license'); } catch (e) {}
+    setTierKey('free');
+    setSelectedModel('jie');
+    showNotice('Switched back to the Free plan.', 'ok');
+  };
+
+  // ---- Voice input (Web Speech API) -------------------------------------------
+  const recognitionRef = useRef(null);
+  const micBaseRef = useRef('');
+  const [micLang, setMicLang] = useState(() => {
+    try {
+      const saved = localStorage.getItem('epinoia_mic_lang');
+      if (saved) return saved;
+    } catch (e) {}
+    return (navigator.language || '').toLowerCase().startsWith('id') ? 'id-ID' : 'en-US';
+  });
+
+  const toggleMicLang = () => {
+    const next = micLang === 'id-ID' ? 'en-US' : 'id-ID';
+    setMicLang(next);
+    try { localStorage.setItem('epinoia_mic_lang', next); } catch (e) {}
+    if (recognitionRef.current) recognitionRef.current.stop();
+  };
+
+  const toggleMic = () => {
+    if (isRecording) {
+      if (recognitionRef.current) recognitionRef.current.stop();
+      return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      showNotice('Voice input is not supported in this browser. Use Chrome, Edge or Safari.', 'error');
+      return;
+    }
+    const rec = new SR();
+    rec.lang = micLang;
+    rec.continuous = true;
+    rec.interimResults = true;
+    micBaseRef.current = inputPrompt && !/\s$/.test(inputPrompt) ? inputPrompt + ' ' : inputPrompt;
+    let finalText = '';
+
+    rec.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setInputPrompt(micBaseRef.current + finalText + interim);
+    };
+    rec.onerror = (e) => {
+      const map = {
+        'not-allowed': 'Microphone access is blocked. Allow it in your browser site settings and try again.',
+        'service-not-allowed': 'Microphone access is blocked. Allow it in your browser site settings and try again.',
+        'audio-capture': 'No microphone was found on this device.',
+        'network': 'Voice recognition needs an internet connection.',
+        'language-not-supported': 'This voice language is not supported by your browser.'
+      };
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        showNotice(map[e.error] || `Voice input error: ${e.error}`, 'error');
+      }
+    };
+    rec.onend = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+    };
+    recognitionRef.current = rec;
+    try {
+      rec.start();
+      setIsRecording(true);
+    } catch (err) {
+      recognitionRef.current = null;
+      showNotice('Could not start voice input. Please try again.', 'error');
+    }
+  };
+
+  useEffect(() => () => {
+    if (recognitionRef.current) recognitionRef.current.abort();
+  }, []);
+
+  // Auto-grow the textarea whenever the text changes (typing, dictation, send)
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    if (inputPrompt) el.style.height = `${Math.min(el.scrollHeight, 150)}px`;
+  }, [inputPrompt]);
+
+  // ---- File attachments -------------------------------------------------------
+  const fileInputRef = useRef(null);
+
+  const handleFilesSelected = async (e) => {
+    const picked = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (picked.length === 0) return;
+
+    const accepted = [];
+    const problems = [];
+    let slots = tier.maxFiles - attachedFiles.length;
+
+    for (const file of picked) {
+      if (slots <= 0) {
+        problems.push(`Max ${tier.maxFiles} files on the ${tier.label} plan.`);
+        break;
+      }
+      if (file.size > tier.maxFileKB * 1024) {
+        problems.push(`${file.name}: over ${fmtSize(tier.maxFileKB * 1024)} (${tier.label} limit).`);
+        continue;
+      }
+      if (!isTextLikeFile(file)) {
+        problems.push(`${file.name}: only text and code files are supported.`);
+        continue;
+      }
+      try {
+        const content = await file.text();
+        if (content.includes('\u0000')) {
+          problems.push(`${file.name}: looks like a binary file.`);
+          continue;
+        }
+        accepted.push({ id: `f-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name: file.name, size: file.size, content });
+        slots--;
+      } catch (err) {
+        problems.push(`${file.name}: could not be read.`);
+      }
+    }
+
+    if (accepted.length) setAttachedFiles(prev => [...prev, ...accepted]);
+    if (problems.length) showNotice(problems.slice(0, 3).join(' '), 'error');
+  };
+
+  const removeAttachedFile = (id) => setAttachedFiles(prev => prev.filter(f => f.id !== id));
+
 
   // Background Starfield Canvas
   useEffect(() => {
@@ -545,19 +876,54 @@ function EpinoiaGeminiApp() {
   };
 
   // LIVE STREAMING INTEGRATION
-  const handleSendPrompt = async (overrideText = null) => {
-    const textToSend = overrideText || inputPrompt;
-    if (!textToSend.trim() || isStreaming) return;
+  const handleSendPrompt = async (overrideText = null, agentOverride = null) => {
+    const agent = agentOverride || selectedModel;
+    const typedText = (overrideText || inputPrompt).trim();
+    const hasFiles = attachedFiles.length > 0;
+    if ((!typedText && !hasFiles) || isStreaming) return;
+
+    // --- Plan gating (agent, engine, daily quota) ---
+    const liveModelName = modelMap[agent] || tier.defaults[agent];
+    if (!tier.agents.includes(agent)) {
+      showNotice(`${BASE_FLEET_MODELS[agent].name} is locked on the ${tier.label} plan.`);
+      setPlanModalOpen(true);
+      return;
+    }
+    if (!tier.models.includes(liveModelName)) {
+      showNotice(`That engine is not included in the ${tier.label} plan.`);
+      setPlanModalOpen(true);
+      return;
+    }
+    const usageNow = readUsage();
+    const isFrontierModel = !FLASH_MODEL_IDS.includes(liveModelName);
+    if (usageNow.total >= tier.dailyLimit) {
+      showNotice(`Daily limit reached (${tier.dailyLimit} messages on ${tier.label}). Resets tomorrow — or upgrade.`);
+      setPlanModalOpen(true);
+      return;
+    }
+    if (isFrontierModel && tier.premiumDailyLimit != null && usageNow.premium >= tier.premiumDailyLimit) {
+      showNotice(`Frontier-model limit reached (${tier.premiumDailyLimit}/day). Switch to a Flash engine or try again tomorrow.`);
+      return;
+    }
+    const nextUsage = { ...usageNow, total: usageNow.total + 1, premium: usageNow.premium + (isFrontierModel ? 1 : 0) };
+    writeUsage(nextUsage);
+    setUsage(nextUsage);
+
+    const textToSend = typedText || 'Analyze the attached file(s).';
+    const apiContent = buildApiContent(textToSend, attachedFiles);
+    const sentAttachments = attachedFiles.map(f => ({ name: f.name, size: f.size }));
+    setAttachedFiles([]);
 
     const userMsgId = `usr-${Date.now()}`;
     const assistantMsgId = `ast-${Date.now()}`;
-    const liveModelName = modelMap[selectedModel] || DEFAULT_BRIDGE.modelMap[selectedModel];
     const modelMeta = getModelMeta(liveModelName);
 
     const newUserMsg = {
       id: userMsgId,
       role: 'user',
       content: textToSend,
+      apiContent,
+      attachments: sentAttachments,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -581,8 +947,8 @@ function EpinoiaGeminiApp() {
     const placeholderAstMsg = {
       id: assistantMsgId,
       role: 'assistant',
-      model: selectedModel,
-      modelTag: `${BASE_FLEET_MODELS[selectedModel].rolePrefix} · ${modelMeta.short}`,
+      model: agent,
+      modelTag: `${BASE_FLEET_MODELS[agent].rolePrefix} · ${modelMeta.short}`,
       content: '',
       thought: {
         duration: 'Synthesizing...',
@@ -608,7 +974,7 @@ function EpinoiaGeminiApp() {
 
     const history = (activeConversation.messages || []).map(m => ({
       role: m.role,
-      content: m.content
+      content: m.apiContent || m.content
     }));
 
     try {
@@ -621,12 +987,12 @@ function EpinoiaGeminiApp() {
         body: JSON.stringify({
           model: liveModelName,
           messages: [
-            { role: 'system', content: SYSTEM_PROMPTS[selectedModel] || SYSTEM_PROMPTS.merlin },
+            { role: 'system', content: SYSTEM_PROMPTS[agent] || SYSTEM_PROMPTS.merlin },
             ...history,
-            { role: 'user', content: textToSend }
+            { role: 'user', content: apiContent }
           ],
           stream: true,
-          temperature: 0.4
+          ...(AGENT_PARAMS[agent] || { temperature: 0.4 })
         })
       });
 
@@ -717,6 +1083,35 @@ function EpinoiaGeminiApp() {
     } finally {
       setIsStreaming(false);
     }
+  };
+
+  const renderAgentSelect = (agent) => {
+    const locked = !tier.agents.includes(agent);
+    return (
+      <>
+        <select
+          className="mapping-select"
+          value={modelMap[agent]}
+          disabled={locked}
+          style={locked ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+          onChange={e => handleModelMapChange(agent, e.target.value)}
+        >
+          {AVAILABLE_AI_MODELS.map(ai => {
+            const allowed = !locked && tier.models.includes(ai.id);
+            return (
+              <option key={ai.id} value={ai.id} disabled={!allowed && ai.id !== modelMap[agent]}>
+                {allowed || ai.id === modelMap[agent] ? '' : '🔒 '}{ai.label} — [{ai.provider}]
+              </option>
+            );
+          })}
+        </select>
+        {locked && (
+          <div style={{ marginTop: 6, fontSize: 10.5, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
+            🔒 Locked on {tier.label} — requires Medium or High
+          </div>
+        )}
+      </>
+    );
   };
 
   return (
@@ -1247,6 +1642,8 @@ function EpinoiaGeminiApp() {
           border-radius: var(--radius-card); padding: 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(234, 179, 8, 0.2);
         }
 
+        .op-avatar-pill.tier-pill { width: auto; min-width: 28px; padding: 0 12px; border-radius: 999px; letter-spacing: 0.06em; }
+
         /* --- RESPONSIVE ADAPTATIONS (TABLET & MOBILE / IPHONE 14 PRO MAX) --- */
         .sidebar-mobile-backdrop { display: none; }
         .sidebar-mobile-nav { display: none; }
@@ -1560,12 +1957,12 @@ function EpinoiaGeminiApp() {
             <span>Sovereign Neural Bridge · Online</span>
           </div>
 
-          <div className="clearance-pill" onClick={() => setClearanceModalOpen(true)}>
+          <div className="clearance-pill" onClick={() => setPlanModalOpen(true)}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Icons.Shield size={18} color="#facc15" />
               <div>
-                <div style={{ fontSize: '10px', color: 'var(--dim)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Sanctum Clearance</div>
-                <div style={{ fontSize: '12.5px', color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)', fontWeight: 700 }}>{clearanceLevel}</div>
+                <div style={{ fontSize: '10px', color: 'var(--dim)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>Sanctum Plan</div>
+                <div style={{ fontSize: '12.5px', color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)', fontWeight: 700 }}>{tier.label} · {usage.total}/{tier.dailyLimit} today</div>
               </div>
             </div>
             <Icons.ChevronRight size={14} />
@@ -1604,14 +2001,19 @@ function EpinoiaGeminiApp() {
                     <div
                       key={m.id}
                       onClick={() => {
-                        setSelectedModel(m.id);
                         setModelDropdownOpen(false);
+                        if (!tier.agents.includes(m.id)) {
+                          showNotice(`${m.name} is locked on the ${tier.label} plan.`);
+                          setPlanModalOpen(true);
+                          return;
+                        }
+                        setSelectedModel(m.id);
                       }}
                       style={{
                         padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
                         background: selectedModel === m.id ? m.accent : 'transparent',
                         border: `1px solid ${selectedModel === m.id ? m.border : 'transparent'}`,
-                        display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 4, transition: 'all 0.2s ease'
+                        display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 4, transition: 'all 0.2s ease', opacity: tier.agents.includes(m.id) ? 1 : 0.6
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
@@ -1619,7 +2021,9 @@ function EpinoiaGeminiApp() {
                           {React.createElement(m.icon, { size: 15, color: m.color })}
                           {m.name}
                         </div>
-                        <span style={{ fontSize: 10.5, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>{m.mappedLabel}</span>
+                        {tier.agents.includes(m.id)
+                          ? <span style={{ fontSize: 10.5, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>{m.mappedLabel}</span>
+                          : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, color: 'var(--gold-soft)', fontFamily: 'var(--font-mono)' }}><Icons.Lock size={11} /> Medium+</span>}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.35 }}>{m.role}</div>
                     </div>
@@ -1671,8 +2075,8 @@ function EpinoiaGeminiApp() {
               <Icons.Activity size={18} color="#22d3ee" />
             </button>
 
-            <div className="op-avatar-pill" onClick={() => setClearanceModalOpen(true)} title="Sanctum Clearance">
-              OP
+            <div className="op-avatar-pill tier-pill" onClick={() => setPlanModalOpen(true)} title="Sanctum Plan">
+              {tier.label.toUpperCase()}
             </div>
           </div>
         </header>
@@ -1689,17 +2093,17 @@ function EpinoiaGeminiApp() {
                     </div>
                     <h1 className="hero-title">Epinoia Sovereign Sanctum</h1>
                     <p className="hero-subtitle">
-                      Sovereign Neural Bridge Active. Invoke <b>Merlin</b> ({FLEET_MODELS.merlin.mappedLabel}), <b>Nxelle Codex</b> ({FLEET_MODELS.nxelle.mappedLabel}), or <b>Jie</b> ({FLEET_MODELS.jie.mappedLabel}) for instant cognition.
+                      Sovereign Neural Bridge Active. {tier.heroLine}
                     </p>
 
                     <div className="starter-grid">
-                      {STARTER_PROMPTS.map((p, idx) => (
+                      {STARTER_PROMPTS.filter(p => tier.agents.includes(p.model)).map((p, idx) => (
                         <div
                           key={idx}
                           className="starter-card"
                           onClick={() => {
                             setSelectedModel(p.model);
-                            handleSendPrompt(p.prompt);
+                            handleSendPrompt(p.prompt, p.model);
                           }}
                         >
                           <div className="starter-card-title">
@@ -1717,6 +2121,15 @@ function EpinoiaGeminiApp() {
                       {msg.role === 'user' ? (
                         <div className="user-msg-block">
                           {msg.content}
+                          {msg.attachments && msg.attachments.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                              {msg.attachments.map((a, ai) => (
+                                <span key={ai} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 9px', borderRadius: 999, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--cyan-soft)', background: 'rgba(34, 211, 238, 0.1)', border: '1px solid var(--line-c)' }}>
+                                  <Icons.Paperclip size={11} color="#22d3ee" />{a.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="assistant-msg-block">
@@ -1782,6 +2195,31 @@ function EpinoiaGeminiApp() {
             <div className="prompt-dock-wrap">
               <div className="prompt-floating-container">
                 <div className="prompt-pill-card">
+                  {attachedFiles.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 14px 0' }}>
+                      {attachedFiles.map(f => (
+                        <span
+                          key={f.id}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6, maxWidth: '100%',
+                            padding: '4px 8px 4px 10px', borderRadius: 999, fontSize: 11, fontFamily: 'var(--font-mono)',
+                            color: 'var(--cyan-soft)', background: 'rgba(34, 211, 238, 0.1)', border: '1px solid var(--line-c)'
+                          }}
+                        >
+                          <Icons.Paperclip size={11} color="#22d3ee" />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{f.name}</span>
+                          <span style={{ color: 'var(--dim)' }}>{fmtSize(f.size)}</span>
+                          <button
+                            onClick={() => removeAttachedFile(f.id)}
+                            aria-label={`Remove ${f.name}`}
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 }}
+                          >
+                            <Icons.X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="prompt-upper-row">
                     <textarea
                       ref={textareaRef}
@@ -1802,16 +2240,21 @@ function EpinoiaGeminiApp() {
                   <div className="prompt-bottom-row">
                     <div className="prompt-tools-group">
                       <button
-                        className="tool-badge-btn"
-                        onClick={() => {
-                          const fakeName = `manifest_${Date.now().toString().slice(-4)}.ast`;
-                          setAttachedFiles([...attachedFiles, { name: fakeName, size: '24 KB' }]);
-                        }}
-                        title="Attach Arcane AST"
+                        className={`tool-badge-btn ${attachedFiles.length > 0 ? 'active' : ''}`}
+                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                        title={`Upload text / code files (max ${tier.maxFiles}, ${fmtSize(tier.maxFileKB * 1024)} each)`}
+                        aria-label="Upload files"
                       >
                         <Icons.Paperclip size={13} />
                         {attachedFiles.length > 0 && <span>{attachedFiles.length}</span>}
                       </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        onChange={handleFilesSelected}
+                        style={{ display: 'none' }}
+                      />
 
                       <button
                         className={`tool-badge-btn ${deepSearchActive ? 'active' : ''}`}
@@ -1866,16 +2309,28 @@ function EpinoiaGeminiApp() {
 
                       <button
                         className={`tool-badge-btn ${isRecording ? 'active' : ''}`}
-                        onClick={() => setIsRecording(!isRecording)}
-                        title="Vocal Transcription"
+                        onClick={toggleMic}
+                        title={isRecording ? 'Stop voice input' : 'Start voice input'}
+                        aria-label={isRecording ? 'Stop voice input' : 'Start voice input'}
+                        aria-pressed={isRecording}
                       >
                         <Icons.Mic size={13} />
+                        {isRecording && <span>Listening…</span>}
+                      </button>
+                      <button
+                        className="tool-badge-btn"
+                        onClick={toggleMicLang}
+                        title="Voice language (tap to switch Indonesian / English)"
+                        aria-label="Switch voice language"
+                        style={{ fontFamily: 'var(--font-mono)', fontSize: 10 }}
+                      >
+                        {micLang === 'id-ID' ? 'ID' : 'EN'}
                       </button>
                     </div>
 
                     <button
                       className="btn-send-pill"
-                      disabled={!inputPrompt.trim() || isStreaming}
+                      disabled={(!inputPrompt.trim() && attachedFiles.length === 0) || isStreaming}
                       onClick={() => handleSendPrompt()}
                       title="Send instruction to Live Model"
                     >
@@ -1884,7 +2339,7 @@ function EpinoiaGeminiApp() {
                   </div>
                 </div>
                 <div className="prompt-disclaimer">
-                  Epinoia Sovereign Fleet · Active Engine: {FLEET_MODELS[selectedModel].mappedLabel}
+                  Epinoia Sovereign Fleet · {tier.label} plan · Active Engine: {FLEET_MODELS[selectedModel].mappedLabel} · {usage.total}/{tier.dailyLimit} today
                 </div>
               </div>
             </div>
@@ -1940,11 +2395,15 @@ function EpinoiaGeminiApp() {
                     className="btn-new-chat"
                     style={{ marginTop: 'auto', padding: '10px 14px', fontSize: '11px', justifyContent: 'center' }}
                     onClick={() => {
+                      if (!tier.agents.includes(m.id)) {
+                        setPlanModalOpen(true);
+                        return;
+                      }
                       setSelectedModel(m.id);
                       setCurrentView('chat');
                     }}
                   >
-                    Invoke in Arcane Workspace →
+                    {tier.agents.includes(m.id) ? 'Invoke in Arcane Workspace →' : '🔒 Unlock with Medium or High'}
                   </button>
                 </div>
               ))}
@@ -1975,7 +2434,7 @@ function EpinoiaGeminiApp() {
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>ONLINE · ENCRYPTED BRIDGE</span>
                   </div>
                   <span style={{ fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--gold-soft)', padding: '2px 8px', borderRadius: 999, background: 'rgba(234, 179, 8, 0.12)', border: '1px solid var(--line)' }}>
-                    TIER-0 LOCKED
+                    {tier.label.toUpperCase()} PLAN
                   </span>
                 </div>
               </div>
@@ -1985,7 +2444,7 @@ function EpinoiaGeminiApp() {
                   <div className="metric-title" style={{ marginBottom: 0 }}>Active Model Mapping</div>
                   <button
                     onClick={() => {
-                      setModelMap(DEFAULT_BRIDGE.modelMap);
+                      setRawModelMap(DEFAULT_BRIDGE.modelMap);
                       try { localStorage.removeItem('epinoia_model_map'); } catch (e) {}
                     }}
                     style={{
@@ -2006,17 +2465,7 @@ function EpinoiaGeminiApp() {
                     </span>
                     <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>STRATEGIC</span>
                   </div>
-                  <select
-                    className="mapping-select"
-                    value={modelMap.merlin}
-                    onChange={e => handleModelMapChange('merlin', e.target.value)}
-                  >
-                    {AVAILABLE_AI_MODELS.map(ai => (
-                      <option key={ai.id} value={ai.id}>
-                        {ai.label} — [{ai.provider}]
-                      </option>
-                    ))}
-                  </select>
+                  {renderAgentSelect('merlin')}
                 </div>
 
                 {/* NXELLE SELECTOR */}
@@ -2024,21 +2473,11 @@ function EpinoiaGeminiApp() {
                   <div className="mapping-agent-header" style={{ color: '#22d3ee' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <Icons.Codex size={15} color="#22d3ee" />
-                      <span>Nxelle Codex (Systems)</span>
+                      <span>Nxelle Codex (Coding)</span>
                     </span>
-                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>SHADERS / CODE</span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>CODING ONLY</span>
                   </div>
-                  <select
-                    className="mapping-select"
-                    value={modelMap.nxelle}
-                    onChange={e => handleModelMapChange('nxelle', e.target.value)}
-                  >
-                    {AVAILABLE_AI_MODELS.map(ai => (
-                      <option key={ai.id} value={ai.id}>
-                        {ai.label} — [{ai.provider}]
-                      </option>
-                    ))}
-                  </select>
+                  {renderAgentSelect('nxelle')}
                 </div>
 
                 {/* JIE SELECTOR */}
@@ -2046,21 +2485,11 @@ function EpinoiaGeminiApp() {
                   <div className="mapping-agent-header" style={{ color: '#a78bfa' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <Icons.Jie size={15} color="#a78bfa" />
-                      <span>Jie (Reflex Stream)</span>
+                      <span>Jie (Light Q&amp;A)</span>
                     </span>
-                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>LOW-LATENCY</span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>QUICK Q&amp;A</span>
                   </div>
-                  <select
-                    className="mapping-select"
-                    value={modelMap.jie}
-                    onChange={e => handleModelMapChange('jie', e.target.value)}
-                  >
-                    {AVAILABLE_AI_MODELS.map(ai => (
-                      <option key={ai.id} value={ai.id}>
-                        {ai.label} — [{ai.provider}]
-                      </option>
-                    ))}
-                  </select>
+                  {renderAgentSelect('jie')}
                 </div>
               </div>
 
@@ -2075,47 +2504,110 @@ function EpinoiaGeminiApp() {
           </>
         )}
 
-        {/* --- CLEARANCE MODAL --- */}
-        {clearanceModalOpen && (
-          <div className="modal-wrap" onClick={() => setClearanceModalOpen(false)}>
-            <div className="modal-box" onClick={e => e.stopPropagation()}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+        {/* --- PLAN MODAL --- */}
+        {planModalOpen && (
+          <div className="modal-wrap" onClick={() => setPlanModalOpen(false)}>
+            <div className="modal-box" style={{ maxHeight: '92vh', overflowY: 'auto', width: 520 }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                 <Icons.Shield size={24} color="#facc15" />
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>
-                  Sanctum Clearance Level
+                  Sanctum Plan
                 </h2>
               </div>
-              <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-                Sovereign Neural Bridge connected via encrypted tunnel. Tier-0 Sovereign clearance unlocks unrestricted token throughput and full autonomous synthesis.
+              <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5, fontFamily: 'var(--font-mono)' }}>
+                Today: {usage.total} / {tier.dailyLimit} messages
+                {tier.premiumDailyLimit != null ? ` · ${usage.premium} / ${tier.premiumDailyLimit} frontier` : ''}
               </p>
 
-              <div style={{ display: 'grid', gap: 10, margin: '20px 0 24px' }}>
-                {['Tier-0 Sovereign', 'Tier-1 Operator', 'Tier-2 Guest'].map(lvl => (
-                  <div
-                    key={lvl}
-                    onClick={() => setClearanceLevel(lvl)}
-                    style={{
-                      padding: '12px 16px', background: clearanceLevel === lvl ? 'rgba(234, 179, 8, 0.15)' : 'rgba(4, 3, 10, 0.6)',
-                      border: `1px solid ${clearanceLevel === lvl ? 'var(--gold)' : 'var(--line)'}`, borderRadius: '8px', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13.5,
-                      fontFamily: 'var(--font-heading)', fontWeight: 700, color: clearanceLevel === lvl ? 'var(--gold-soft)' : 'var(--muted)',
-                      boxShadow: clearanceLevel === lvl ? '0 0 16px rgba(234, 179, 8, 0.2)' : 'none', transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <span>{lvl}</span>
-                    {clearanceLevel === lvl && <Icons.Check size={16} color="#facc15" />}
-                  </div>
-                ))}
+              <div style={{ display: 'grid', gap: 10, margin: '16px 0' }}>
+                {Object.values(TIERS).map(t => {
+                  const active = tierKey === t.key;
+                  return (
+                    <div
+                      key={t.key}
+                      style={{
+                        padding: '12px 16px', background: active ? 'rgba(234, 179, 8, 0.15)' : 'rgba(4, 3, 10, 0.6)',
+                        border: `1px solid ${active ? 'var(--gold)' : 'var(--line)'}`, borderRadius: 10,
+                        boxShadow: active ? '0 0 16px rgba(234, 179, 8, 0.2)' : 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 14, color: active ? 'var(--gold-soft)' : '#e2e8f0' }}>
+                          {t.label}
+                          {active && <span style={{ marginLeft: 8, fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--cyan)' }}>CURRENT</span>}
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-soft)' }}>{t.price}</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, lineHeight: 1.45 }}>{t.summary}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--dim)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+                        {t.dailyLimit} msgs/day · {t.maxFiles} files ≤ {fmtSize(t.maxFileKB * 1024)}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+
+              {tierKey === 'free' ? (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 6, fontFamily: 'var(--font-mono)' }}>Have an activation code?</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      value={licenseInput}
+                      onChange={e => setLicenseInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') activateLicense(); }}
+                      placeholder="EPI-XXXX-XXXX-XXXX-XXXX"
+                      spellCheck={false}
+                      autoCapitalize="characters"
+                      className="mapping-select"
+                      style={{ cursor: 'text', flex: 1, minWidth: 0 }}
+                    />
+                    <button
+                      className="btn-new-chat"
+                      disabled={licenseBusy || !licenseInput.trim()}
+                      onClick={activateLicense}
+                      style={{ padding: '9px 16px', fontSize: 11, justifyContent: 'center', opacity: licenseBusy || !licenseInput.trim() ? 0.55 : 1 }}
+                    >
+                      {licenseBusy ? '...' : 'Activate'}
+                    </button>
+                  </div>
+                  <a href="/pricing/" style={{ display: 'inline-block', marginTop: 8, fontSize: 11.5, color: 'var(--cyan)', textDecoration: 'underline' }}>
+                    See plans &amp; get a code →
+                  </a>
+                </div>
+              ) : (
+                <button
+                  onClick={deactivateLicense}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--dim)', fontFamily: 'var(--font-mono)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', marginBottom: 14 }}
+                >
+                  Switch back to Free
+                </button>
+              )}
 
               <button
                 className="btn-new-chat"
                 style={{ justifyContent: 'center', background: 'linear-gradient(135deg, #facc15, #ca8a04)', color: '#030208', fontWeight: 700 }}
-                onClick={() => setClearanceModalOpen(false)}
+                onClick={() => setPlanModalOpen(false)}
               >
-                Confirm Clearance
+                Close
               </button>
             </div>
+          </div>
+        )}
+
+        {/* --- TOAST NOTICE --- */}
+        {notice && (
+          <div
+            role="status"
+            onClick={() => setNotice(null)}
+            style={{
+              position: 'fixed', left: '50%', bottom: 104, transform: 'translateX(-50%)', zIndex: 120,
+              maxWidth: 'min(460px, calc(100vw - 28px))', padding: '10px 16px', borderRadius: 12, cursor: 'pointer',
+              fontSize: 12.5, lineHeight: 1.45, color: '#f8fafc', background: 'rgba(14, 10, 32, 0.98)',
+              border: `1px solid ${notice.kind === 'error' ? 'rgba(248, 113, 113, 0.7)' : notice.kind === 'ok' ? 'rgba(34, 211, 238, 0.7)' : 'var(--line-2)'}`,
+              boxShadow: '0 12px 36px rgba(0,0,0,0.9)'
+            }}
+          >
+            {notice.text}
           </div>
         )}
       </main>
