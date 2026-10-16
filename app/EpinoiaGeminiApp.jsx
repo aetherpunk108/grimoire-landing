@@ -20,7 +20,7 @@ const SYSTEM_PROMPTS = {
 You operate with grey-hat precision and Tier-3 deep architecture logic.
 - Ultra-sharp, functional, zero fluff.
 - Language: Indonesian slang / technical English mix when relevant, direct, confident.
-- Specialize in cognitive architecture, selective SSM gates (Δ, B, C), multi-agent orchestration, and system security invariants.`,
+- Specialize in autonomous systems architecture, high-performance computing, multi-agent orchestration, and security invariants.`,
   nxelle: `You are Nxelle Codex, Systems Architecture, Shaders & 3D Math Engine of Epinoia Horizon.
 - Specialize in GLSL, WGSL shaders, raymarching, SDF geometry, and compiler AST transforms.
 - Provide clean, highly optimized production shaders and mathematical proofs.`,
@@ -227,10 +227,10 @@ const FLEET_MODELS = {
 
 const STARTER_PROMPTS = [
   {
-    title: "Audit Tier-3 Cognitive Pulse",
-    desc: "Target input-dependent selectivity gates (Δ, B, C) in sovereign SSM architecture.",
+    title: "Sovereign Fleet Diagnostic",
+    desc: "Verify active cluster shards, node allocation, and harness governance health.",
     model: "merlin",
-    prompt: "Lakukan Tier-3 cognitive pulse audit pada layer x_proj dan dt_proj untuk adaptasi dynamic reasoning style."
+    prompt: "Lakukan diagnostik status node dan integritas harness sovereign fleet."
   },
   {
     title: "Synthesize GLSL Raymarching Shader",
@@ -328,73 +328,13 @@ export default function EpinoiaGeminiApp() {
   // Conversations State
   const [conversations, setConversations] = useState([
     {
-      id: 'conv-1',
-      title: 'Cognitive Pulse SSM Architecture',
-      date: 'Today',
-      messages: [
-        {
-          id: 'm1',
-          role: 'user',
-          content: 'Lakukan audit Tier-3 pada mekanisme gate selektif SSM. Bagaimana bypass computational bottleneck pada scan sequence panjang?',
-          timestamp: '14:20'
-        },
-        {
-          id: 'm2',
-          role: 'assistant',
-          model: 'merlin',
-          content: `### Tier-3 Architecture Audit: Input-Dependent Selectivity Injection
-
-Untuk meloloskan scan sequence panjang tanpa degradasi memory throughput, kita langsung melakukan intervensi bedah pada gate proyeksi input:
-
-Recurrence Invariant:
-h_t = A_bar * h_{t-1} + B_bar * x_t
-y_t = C * h_t
-
-1. Selective Gate Surgery (x_proj -> Δ, B, C):
-- Menghindari standard dense layer. Terapkan rank-16 low-rank factorization langsung di jalur Δ projection.
-- Inject fused hardware scan (torch.addcmul level kernel) untuk memotong kompleksitas scan dari O(L) menjadi O(log L) via parallel associative scan.
-
-\`\`\`python
-# Merlin Tier-3 Fused SSM Kernel Injection
-import torch
-import torch.nn as nn
-
-class SovereignCognitivePulse(nn.Module):
-    def __init__(self, d_model=2048, d_state=64, dt_rank=32):
-        super().__init__()
-        self.d_model = d_model
-        self.d_state = d_state
-        # Direct surgical targeting of selectivity gates (Delta, B, C)
-        self.x_proj = nn.Linear(d_model, dt_rank + d_state * 2, bias=False)
-        self.dt_proj = nn.Linear(dt_rank, d_model, bias=True)
-        
-    @torch.compile(mode="max-autotune")
-    def forward(self, u):
-        # Hardware-aware fused associative recurrence
-        B, L, D = u.shape
-        pulse = self.x_proj(u)
-        delta, B_gate, C_gate = torch.split(pulse, [32, self.d_state, self.d_state], dim=-1)
-        dt = torch.nn.functional.softplus(self.dt_proj(delta))
-        return dt, B_gate, C_gate
-\`\`\`
-
-2. Invariance & Air-Gap Guarantee:
-Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress jaringan dinonaktifkan secara kernel-level pada seluruh node cluster.`,
-          thought: {
-            duration: '4.8s',
-            steps: [
-              { name: 'Query AST Parsing', time: '120ms', status: 'complete', detail: 'Decomposed mathematical recurrence tensors & selective projection matrix.' },
-              { name: 'Sovereign Gate Clearance', time: '210ms', status: 'complete', detail: 'Verified Tier-0 security policy; verified zero external telemetry egress.' },
-              { name: 'Selective SSM Kernel Synthesis', time: '3,840ms', status: 'complete', detail: 'Compiled Kogge-Stone fused scan AST with torch.compile max-autotune.' },
-              { name: 'Anti-Hallucination Matrix Audit', time: '630ms', status: 'complete', detail: 'Checked numerical stability under BF16 mixed-precision envelope.' }
-            ]
-          },
-          timestamp: '14:21'
-        }
-      ]
+      id: 'conv-init',
+      title: 'New Sovereign Thread',
+      date: 'Just now',
+      messages: []
     }
   ]);
-  const [activeConvId, setActiveConvId] = useState('conv-1');
+  const [activeConvId, setActiveConvId] = useState('conv-init');
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1573,7 +1513,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                                 <div className="thought-header" onClick={() => toggleThought(msg.id)}>
                                   <div className="thought-title-group">
                                     <Icons.Brain size={15} color="#22d3ee" />
-                                    <span>Cognitive Pulse: {msg.thought.duration}</span>
+                                    <span>Thought for {msg.thought.duration}</span>
                                     <span className="thought-timing-pill">{msg.thought.steps.length} Arcane Gates</span>
                                   </div>
                                   {expandedThoughts[msg.id] ? <Icons.ChevronDown size={14} /> : <Icons.ChevronRight size={14} />}
