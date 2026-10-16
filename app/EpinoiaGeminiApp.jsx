@@ -35,7 +35,8 @@ const AVAILABLE_AI_MODELS = [
 ];
 
 const DEFAULT_BRIDGE = {
-  baseUrl: 'https://clariohub.id/v1',
+  baseUrl: 'https://muddy-term-6b8d.epinoiahorizon.workers.dev/v1',
+  authUrl: 'https://muddy-term-6b8d.epinoiahorizon.workers.dev',
   apiKey: 'sk-clario-b1571fb8c1225e33513b13c5ee5f096af76aaa3d03cb5403',
   modelMap: {
     merlin: 'clario/deepseek-v4.1-flash-auto',
@@ -742,7 +743,8 @@ function EpinoiaGeminiApp() {
     if (e) e.preventDefault();
     setAuthBusy(true);
     setAuthError('');
-    const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    const authBase = DEFAULT_BRIDGE.authUrl || '';
+    const endpoint = `${authBase}${authMode === 'register' ? '/api/auth/register' : '/api/auth/login'}`;
 
     try {
       // Direct call to Cloudflare Worker endpoint if active, with graceful fallback
@@ -1030,11 +1032,14 @@ function EpinoiaGeminiApp() {
     }));
 
     try {
+      const jwtToken = localStorage.getItem('epinoia_jwt');
+      const authHeaderVal = jwtToken ? `Bearer ${jwtToken}` : `Bearer ${apiKey}`;
+
       const response = await fetch(`${apiBaseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': authHeaderVal
         },
         body: JSON.stringify({
           model: liveModelName,
