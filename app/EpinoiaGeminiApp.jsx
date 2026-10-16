@@ -254,7 +254,7 @@ const STARTER_PROMPTS = [
 
 export default function EpinoiaGeminiApp() {
   const [currentView, setCurrentView] = useState('chat');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
   const [selectedModel, setSelectedModel] = useState('merlin');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
 
@@ -1114,14 +1114,205 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           margin: 16px 0 22px; outline: none;
         }
 
-        @media (max-width: 960px) {
-          .nav-links { display: none; }
-          .epi-sidebar { position: absolute; height: 100%; }
-          .matrix-grid { grid-template-columns: 1fr; }
-          .starter-grid { grid-template-columns: 1fr; }
-          .telemetry-drawer { width: 100%; }
+        /* --- RESPONSIVE ADAPTATIONS (MOBILE & TABLET) --- */
+        .sidebar-mobile-backdrop { display: none; }
+        .sidebar-mobile-nav { display: none; }
+
+        /* TABLET & MOBILE (<1024px) */
+        @media (max-width: 1024px) {
+          .epi-sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 290px;
+            z-index: 100;
+            box-shadow: 15px 0 45px rgba(0,0,0,0.95);
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-left: 0 !important;
+            transform: translateX(0);
+          }
+          .epi-sidebar.collapsed {
+            transform: translateX(-100%);
+          }
+          .sidebar-mobile-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 2, 8, 0.78);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 95;
+            animation: fadeIn 0.2s ease;
+          }
+          .sidebar-mobile-nav {
+            display: block;
+            padding: 8px 12px;
+            border-top: 1px solid rgba(234, 179, 8, 0.12);
+          }
+          .matrix-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+          }
+          .nav-links {
+            display: none;
+          }
+        }
+
+        /* MOBILE (<768px) */
+        @media (max-width: 768px) {
+          .workspace-header {
+            height: 58px;
+            padding: 0 12px;
+            gap: 8px;
+          }
+          .header-left {
+            gap: 8px;
+          }
+          .model-selector-pill {
+            padding: 6px 10px;
+            font-size: 12px;
+            gap: 6px;
+          }
+          .model-pill-tag {
+            display: none !important;
+          }
+          .view-segmented-wrap {
+            padding: 2px;
+          }
+          .view-btn {
+            padding: 6px 10px;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            gap: 4px;
+          }
+          .header-right {
+            gap: 8px;
+          }
+
+          /* Chat area on mobile */
+          .chat-scroll-content {
+            padding: 16px 12px 165px;
+            gap: 16px;
+          }
+          .user-msg-block {
+            max-width: 92%;
+            padding: 11px 15px;
+            font-size: 13.5px;
+            line-height: 1.5;
+          }
+          .assistant-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+          }
+          .thought-header {
+            padding: 8px 12px;
+          }
+          .thought-title-group {
+            font-size: 11px;
+            gap: 6px;
+          }
+          .thought-timing-pill {
+            font-size: 9.5px;
+            padding: 1px 6px;
+          }
+          .code-pre {
+            padding: 12px 14px;
+            font-size: 11.5px;
+          }
+          .starter-hero {
+            padding: 20px 0 16px;
+          }
+          .hero-glyph {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 14px;
+          }
+          .hero-title {
+            font-size: 22px;
+          }
+          .hero-subtitle {
+            font-size: 13px;
+          }
+          .starter-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 20px;
+          }
+          .starter-card {
+            padding: 14px 16px;
+          }
+
+          /* Floating prompt pill on mobile */
+          .prompt-floating-container {
+            bottom: 10px;
+            width: calc(100% - 16px);
+            max-width: 100%;
+          }
+          .prompt-pill-card {
+            padding: 8px 12px 6px 14px;
+            border-radius: 20px;
+            gap: 4px;
+          }
+          .prompt-textarea {
+            font-size: 13.5px;
+          }
+          .prompt-textarea::placeholder {
+            font-size: 12px;
+          }
+          .prompt-tools-group {
+            gap: 5px;
+            overflow-x: auto;
+            max-width: calc(100% - 46px);
+            scrollbar-width: none;
+          }
+          .prompt-tools-group::-webkit-scrollbar {
+            display: none;
+          }
+          .tool-badge-btn {
+            padding: 5px 8px;
+            font-size: 10px;
+            white-space: nowrap;
+          }
+          .btn-send-pill {
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+          }
+          .prompt-disclaimer {
+            display: none;
+          }
+
+          /* Overview on mobile */
+          .overview-container {
+            padding: 20px 14px 80px;
+          }
+          .overview-title {
+            font-size: 24px;
+          }
+          .overview-subtitle {
+            font-size: 13.5px;
+          }
+          .matrix-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+          }
+          .telemetry-drawer {
+            width: 100%;
+            padding: 20px 16px;
+          }
+          .modal-box {
+            width: calc(100% - 32px);
+            padding: 22px 18px;
+          }
         }
       `}</style>
+
+      {/* --- SIDEBAR BACKDROP OVERLAY (MOBILE/TABLET) --- */}
+      {sidebarOpen && (
+        <div className="sidebar-mobile-backdrop" onClick={() => setSidebarOpen(false)} />
+      )}
 
       {/* --- SIDEBAR DRAWER --- */}
       <aside className={`epi-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
@@ -1175,6 +1366,39 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           ))}
         </div>
 
+        {/* MOBILE NAVIGATION LINKS */}
+        <div className="sidebar-mobile-nav">
+          <div className="sidebar-section-title">Navigation</div>
+          <a href="/" className="sidebar-history-item">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Icons.Eye size={14} color="#facc15" />
+              <span>Sanctum</span>
+            </span>
+            <Icons.ChevronRight size={12} />
+          </a>
+          <a href="/docs/" className="sidebar-history-item">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Icons.Spark size={14} color="#facc15" />
+              <span>Docs</span>
+            </span>
+            <Icons.ChevronRight size={12} />
+          </a>
+          <a href="/pricing/" className="sidebar-history-item">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Icons.Shield size={14} color="#facc15" />
+              <span>Pricing</span>
+            </span>
+            <Icons.ChevronRight size={12} />
+          </a>
+          <a href="/store/" className="sidebar-history-item" style={{ color: 'var(--gold)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>💎</span>
+              <span>Vault Store</span>
+            </span>
+            <Icons.ChevronRight size={12} />
+          </a>
+        </div>
+
         <div className="sidebar-bottom">
           <div className="bridge-status-pill">
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22d3ee', boxShadow: '0 0 8px #22d3ee' }} />
@@ -1213,7 +1437,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
               <button className="model-selector-pill" onClick={() => setModelDropdownOpen(!modelDropdownOpen)}>
                 {React.createElement(FLEET_MODELS[selectedModel].icon, { size: 16, color: FLEET_MODELS[selectedModel].color })}
                 <span>{FLEET_MODELS[selectedModel].name}</span>
-                <span style={{ fontSize: 10.5, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
+                <span className="model-pill-tag" style={{ fontSize: 10.5, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
                   {FLEET_MODELS[selectedModel].tag}
                 </span>
                 <Icons.ChevronDown size={14} />
@@ -1397,7 +1621,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                   <textarea
                     ref={textareaRef}
                     className="prompt-textarea"
-                    placeholder={`Inscribe instruction to ${FLEET_MODELS[selectedModel].name} (Live Clario Bridge)...`}
+                    placeholder={`Inscribe instruction to ${FLEET_MODELS[selectedModel].name}...`}
                     rows={1}
                     value={inputPrompt}
                     onChange={handleInputChange}
