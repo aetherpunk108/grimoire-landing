@@ -2,8 +2,31 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // ============================================================================
 // EPINOIA HORIZON · MERLIN ARCANE FLEET
-// Live Neural Bridge: clariohub.id v1 | Sovereign Architecture
+// Sovereign Neural Architecture
 // ============================================================================
+
+const AVAILABLE_AI_MODELS = [
+  { id: 'clario/deepseek-v4.1-flash-auto', label: 'DeepSeek V4.1 Flash (Auto)', short: 'DeepSeek-v4.1', provider: 'DeepSeek' },
+  { id: 'clario/deepseek-v4-pro', label: 'DeepSeek V4 Pro', short: 'DeepSeek-v4-Pro', provider: 'DeepSeek' },
+  { id: 'clario/deepseek-v4-pro-0813', label: 'DeepSeek V4 Pro (0813)', short: 'DeepSeek-v4-Pro-0813', provider: 'DeepSeek' },
+  { id: 'clario/deepseek-v4.1-flash', label: 'DeepSeek V4.1 Flash', short: 'DeepSeek-v4.1-Flash', provider: 'DeepSeek' },
+  { id: 'clario/deepseek-v4-flash', label: 'DeepSeek V4 Flash', short: 'DeepSeek-v4-Flash', provider: 'DeepSeek' },
+  { id: 'clario/glm-5.3-flash-auto', label: 'GLM 5.3 Flash (Auto)', short: 'GLM-5.3', provider: 'Zhipu GLM' },
+  { id: 'clario/glm-5.3', label: 'GLM 5.3 Sovereign', short: 'GLM-5.3-Pro', provider: 'Zhipu GLM' },
+  { id: 'clario/glm-5.2', label: 'GLM 5.2', short: 'GLM-5.2', provider: 'Zhipu GLM' },
+  { id: 'clario/gemini-3.8-flash', label: 'Gemini 3.8 Flash', short: 'Gemini-3.8-Flash', provider: 'Google' },
+  { id: 'clario/gemini-3.7-flash-auto', label: 'Gemini 3.7 Flash (Auto)', short: 'Gemini-3.7-Flash', provider: 'Google' },
+  { id: 'clario/gemini-3.1-pro', label: 'Gemini 3.1 Pro', short: 'Gemini-3.1-Pro', provider: 'Google' },
+  { id: 'clario/opus-5', label: 'Claude Opus 5', short: 'Opus-5', provider: 'Anthropic' },
+  { id: 'clario/gpt-6-astra', label: 'GPT 6 Astra', short: 'GPT-6-Astra', provider: 'OpenAI' },
+  { id: 'clario/gpt-5.6-sol', label: 'GPT 5.6 Sol', short: 'GPT-5.6-Sol', provider: 'OpenAI' },
+  { id: 'clario/gpt-5.6-luna', label: 'GPT 5.6 Luna', short: 'GPT-5.6-Luna', provider: 'OpenAI' },
+  { id: 'clario/kimi-k3', label: 'Kimi K3 (1M Context)', short: 'Kimi-K3', provider: 'Moonshot' },
+  { id: 'clario/kimi-k2.8-preview', label: 'Kimi K2.8 Preview', short: 'Kimi-K2.8', provider: 'Moonshot' },
+  { id: 'clario/minimax-m3', label: 'MiniMax M3', short: 'MiniMax-M3', provider: 'MiniMax' },
+  { id: 'clario/minimax-m2.7', label: 'MiniMax M2.7', short: 'MiniMax-M2.7', provider: 'MiniMax' },
+  { id: 'clario/hy4-preview', label: 'Hunyuan 4 Preview', short: 'Hunyuan-4', provider: 'Tencent' }
+];
 
 const DEFAULT_BRIDGE = {
   baseUrl: 'https://clariohub.id/v1',
@@ -180,16 +203,15 @@ const Icons = {
   )
 };
 
-const FLEET_MODELS = {
+const BASE_FLEET_MODELS = {
   merlin: {
     id: 'merlin',
     name: 'Merlin',
     role: 'Tier-0 Frontier Sovereign Harness Governor & Strategic Reasoning',
-    tag: 'Governor · DeepSeek-v4.1',
+    rolePrefix: 'Governor',
     icon: Icons.Merlin,
-    latency: 'Live Clario Stream',
-    context: '128,000 tokens',
-    arch: 'DeepSeek-v4.1 Flash via ClarioHub',
+    latency: 'Live Sovereign Stream',
+    context: '1,000,000 tokens',
     thinkingDefault: 'High',
     color: '#facc15',
     accent: 'rgba(250, 204, 21, 0.15)',
@@ -199,11 +221,10 @@ const FLEET_MODELS = {
     id: 'nxelle',
     name: 'Nxelle Codex',
     role: 'Systems Architecture, Shaders & 3D Math Engine',
-    tag: 'Systems · DeepSeek-v4-Pro',
+    rolePrefix: 'Systems',
     icon: Icons.Codex,
-    latency: 'Live Clario Stream',
-    context: '64,000 tokens',
-    arch: 'DeepSeek-v4-Pro via ClarioHub',
+    latency: 'Live Sovereign Stream',
+    context: '1,000,000 tokens',
     thinkingDefault: 'Mid',
     color: '#22d3ee',
     accent: 'rgba(34, 211, 238, 0.15)',
@@ -213,11 +234,10 @@ const FLEET_MODELS = {
     id: 'jie',
     name: 'Jie',
     role: 'Ultra-Fast Stream Telemetry & Reflex Dispatch',
-    tag: 'Reflex · GLM-5.3',
+    rolePrefix: 'Reflex',
     icon: Icons.Jie,
     latency: 'Sub-second Reflex',
-    context: '128,000 tokens',
-    arch: 'GLM-5.3 Flash Auto via ClarioHub',
+    context: '1,048,576 tokens',
     thinkingDefault: 'Low',
     color: '#a78bfa',
     accent: 'rgba(167, 139, 250, 0.15)',
@@ -258,15 +278,57 @@ export default function EpinoiaGeminiApp() {
   const [selectedModel, setSelectedModel] = useState('merlin');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
 
-  // Neural Bridge API Configuration State
-  const [apiBaseUrl, setApiBaseUrl] = useState(() => localStorage.getItem('clario_base_url') || DEFAULT_BRIDGE.baseUrl);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('clario_api_key') || DEFAULT_BRIDGE.apiKey);
-  const [bridgeConnected, setBridgeConnected] = useState(true);
+  // Hidden Internal Bridge Credentials
+  const apiBaseUrl = DEFAULT_BRIDGE.baseUrl;
+  const apiKey = DEFAULT_BRIDGE.apiKey;
+
+  // Dynamic Active Model Mapping (persisted in localStorage)
+  const [modelMap, setModelMap] = useState(() => {
+    try {
+      const saved = localStorage.getItem('epinoia_model_map');
+      if (saved) {
+        return { ...DEFAULT_BRIDGE.modelMap, ...JSON.parse(saved) };
+      }
+    } catch (e) {}
+    return DEFAULT_BRIDGE.modelMap;
+  });
+
+  const handleModelMapChange = (agentKey, newModelId) => {
+    const updated = { ...modelMap, [agentKey]: newModelId };
+    setModelMap(updated);
+    try {
+      localStorage.setItem('epinoia_model_map', JSON.stringify(updated));
+    } catch (e) {}
+  };
+
+  const getModelMeta = (modelId) => {
+    return AVAILABLE_AI_MODELS.find(m => m.id === modelId) || {
+      id: modelId,
+      label: modelId.replace('clario/', ''),
+      short: modelId.replace('clario/', ''),
+      provider: 'Sovereign'
+    };
+  };
+
+  // Compute dynamic FLEET_MODELS with active mapped AI info
+  const FLEET_MODELS = Object.keys(BASE_FLEET_MODELS).reduce((acc, key) => {
+    const base = BASE_FLEET_MODELS[key];
+    const mappedId = modelMap[key] || DEFAULT_BRIDGE.modelMap[key];
+    const meta = getModelMeta(mappedId);
+    acc[key] = {
+      ...base,
+      mappedId,
+      mappedLabel: meta.label,
+      tag: `${base.rolePrefix} · ${meta.short}`,
+      arch: `${meta.label} (${meta.provider} Core)`
+    };
+    return acc;
+  }, {});
 
   // Thinking Features
   const [thinkingBudget, setThinkingBudget] = useState('high');
   const [thinkingPopoverOpen, setThinkingPopoverOpen] = useState(false);
-  const [expandedThoughts, setExpandedThoughts] = useState({ 'm2': true });
+  const [expandedThoughts, setExpandedThoughts] = useState({});
 
   // Drawers & Modals
   const [telemetryOpen, setTelemetryOpen] = useState(false);
@@ -281,7 +343,7 @@ export default function EpinoiaGeminiApp() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const textareaRef = useRef(null);
-  const chatBottomRef = useRef(null);
+  const chatScrollAreaRef = useRef(null);
   const canvasRef = useRef(null);
 
   // Background Starfield Canvas
@@ -299,7 +361,7 @@ export default function EpinoiaGeminiApp() {
     };
     window.addEventListener('resize', onResize);
 
-    const stars = Array.from({ length: 90 }, () => ({
+    const stars = Array.from({ length: 75 }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
       size: Math.random() * 1.5 + 0.5,
@@ -325,7 +387,7 @@ export default function EpinoiaGeminiApp() {
     };
   }, []);
 
-  // Conversations State
+  // Conversations State — Clean Slate: Starts with empty New Sovereign Thread
   const [conversations, setConversations] = useState([
     {
       id: 'conv-init',
@@ -336,17 +398,21 @@ export default function EpinoiaGeminiApp() {
   ]);
   const [activeConvId, setActiveConvId] = useState('conv-init');
 
-  useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversations, isStreaming]);
-
   const activeConversation = conversations.find(c => c.id === activeConvId) || conversations[0];
+
+  // Safe inner scroll that NEVER shifts window/header on iOS Safari
+  useEffect(() => {
+    if (chatScrollAreaRef.current && activeConversation.messages.length > 0) {
+      const el = chatScrollAreaRef.current;
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    }
+  }, [conversations, isStreaming]);
 
   const handleInputChange = (e) => {
     setInputPrompt(e.target.value);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
     }
   };
 
@@ -361,6 +427,9 @@ export default function EpinoiaGeminiApp() {
     setConversations([newConv, ...conversations]);
     setActiveConvId(newId);
     setInputPrompt('');
+    if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+      setSidebarOpen(false);
+    }
   };
 
   const toggleThought = (msgId) => {
@@ -436,15 +505,15 @@ export default function EpinoiaGeminiApp() {
     });
   };
 
-  // LIVE CLARIO STREAMING INTEGRATION
+  // LIVE STREAMING INTEGRATION
   const handleSendPrompt = async (overrideText = null) => {
     const textToSend = overrideText || inputPrompt;
     if (!textToSend.trim() || isStreaming) return;
 
     const userMsgId = `usr-${Date.now()}`;
     const assistantMsgId = `ast-${Date.now()}`;
-    const activeModelObj = FLEET_MODELS[selectedModel];
-    const liveModelName = DEFAULT_BRIDGE.modelMap[selectedModel] || 'clario/deepseek-v4.1-flash-auto';
+    const liveModelName = modelMap[selectedModel] || DEFAULT_BRIDGE.modelMap[selectedModel];
+    const modelMeta = getModelMeta(liveModelName);
 
     const newUserMsg = {
       id: userMsgId,
@@ -453,7 +522,6 @@ export default function EpinoiaGeminiApp() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    // Update conversation with user message
     setConversations(prev => prev.map(conv => {
       if (conv.id === activeConvId) {
         const title = conv.messages.length === 0 ? textToSend.slice(0, 32) + '...' : conv.title;
@@ -475,12 +543,13 @@ export default function EpinoiaGeminiApp() {
       id: assistantMsgId,
       role: 'assistant',
       model: selectedModel,
+      modelTag: `${BASE_FLEET_MODELS[selectedModel].rolePrefix} · ${modelMeta.short}`,
       content: '',
       thought: {
         duration: 'Synthesizing...',
         steps: [
-          { name: 'Gateway Dispatch', time: 'Initiated', status: 'active', detail: `Routing to ${liveModelName} via ${apiBaseUrl}` },
-          { name: 'Sovereign Pulse Alignment', time: 'Active', status: 'active', detail: 'Applying Epinoia Tier-3 Governance & System Prompts' }
+          { name: 'Gateway Dispatch', time: 'Initiated', status: 'active', detail: `Routing to ${modelMeta.label} sovereign neural shard` },
+          { name: 'Sovereign Alignment', time: 'Active', status: 'active', detail: 'Applying Epinoia Tier-3 Governance & System Directives' }
         ]
       },
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -496,9 +565,8 @@ export default function EpinoiaGeminiApp() {
       }
       return conv;
     }));
-    setExpandedThoughts(prev => ({ ...prev, [assistantMsgId]: true }));
+    setExpandedThoughts(prev => ({ ...prev, [assistantMsgId]: false }));
 
-    // Prepare message history
     const history = (activeConversation.messages || []).map(m => ({
       role: m.role,
       content: m.content
@@ -559,9 +627,7 @@ export default function EpinoiaGeminiApp() {
                   return conv;
                 }));
               }
-            } catch (e) {
-              // Ignore partial chunk parsing
-            }
+            } catch (e) {}
           }
         }
       }
@@ -577,7 +643,7 @@ export default function EpinoiaGeminiApp() {
               thought: {
                 duration: `${elapsed}s`,
                 steps: [
-                  { name: 'Gateway Dispatch', time: '14ms', status: 'complete', detail: `Handled by ${liveModelName} on ${apiBaseUrl}` },
+                  { name: 'Gateway Dispatch', time: '14ms', status: 'complete', detail: `Executed on ${modelMeta.label} (${modelMeta.provider})` },
                   { name: 'Cognitive Recurrence Synthesis', time: `${elapsed}s`, status: 'complete', detail: 'Completed stream generation with zero-hallucination guard.' },
                   { name: 'Cryptographic Ledger Hash', time: '4ms', status: 'complete', detail: 'State verification locked in local session journal.' }
                 ]
@@ -588,8 +654,7 @@ export default function EpinoiaGeminiApp() {
         return conv;
       }));
     } catch (err) {
-      console.error('ClarioHub stream error:', err);
-      // Fallback message if network error
+      console.error('Stream error:', err);
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
       setConversations(prev => prev.map(conv => {
         if (conv.id === activeConvId) {
@@ -598,7 +663,7 @@ export default function EpinoiaGeminiApp() {
             messages: conv.messages.map(m => m.id === assistantMsgId ? {
               ...m,
               isStreaming: false,
-              content: `### ⚠️ Bridge Error: ${err.message}\n\nPastikan koneksi jaringan atau konfigurasi API Key di Shard Telemetry HUD valid.`,
+              content: `### ⚠️ Neural Bridge Error: ${err.message}\n\nSilakan coba pilih model AI alternatif di menu **Neural Bridge & Shard HUD**.`,
               thought: {
                 duration: `${elapsed}s`,
                 steps: [
@@ -623,9 +688,9 @@ export default function EpinoiaGeminiApp() {
       <style>{`
         :root {
           --bg: #030208;
-          --panel: rgba(10, 7, 24, 0.86);
-          --panel-2: rgba(4, 3, 10, 0.78);
-          --panel-elevated: rgba(18, 12, 38, 0.92);
+          --panel: rgba(10, 7, 24, 0.88);
+          --panel-2: rgba(4, 3, 10, 0.82);
+          --panel-elevated: rgba(18, 12, 38, 0.94);
           --line: rgba(234, 179, 8, 0.22);
           --line-2: rgba(234, 179, 8, 0.42);
           --line-c: rgba(34, 211, 238, 0.32);
@@ -647,13 +712,18 @@ export default function EpinoiaGeminiApp() {
           --font-mono: 'JetBrains Mono', monospace;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html {
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body {
           background-color: var(--bg);
           color: var(--text);
           font-family: var(--font-sans);
+          width: 100%;
           height: 100%;
+          height: 100dvh;
+          position: fixed;
+          inset: 0;
           overflow: hidden;
+          overscroll-behavior: none;
           -webkit-font-smoothing: antialiased;
         }
 
@@ -668,18 +738,20 @@ export default function EpinoiaGeminiApp() {
 
         .epi-app-root {
           display: flex;
-          height: 100vh;
-          width: 100vw;
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          height: 100dvh;
           background-color: var(--bg);
           color: var(--text);
           overflow: hidden;
-          position: relative;
           z-index: 1;
         }
 
         .epi-sidebar {
           width: 290px;
           min-width: 290px;
+          height: 100%;
           background-color: var(--panel);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
@@ -693,11 +765,12 @@ export default function EpinoiaGeminiApp() {
         .epi-sidebar.collapsed { margin-left: -290px; }
 
         .sidebar-header {
-          padding: 18px 20px 14px;
+          padding: 16px 18px 14px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           border-bottom: 1px solid rgba(234, 179, 8, 0.1);
+          flex-shrink: 0;
         }
 
         .brand-cluster { display: flex; align-items: center; gap: 12px; text-decoration: none; }
@@ -714,14 +787,15 @@ export default function EpinoiaGeminiApp() {
 
         .btn-icon-ghost {
           background: transparent; border: none; color: var(--gold-soft);
-          width: 32px; height: 32px; border-radius: var(--radius-sm);
+          width: 34px; height: 34px; border-radius: var(--radius-sm);
           display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
+          flex-shrink: 0;
         }
         .btn-icon-ghost:hover { background: rgba(234, 179, 8, 0.12); color: #fff; box-shadow: 0 0 12px rgba(234, 179, 8, 0.2); }
 
-        .sidebar-new-chat-wrap { padding: 16px; }
+        .sidebar-new-chat-wrap { padding: 14px 16px; flex-shrink: 0; }
         .btn-new-chat {
-          width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 16px;
+          width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 16px;
           background: rgba(234, 179, 8, 0.07); border: 1px solid var(--line-2); border-radius: var(--radius-pill);
           color: var(--gold-soft); font-family: var(--font-heading); font-size: 12px; font-weight: 700;
           letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease;
@@ -734,14 +808,15 @@ export default function EpinoiaGeminiApp() {
 
         .sidebar-section-title {
           font-family: var(--font-heading); font-size: 10.5px; font-weight: 700;
-          letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding: 10px 20px 6px;
+          letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding: 8px 20px 6px;
+          flex-shrink: 0;
         }
 
-        .sidebar-history-list { flex: 1; overflow-y: auto; padding: 0 12px; }
+        .sidebar-history-list { flex: 1; overflow-y: auto; padding: 0 12px; min-height: 0; }
         .sidebar-history-item {
           display: flex; align-items: center; justify-content: space-between; padding: 9px 12px;
           border-radius: var(--radius-sm); font-size: 13px; color: var(--muted); cursor: pointer;
-          margin-bottom: 3px; border: 1px solid transparent; transition: all 0.18s ease;
+          margin-bottom: 3px; border: 1px solid transparent; transition: all 0.18s ease; text-decoration: none;
         }
         .sidebar-history-item:hover { background: rgba(234, 179, 8, 0.06); color: var(--text); border-color: rgba(234, 179, 8, 0.15); }
         .sidebar-history-item.active {
@@ -750,8 +825,9 @@ export default function EpinoiaGeminiApp() {
         }
 
         .sidebar-bottom {
-          padding: 14px 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column;
-          gap: 10px; background: rgba(6, 4, 14, 0.6);
+          padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+          border-top: 1px solid var(--line); display: flex; flex-direction: column;
+          gap: 10px; background: rgba(6, 4, 14, 0.75); flex-shrink: 0;
         }
 
         .bridge-status-pill {
@@ -768,44 +844,70 @@ export default function EpinoiaGeminiApp() {
         .clearance-pill:hover { border-color: var(--gold); box-shadow: 0 0 15px rgba(234, 179, 8, 0.15); }
 
         .epi-workspace {
-          flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-          background: transparent; position: relative;
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          overflow: hidden;
+          background: transparent;
+          position: relative;
         }
 
         .workspace-header {
-          height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
-          border-bottom: 1px solid var(--line); background: rgba(3, 2, 8, 0.88);
-          backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); z-index: 30;
+          height: 66px;
+          min-height: 66px;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 22px;
+          border-bottom: 1px solid var(--line);
+          background: rgba(3, 2, 8, 0.92);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          position: relative;
+          z-index: 35;
         }
 
-        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .model-selector-pill {
-          display: flex; align-items: center; gap: 9px; padding: 7px 16px;
-          background: rgba(14, 10, 32, 0.8); border: 1px solid var(--line-2); border-radius: var(--radius-pill);
+          display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+          background: rgba(14, 10, 32, 0.88); border: 1px solid var(--line-2); border-radius: var(--radius-pill);
           font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--gold-soft);
           letter-spacing: 0.05em; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 0 16px rgba(234, 179, 8, 0.12);
+          white-space: nowrap;
         }
         .model-selector-pill:hover {
           background: rgba(234, 179, 8, 0.14); border-color: var(--gold); box-shadow: 0 0 22px rgba(234, 179, 8, 0.25);
         }
 
+        .model-dropdown-menu {
+          position: absolute; top: calc(100% + 8px); left: 0; width: 320px; max-width: calc(100vw - 24px);
+          background: rgba(10, 7, 24, 0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+          border: 1px solid var(--line-2); border-radius: 14px;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.95), 0 0 25px rgba(234, 179, 8, 0.22);
+          padding: 10px; z-index: 60;
+        }
+
         .view-segmented-wrap {
-          display: flex; align-items: center; background: rgba(8, 6, 20, 0.85); border: 1px solid var(--line);
-          border-radius: var(--radius-pill); padding: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.4);
+          display: flex; align-items: center; background: rgba(8, 6, 20, 0.9); border: 1px solid var(--line);
+          border-radius: var(--radius-pill); padding: 3px; box-shadow: 0 0 20px rgba(0,0,0,0.4);
+          flex-shrink: 1; min-width: 0;
         }
         .view-btn {
-          padding: 7px 18px; font-family: var(--font-heading); font-size: 11.5px; font-weight: 700;
-          letter-spacing: 0.12em; text-transform: uppercase; border-radius: var(--radius-pill); border: none;
+          padding: 7px 16px; font-family: var(--font-heading); font-size: 11px; font-weight: 700;
+          letter-spacing: 0.1em; text-transform: uppercase; border-radius: var(--radius-pill); border: 1px solid transparent;
           background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s ease;
-          display: flex; align-items: center; gap: 7px;
+          display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
         }
         .view-btn.active {
           background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(202, 138, 4, 0.35));
-          color: #fff; border: 1px solid var(--line-2); box-shadow: 0 0 18px rgba(234, 179, 8, 0.25);
+          color: #fff; border-color: var(--line-2); box-shadow: 0 0 18px rgba(234, 179, 8, 0.25);
           text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
         }
 
-        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .nav-links { display: flex; align-items: center; gap: 18px; }
         .nav-link {
           font-family: var(--font-heading); font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em;
@@ -813,34 +915,62 @@ export default function EpinoiaGeminiApp() {
         }
         .nav-link:hover { color: var(--gold); }
 
-        .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .chat-scroll-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
+        .op-avatar-pill {
+          width: 34px; height: 34px; border-radius: 50%; background: rgba(234, 179, 8, 0.1);
+          border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center;
+          font-size: 11.5px; font-weight: 700; color: var(--gold-soft); font-family: var(--font-mono);
+          box-shadow: 0 0 12px rgba(234, 179, 8, 0.2); flex-shrink: 0; cursor: pointer;
+        }
+
+        .chat-container {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          position: relative;
+        }
+        .chat-scroll-area {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          -webkit-overflow-scrolling: touch;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+        }
         .chat-scroll-content {
-          max-width: 880px; width: 100%; margin: 0 auto; padding: 28px 24px 190px;
-          display: flex; flex-direction: column; gap: 24px;
+          max-width: 880px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 28px 24px 28px;
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
         }
 
         .starter-hero {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          padding: 36px 0 24px; text-align: center;
+          padding: 28px 0 16px; text-align: center;
         }
         .hero-glyph {
-          width: 58px; height: 58px; border-radius: 14px; background: rgba(17, 12, 36, 0.95);
+          width: 56px; height: 56px; border-radius: 14px; background: rgba(17, 12, 36, 0.95);
           border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center;
-          margin-bottom: 22px; box-shadow: 0 0 30px rgba(234, 179, 8, 0.35);
+          margin-bottom: 18px; box-shadow: 0 0 30px rgba(234, 179, 8, 0.35);
         }
         .hero-title {
-          font-family: var(--font-display); font-size: clamp(26px, 4vw, 36px); font-weight: 900;
+          font-family: var(--font-display); font-size: clamp(22px, 4vw, 34px); font-weight: 900;
           color: var(--gold); letter-spacing: 0.04em; margin-bottom: 10px;
           text-shadow: 0 0 24px rgba(234, 179, 8, 0.45);
           background: linear-gradient(92deg, #fef3c7 0%, #facc15 45%, #eab308 70%, #c4b5fd 100%);
           -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .hero-subtitle { font-size: 14.5px; color: var(--muted); max-width: 580px; line-height: 1.6; }
+        .hero-subtitle { font-size: 14px; color: var(--muted); max-width: 580px; line-height: 1.6; }
 
-        .starter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 32px; }
+        .starter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 26px; width: 100%; }
         .starter-card {
-          padding: 18px 20px; background: var(--panel); border: 1px solid var(--line);
+          padding: 16px 18px; background: var(--panel); border: 1px solid var(--line);
           border-radius: var(--radius-card); cursor: pointer; transition: all 0.25s ease; text-align: left;
           box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
@@ -849,71 +979,72 @@ export default function EpinoiaGeminiApp() {
           box-shadow: 0 8px 30px rgba(234, 179, 8, 0.2);
         }
         .starter-card-title {
-          font-family: var(--font-heading); font-size: 14px; font-weight: 700; color: var(--gold-soft);
-          margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;
+          font-family: var(--font-heading); font-size: 13.5px; font-weight: 700; color: var(--gold-soft);
+          margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
         }
         .starter-card-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
 
-        .msg-row { display: flex; flex-direction: column; gap: 12px; animation: fadeIn 0.25s ease forwards; }
+        .msg-row { display: flex; flex-direction: column; gap: 12px; animation: fadeIn 0.25s ease forwards; min-width: 0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         .user-msg-block {
-          align-self: flex-end; max-width: 82%; background: rgba(22, 15, 48, 0.88); border: 1px solid var(--line-2);
-          padding: 14px 20px; border-radius: 18px 18px 4px 18px; font-size: 14px; line-height: 1.6;
+          align-self: flex-end; max-width: 84%; background: rgba(22, 15, 48, 0.9); border: 1px solid var(--line-2);
+          padding: 13px 18px; border-radius: 18px 18px 4px 18px; font-size: 14px; line-height: 1.55;
           color: #f8fafc; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 15px rgba(139, 92, 246, 0.15);
+          overflow-wrap: anywhere; word-break: break-word;
         }
-        .assistant-msg-block { display: flex; gap: 16px; width: 100%; }
+        .assistant-msg-block { display: flex; gap: 14px; width: 100%; min-width: 0; }
         .assistant-avatar {
-          width: 36px; height: 36px; border-radius: 10px; background: rgba(17, 12, 36, 0.95);
+          width: 34px; height: 34px; border-radius: 10px; background: rgba(17, 12, 36, 0.95);
           border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 16px rgba(234, 179, 8, 0.2);
+          flex-shrink: 0; margin-top: 2px; box-shadow: 0 0 16px rgba(234, 179, 8, 0.2);
         }
-        .assistant-body { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
-        .assistant-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--dim); }
+        .assistant-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        .assistant-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; font-size: 11.5px; color: var(--dim); }
         .assistant-model-tag { font-family: var(--font-heading); font-weight: 700; color: var(--gold-soft); letter-spacing: 0.05em; }
 
         .thought-accordion {
-          background: rgba(10, 7, 24, 0.65); border: 1px solid rgba(34, 211, 238, 0.25);
+          background: rgba(10, 7, 24, 0.72); border: 1px solid rgba(34, 211, 238, 0.28);
           border-radius: 12px; overflow: hidden; transition: all 0.2s ease; box-shadow: 0 0 15px rgba(34, 211, 238, 0.06);
         }
         .thought-accordion:hover { border-color: var(--cyan); box-shadow: 0 0 20px rgba(34, 211, 238, 0.15); }
-        .thought-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer; user-select: none; }
-        .thought-title-group { display: flex; align-items: center; gap: 10px; font-size: 12px; font-family: var(--font-mono); color: var(--cyan-soft); }
+        .thought-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; cursor: pointer; user-select: none; gap: 8px; }
+        .thought-title-group { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 11.5px; font-family: var(--font-mono); color: var(--cyan-soft); }
         .thought-timing-pill {
           padding: 2px 8px; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3);
-          border-radius: var(--radius-pill); font-size: 10.5px; color: var(--cyan);
+          border-radius: var(--radius-pill); font-size: 10px; color: var(--cyan); white-space: nowrap;
         }
         .thought-body {
-          padding: 10px 16px 14px; border-top: 1px solid rgba(34, 211, 238, 0.15); display: flex; flex-direction: column;
-          gap: 8px; background: rgba(4, 3, 10, 0.4);
+          padding: 10px 14px 12px; border-top: 1px solid rgba(34, 211, 238, 0.15); display: flex; flex-direction: column;
+          gap: 8px; background: rgba(4, 3, 10, 0.45);
         }
-        .thought-step-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; line-height: 1.45; padding: 4px 0; }
+        .thought-step-item { display: flex; align-items: flex-start; gap: 10px; font-size: 11.5px; line-height: 1.45; padding: 3px 0; }
         .step-indicator { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); margin-top: 6px; flex-shrink: 0; }
-        .step-name { font-weight: 600; color: #f1f5f9; font-family: var(--font-mono); font-size: 11.5px; }
-        .step-time { color: var(--dim); font-size: 11px; margin-left: 6px; }
-        .step-detail { color: var(--muted); margin-top: 2px; }
+        .step-name { font-weight: 600; color: #f1f5f9; font-family: var(--font-mono); font-size: 11px; }
+        .step-time { color: var(--dim); font-size: 10.5px; margin-left: 6px; }
+        .step-detail { color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
 
-        .text-paragraphs-group { font-size: 14.5px; line-height: 1.7; color: #e2e8f0; }
+        .text-paragraphs-group { font-size: 14px; line-height: 1.68; color: #e2e8f0; overflow-wrap: anywhere; word-break: break-word; }
         .md-h3 {
-          font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--gold-soft);
-          margin: 18px 0 8px; letter-spacing: 0.04em; text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+          font-family: var(--font-heading); font-size: 15.5px; font-weight: 700; color: var(--gold-soft);
+          margin: 14px 0 6px; letter-spacing: 0.04em; text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
         }
         .md-h2 {
-          font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--gold);
-          margin: 22px 0 10px; text-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
+          font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold);
+          margin: 18px 0 8px; text-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
         }
-        .md-p { margin-bottom: 12px; }
+        .md-p { margin-bottom: 10px; }
 
         .code-block-wrap {
-          margin: 16px 0; background: rgba(4, 3, 10, 0.95); border: 1px solid var(--line-2);
-          border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+          margin: 12px 0; background: rgba(4, 3, 10, 0.96); border: 1px solid var(--line-2);
+          border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.7); max-width: 100%;
         }
         .code-block-header {
-          display: flex; align-items: center; justify-content: space-between; padding: 8px 16px;
+          display: flex; align-items: center; justify-content: space-between; padding: 8px 14px;
           background: rgba(14, 10, 32, 0.85); border-bottom: 1px solid var(--line);
         }
         .code-lang-tag {
-          font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--gold-soft);
+          font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--gold-soft);
           text-transform: uppercase; letter-spacing: 0.1em;
         }
         .btn-copy-code {
@@ -922,40 +1053,51 @@ export default function EpinoiaGeminiApp() {
         }
         .btn-copy-code:hover { color: #fff; }
         .code-pre {
-          padding: 16px 18px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55;
-          color: #cbd5e1; overflow-x: auto; white-space: pre;
+          padding: 14px 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.55;
+          color: #cbd5e1; overflow-x: auto; white-space: pre; -webkit-overflow-scrolling: touch;
         }
 
-        .msg-action-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+        .msg-action-bar { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
 
+        /* Docked Prompt Bar — Never bleeds text underneath */
+        .prompt-dock-wrap {
+          flex-shrink: 0;
+          width: 100%;
+          padding: 10px 20px calc(14px + env(safe-area-inset-bottom));
+          background: linear-gradient(180deg, rgba(3, 2, 8, 0.75) 0%, rgba(3, 2, 8, 0.98) 35%, #030208 100%);
+          border-top: 1px solid rgba(234, 179, 8, 0.14);
+          z-index: 25;
+        }
         .prompt-floating-container {
-          position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px);
-          max-width: 840px; z-index: 25;
+          width: 100%;
+          max-width: 840px;
+          margin: 0 auto;
         }
         .prompt-pill-card {
-          background: rgba(10, 7, 24, 0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-          border: 1px solid var(--line-2); border-radius: 28px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 25px rgba(234, 179, 8, 0.12);
-          padding: 12px 18px 10px 20px; display: flex; flex-direction: column; gap: 6px; transition: all 0.25s ease;
+          background: rgba(10, 7, 24, 0.96); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+          border: 1px solid var(--line-2); border-radius: 24px;
+          box-shadow: 0 10px 36px rgba(0,0,0,0.85), 0 0 22px rgba(234, 179, 8, 0.12);
+          padding: 11px 16px 9px 18px; display: flex; flex-direction: column; gap: 6px; transition: all 0.25s ease;
         }
         .prompt-pill-card:focus-within {
-          border-color: var(--gold); box-shadow: 0 12px 48px rgba(0,0,0,0.9), 0 0 35px rgba(234, 179, 8, 0.25);
+          border-color: var(--gold); box-shadow: 0 12px 44px rgba(0,0,0,0.9), 0 0 32px rgba(234, 179, 8, 0.25);
         }
         .prompt-upper-row { display: flex; align-items: center; gap: 8px; }
         .prompt-textarea {
-          width: 100%; min-height: 28px; max-height: 180px; background: transparent; border: none; outline: none;
-          color: #f8fafc; font-family: var(--font-sans); font-size: 14.5px; line-height: 1.5; resize: none;
+          width: 100%; min-height: 26px; max-height: 150px; background: transparent; border: none; outline: none;
+          color: #f8fafc; font-family: var(--font-sans); font-size: 14.5px; line-height: 1.45; resize: none;
         }
         .prompt-textarea::placeholder {
-          color: rgba(254, 240, 138, 0.4); font-family: var(--font-heading); font-size: 13.5px; letter-spacing: 0.05em;
+          color: rgba(254, 240, 138, 0.42); font-family: var(--font-heading); font-size: 13px; letter-spacing: 0.05em;
         }
 
-        .prompt-bottom-row { display: flex; align-items: center; justify-content: space-between; padding-top: 4px; }
-        .prompt-tools-group { display: flex; align-items: center; gap: 8px; }
+        .prompt-bottom-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; }
+        .prompt-tools-group { display: flex; align-items: center; gap: 7px; flex-wrap: nowrap; }
         .tool-badge-btn {
-          display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(234, 179, 8, 0.07);
+          display: flex; align-items: center; gap: 6px; padding: 6px 11px; background: rgba(234, 179, 8, 0.07);
           border: 1px solid var(--line); border-radius: var(--radius-pill); font-family: var(--font-heading);
-          font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--gold-soft); cursor: pointer; transition: all 0.2s ease;
+          font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; color: var(--gold-soft); cursor: pointer;
+          transition: all 0.2s ease; white-space: nowrap; flex-shrink: 0;
         }
         .tool-badge-btn:hover {
           color: #fff; border-color: var(--gold); background: rgba(234, 179, 8, 0.16); box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
@@ -966,106 +1108,118 @@ export default function EpinoiaGeminiApp() {
         }
 
         .btn-send-pill {
-          width: 38px; height: 38px; border-radius: 50%; border: none; background: linear-gradient(135deg, #facc15, #ca8a04);
+          width: 36px; height: 36px; border-radius: 50%; border: none; background: linear-gradient(135deg, #facc15, #ca8a04);
           color: #030208; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
-          box-shadow: 0 0 18px rgba(234, 179, 8, 0.4);
+          box-shadow: 0 0 18px rgba(234, 179, 8, 0.4); flex-shrink: 0;
         }
         .btn-send-pill:disabled { background: rgba(234, 179, 8, 0.15); color: var(--dim); cursor: not-allowed; box-shadow: none; opacity: 0.5; }
         .btn-send-pill:not(:disabled):hover { transform: scale(1.06); box-shadow: 0 0 25px rgba(234, 179, 8, 0.6); }
 
-        .prompt-disclaimer { text-align: center; font-size: 11px; font-family: var(--font-mono); color: var(--dim); margin-top: 8px; }
+        .prompt-disclaimer { text-align: center; font-size: 10.5px; font-family: var(--font-mono); color: var(--dim); margin-top: 7px; }
 
         /* Overview Matrix */
-        .overview-container { flex: 1; overflow-y: auto; padding: 36px 40px 100px; max-width: 1180px; margin: 0 auto; width: 100%; }
-        .overview-hero { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 40px; }
+        .overview-container {
+          flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+          padding: 32px 36px 90px; max-width: 1180px; margin: 0 auto; width: 100%;
+        }
+        .overview-hero { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 34px; }
         .overview-badge {
           display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: rgba(234, 179, 8, 0.08);
           border: 1px solid var(--line-2); border-radius: var(--radius-pill); font-size: 11px; font-family: var(--font-mono);
-          color: var(--gold-soft); margin-bottom: 18px; box-shadow: 0 0 14px rgba(234, 179, 8, 0.15);
+          color: var(--gold-soft); margin-bottom: 16px; box-shadow: 0 0 14px rgba(234, 179, 8, 0.15);
         }
         .overview-title {
-          font-family: var(--font-display); font-size: clamp(28px, 4.5vw, 42px); font-weight: 900;
+          font-family: var(--font-display); font-size: clamp(24px, 4.5vw, 40px); font-weight: 900;
           color: var(--gold); letter-spacing: 0.04em; margin-bottom: 12px; text-shadow: 0 0 24px rgba(234, 179, 8, 0.45);
           background: linear-gradient(92deg, #fef3c7 0%, #facc15 45%, #eab308 70%, #c4b5fd 100%);
           -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .overview-subtitle { font-size: 15.5px; color: var(--muted); line-height: 1.65; max-width: 780px; }
+        .overview-subtitle { font-size: 15px; color: var(--muted); line-height: 1.65; max-width: 780px; }
 
-        .matrix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 44px; }
+        .matrix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
         .matrix-card {
-          background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 26px;
-          display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: all 0.25s ease;
+          background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 24px;
+          display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: all 0.25s ease;
         }
         .matrix-card:hover { border-color: var(--gold); box-shadow: 0 12px 36px rgba(234, 179, 8, 0.2); transform: translateY(-2px); }
-        .matrix-card-top { display: flex; align-items: center; justify-content: space-between; }
-        .matrix-name { font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.04em; }
+        .matrix-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+        .matrix-name { font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.04em; }
         .matrix-tag {
-          font-size: 10.5px; font-family: var(--font-mono); padding: 4px 10px; border-radius: var(--radius-sm);
+          font-size: 10px; font-family: var(--font-mono); padding: 4px 9px; border-radius: var(--radius-sm);
           background: rgba(234, 179, 8, 0.1); color: var(--gold-soft); border: 1px solid var(--line);
         }
-        .matrix-desc { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
-        .matrix-specs { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; font-size: 12px; font-family: var(--font-mono); }
-        .spec-item { display: flex; justify-content: space-between; color: var(--dim); }
-        .spec-val { color: #f1f5f9; }
+        .matrix-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+        .matrix-specs { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 9px; font-size: 11.5px; font-family: var(--font-mono); }
+        .spec-item { display: flex; justify-content: space-between; gap: 10px; color: var(--dim); }
+        .spec-val { color: #f1f5f9; text-align: right; }
 
         /* Telemetry Drawer */
         .drawer-overlay {
-          position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 2, 8, 0.75);
-          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 50;
+          position: fixed; inset: 0; background: rgba(3, 2, 8, 0.78);
+          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 80;
         }
         .telemetry-drawer {
-          position: fixed; top: 0; right: 0; bottom: 0; width: 420px; background: rgba(10, 7, 24, 0.96);
-          backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-left: 1px solid var(--line-2);
-          padding: 28px; display: flex; flex-direction: column; gap: 20px; z-index: 55;
-          box-shadow: -15px 0 45px rgba(0,0,0,0.9), 0 0 30px rgba(234, 179, 8, 0.15); animation: slideLeft 0.25s ease;
+          position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 100vw;
+          background: rgba(10, 7, 24, 0.98); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+          border-left: 1px solid var(--line-2); padding: 24px 22px calc(24px + env(safe-area-inset-bottom));
+          display: flex; flex-direction: column; gap: 18px; z-index: 85; overflow-y: auto;
+          box-shadow: -15px 0 45px rgba(0,0,0,0.95), 0 0 30px rgba(234, 179, 8, 0.15); animation: slideLeft 0.25s ease;
         }
         @keyframes slideLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        .drawer-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+        .drawer-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 14px; flex-shrink: 0; }
         .metric-card {
-          background: rgba(18, 12, 38, 0.85); border: 1px solid var(--line); border-radius: 12px;
+          background: rgba(18, 12, 38, 0.88); border: 1px solid var(--line); border-radius: 12px;
           padding: 16px; box-shadow: 0 4px 18px rgba(0,0,0,0.4);
         }
-        .metric-title { font-size: 11px; font-family: var(--font-mono); color: var(--gold-soft); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-        .metric-val { font-size: 20px; font-weight: 700; color: #fff; font-family: var(--font-mono); text-shadow: 0 0 12px rgba(234, 179, 8, 0.3); }
-        .bar-wrap { height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-pill); overflow: hidden; margin-top: 12px; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--gold)); border-radius: var(--radius-pill); box-shadow: 0 0 10px var(--gold); }
+        .metric-title { font-size: 11px; font-family: var(--font-mono); color: var(--gold-soft); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
 
-        .drawer-input-label { font-size: 11px; font-family: var(--font-mono); color: var(--gold-soft); margin-bottom: 4px; display: block; }
-        .drawer-input {
-          width: 100%; padding: 10px 12px; background: rgba(4, 3, 10, 0.9); border: 1px solid var(--line);
-          border-radius: var(--radius-sm); color: var(--cyan); font-family: var(--font-mono); font-size: 12px; outline: none;
+        .mapping-row {
+          display: flex; flex-direction: column; gap: 6px; padding: 11px 12px;
+          background: rgba(6, 4, 16, 0.75); border: 1px solid rgba(234, 179, 8, 0.16);
+          border-radius: 10px; margin-bottom: 10px;
         }
-        .drawer-input:focus { border-color: var(--gold); }
+        .mapping-row:last-child { margin-bottom: 0; }
+        .mapping-agent-header {
+          display: flex; align-items: center; justify-content: space-between;
+          font-family: var(--font-heading); font-size: 12.5px; font-weight: 700;
+        }
+        .mapping-select {
+          width: 100%; padding: 9px 12px; background: rgba(14, 10, 32, 0.95);
+          border: 1px solid var(--line-2); border-radius: 8px; color: #f8fafc;
+          font-family: var(--font-mono); font-size: 12px; outline: none; cursor: pointer;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .mapping-select:focus, .mapping-select:hover {
+          border-color: var(--gold); box-shadow: 0 0 12px rgba(234, 179, 8, 0.22);
+        }
+        .mapping-select option {
+          background: #0a0718; color: #f8fafc; padding: 8px;
+        }
 
         /* Modal */
         .modal-wrap {
-          position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 2, 8, 0.85);
-          display: flex; align-items: center; justify-content: center; z-index: 60;
+          position: fixed; inset: 0; background: rgba(3, 2, 8, 0.85);
+          display: flex; align-items: center; justify-content: center; z-index: 90;
           backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
         .modal-box {
-          width: 480px; background: rgba(14, 10, 32, 0.96); border: 1px solid var(--line-2);
-          border-radius: var(--radius-card); padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(234, 179, 8, 0.2);
-        }
-        .modal-input {
-          width: 100%; padding: 12px 16px; background: rgba(4, 3, 10, 0.9); border: 1px solid var(--line);
-          border-radius: var(--radius-sm); color: var(--gold-soft); font-family: var(--font-mono); font-size: 13px;
-          margin: 16px 0 22px; outline: none;
+          width: 460px; max-width: calc(100vw - 28px); background: rgba(14, 10, 32, 0.98); border: 1px solid var(--line-2);
+          border-radius: var(--radius-card); padding: 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(234, 179, 8, 0.2);
         }
 
-        /* --- RESPONSIVE ADAPTATIONS (MOBILE & TABLET) --- */
+        /* --- RESPONSIVE ADAPTATIONS (TABLET & MOBILE / IPHONE 14 PRO MAX) --- */
         .sidebar-mobile-backdrop { display: none; }
         .sidebar-mobile-nav { display: none; }
 
-        /* TABLET & MOBILE (<1024px) */
         @media (max-width: 1024px) {
           .epi-sidebar {
             position: fixed;
             top: 0;
             bottom: 0;
             left: 0;
-            width: 290px;
+            width: 285px;
+            max-width: 82vw;
             z-index: 100;
             box-shadow: 15px 0 45px rgba(0,0,0,0.95);
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1073,7 +1227,7 @@ export default function EpinoiaGeminiApp() {
             transform: translateX(0);
           }
           .epi-sidebar.collapsed {
-            transform: translateX(-100%);
+            transform: translateX(-105%);
           }
           .sidebar-mobile-backdrop {
             display: block;
@@ -1087,8 +1241,9 @@ export default function EpinoiaGeminiApp() {
           }
           .sidebar-mobile-nav {
             display: block;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-top: 1px solid rgba(234, 179, 8, 0.12);
+            flex-shrink: 0;
           }
           .matrix-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -1099,112 +1254,133 @@ export default function EpinoiaGeminiApp() {
           }
         }
 
-        /* MOBILE (<768px) */
+        /* MOBILE OPTIMIZATION (iPhone 14 Pro Max 430px & smaller phones) */
         @media (max-width: 768px) {
           .workspace-header {
-            height: 58px;
-            padding: 0 12px;
-            gap: 8px;
+            height: 56px;
+            min-height: 56px;
+            padding: 0 10px;
+            gap: 6px;
           }
           .header-left {
-            gap: 8px;
+            gap: 6px;
+          }
+          .btn-icon-ghost {
+            width: 30px;
+            height: 30px;
           }
           .model-selector-pill {
-            padding: 6px 10px;
-            font-size: 12px;
-            gap: 6px;
+            padding: 5px 10px;
+            font-size: 11.5px;
+            gap: 5px;
           }
           .model-pill-tag {
             display: none !important;
           }
           .view-segmented-wrap {
             padding: 2px;
+            max-width: 195px;
           }
           .view-btn {
-            padding: 6px 10px;
-            font-size: 10px;
-            letter-spacing: 0.06em;
+            padding: 4px 7px;
+            font-size: 8.5px;
+            line-height: 1.15;
+            letter-spacing: 0.04em;
             gap: 4px;
+            white-space: normal;
+            text-align: center;
           }
           .header-right {
-            gap: 8px;
+            gap: 6px;
+          }
+          .op-avatar-pill {
+            width: 28px;
+            height: 28px;
+            font-size: 10px;
           }
 
           /* Chat area on mobile */
           .chat-scroll-content {
-            padding: 16px 12px 165px;
+            padding: 16px 12px 18px;
             gap: 16px;
           }
           .user-msg-block {
-            max-width: 92%;
-            padding: 11px 15px;
+            max-width: 90%;
+            padding: 11px 14px;
             font-size: 13.5px;
-            line-height: 1.5;
+          }
+          .assistant-msg-block {
+            gap: 10px;
           }
           .assistant-avatar {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 8px;
           }
           .thought-header {
-            padding: 8px 12px;
+            padding: 8px 11px;
           }
           .thought-title-group {
             font-size: 11px;
             gap: 6px;
           }
           .thought-timing-pill {
-            font-size: 9.5px;
+            font-size: 9px;
             padding: 1px 6px;
           }
           .code-pre {
-            padding: 12px 14px;
-            font-size: 11.5px;
+            padding: 11px 12px;
+            font-size: 11px;
           }
           .starter-hero {
-            padding: 20px 0 16px;
+            padding: 14px 4px 10px;
           }
           .hero-glyph {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 14px;
+            width: 46px;
+            height: 46px;
+            margin-bottom: 12px;
           }
           .hero-title {
-            font-size: 22px;
+            font-size: 21px;
           }
           .hero-subtitle {
-            font-size: 13px;
+            font-size: 12.5px;
+            line-height: 1.5;
           }
           .starter-grid {
             grid-template-columns: 1fr;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 16px;
           }
           .starter-card {
-            padding: 14px 16px;
+            padding: 13px 15px;
+          }
+          .starter-card-title {
+            font-size: 13px;
+          }
+          .starter-card-desc {
+            font-size: 11.5px;
           }
 
-          /* Floating prompt pill on mobile */
-          .prompt-floating-container {
-            bottom: 10px;
-            width: calc(100% - 16px);
-            max-width: 100%;
+          /* Docked prompt bar on mobile */
+          .prompt-dock-wrap {
+            padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
           }
           .prompt-pill-card {
-            padding: 8px 12px 6px 14px;
+            padding: 9px 11px 7px 13px;
             border-radius: 20px;
             gap: 4px;
           }
           .prompt-textarea {
-            font-size: 13.5px;
+            font-size: 14px;
           }
           .prompt-textarea::placeholder {
-            font-size: 12px;
+            font-size: 11.5px;
           }
           .prompt-tools-group {
             gap: 5px;
             overflow-x: auto;
-            max-width: calc(100% - 46px);
+            max-width: calc(100% - 42px);
             scrollbar-width: none;
           }
           .prompt-tools-group::-webkit-scrollbar {
@@ -1212,13 +1388,11 @@ export default function EpinoiaGeminiApp() {
           }
           .tool-badge-btn {
             padding: 5px 8px;
-            font-size: 10px;
-            white-space: nowrap;
+            font-size: 9.5px;
           }
           .btn-send-pill {
-            width: 34px;
-            height: 34px;
-            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
           }
           .prompt-disclaimer {
             display: none;
@@ -1226,13 +1400,13 @@ export default function EpinoiaGeminiApp() {
 
           /* Overview on mobile */
           .overview-container {
-            padding: 20px 14px 80px;
+            padding: 18px 14px 70px;
           }
           .overview-title {
-            font-size: 24px;
+            font-size: 22px;
           }
           .overview-subtitle {
-            font-size: 13.5px;
+            font-size: 13px;
           }
           .matrix-grid {
             grid-template-columns: 1fr;
@@ -1240,11 +1414,7 @@ export default function EpinoiaGeminiApp() {
           }
           .telemetry-drawer {
             width: 100%;
-            padding: 20px 16px;
-          }
-          .modal-box {
-            width: calc(100% - 32px);
-            padding: 22px 18px;
+            padding: 18px 16px calc(20px + env(safe-area-inset-bottom));
           }
         }
       `}</style>
@@ -1284,7 +1454,13 @@ export default function EpinoiaGeminiApp() {
             <div
               key={conv.id}
               className={`sidebar-history-item ${activeConvId === conv.id ? 'active' : ''}`}
-              onClick={() => { setActiveConvId(conv.id); setCurrentView('chat'); }}
+              onClick={() => {
+                setActiveConvId(conv.id);
+                setCurrentView('chat');
+                if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+                  setSidebarOpen(false);
+                }
+              }}
             >
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
                 {conv.title}
@@ -1342,7 +1518,7 @@ export default function EpinoiaGeminiApp() {
         <div className="sidebar-bottom">
           <div className="bridge-status-pill">
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22d3ee', boxShadow: '0 0 8px #22d3ee' }} />
-            <span>clariohub.id / live bridge</span>
+            <span>Sovereign Neural Bridge · Online</span>
           </div>
 
           <div className="clearance-pill" onClick={() => setClearanceModalOpen(true)}>
@@ -1358,7 +1534,7 @@ export default function EpinoiaGeminiApp() {
 
           <button className="btn-new-chat" style={{ padding: '9px 14px', fontSize: '11px', justifyContent: 'center' }} onClick={() => setTelemetryOpen(true)}>
             <Icons.Sliders size={15} />
-            <span>Neural Bridge &amp; Telemetry</span>
+            <span>Neural Bridge &amp; AI Mapping</span>
           </button>
         </div>
       </aside>
@@ -1375,21 +1551,16 @@ export default function EpinoiaGeminiApp() {
 
             <div style={{ position: 'relative' }}>
               <button className="model-selector-pill" onClick={() => setModelDropdownOpen(!modelDropdownOpen)}>
-                {React.createElement(FLEET_MODELS[selectedModel].icon, { size: 16, color: FLEET_MODELS[selectedModel].color })}
+                {React.createElement(FLEET_MODELS[selectedModel].icon, { size: 15, color: FLEET_MODELS[selectedModel].color })}
                 <span>{FLEET_MODELS[selectedModel].name}</span>
                 <span className="model-pill-tag" style={{ fontSize: 10.5, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
                   {FLEET_MODELS[selectedModel].tag}
                 </span>
-                <Icons.ChevronDown size={14} />
+                <Icons.ChevronDown size={13} />
               </button>
 
               {modelDropdownOpen && (
-                <div style={{
-                  position: 'absolute', top: '120%', left: 0, width: '330px',
-                  background: 'var(--panel)', backdropFilter: 'blur(20px)', border: '1px solid var(--line-2)',
-                  borderRadius: '14px', boxShadow: '0 16px 40px rgba(0,0,0,0.9), 0 0 25px rgba(234, 179, 8, 0.2)',
-                  padding: '10px', zIndex: 45
-                }}>
+                <div className="model-dropdown-menu">
                   {Object.values(FLEET_MODELS).map(m => (
                     <div
                       key={m.id}
@@ -1398,22 +1569,36 @@ export default function EpinoiaGeminiApp() {
                         setModelDropdownOpen(false);
                       }}
                       style={{
-                        padding: '10px 14px', borderRadius: '10px', cursor: 'pointer',
+                        padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
                         background: selectedModel === m.id ? m.accent : 'transparent',
                         border: `1px solid ${selectedModel === m.id ? m.border : 'transparent'}`,
                         display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 4, transition: 'all 0.2s ease'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontWeight: 700, fontSize: 13.5, color: m.color, fontFamily: 'var(--font-heading)' }}>
-                          {React.createElement(m.icon, { size: 16, color: m.color })}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 13, color: m.color, fontFamily: 'var(--font-heading)' }}>
+                          {React.createElement(m.icon, { size: 15, color: m.color })}
                           {m.name}
                         </div>
-                        <span style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>{m.latency}</span>
+                        <span style={{ fontSize: 10.5, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>{m.mappedLabel}</span>
                       </div>
-                      <div style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.4 }}>{m.role}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.35 }}>{m.role}</div>
                     </div>
                   ))}
+                  <div
+                    onClick={() => {
+                      setModelDropdownOpen(false);
+                      setTelemetryOpen(true);
+                    }}
+                    style={{
+                      marginTop: 6, padding: '8px 12px', borderTop: '1px solid var(--line)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--gold-soft)', cursor: 'pointer'
+                    }}
+                  >
+                    <span>⚙️ Customize Active AI Mapping</span>
+                    <Icons.ChevronRight size={12} />
+                  </div>
                 </div>
               )}
             </div>
@@ -1424,14 +1609,14 @@ export default function EpinoiaGeminiApp() {
               className={`view-btn ${currentView === 'chat' ? 'active' : ''}`}
               onClick={() => setCurrentView('chat')}
             >
-              <Icons.Spark size={14} color="#facc15" />
+              <Icons.Spark size={13} color="#facc15" />
               <span>Arcane Workspace</span>
             </button>
             <button
               className={`view-btn ${currentView === 'overview' ? 'active' : ''}`}
               onClick={() => setCurrentView('overview')}
             >
-              <Icons.Layers size={14} color="#22d3ee" />
+              <Icons.Layers size={13} color="#22d3ee" />
               <span>Fleet Matrix</span>
             </button>
           </div>
@@ -1443,11 +1628,11 @@ export default function EpinoiaGeminiApp() {
               <a href="/store/" className="nav-link" style={{ color: 'var(--gold)' }}>💎 Store</a>
             </div>
 
-            <button className="btn-icon-ghost" onClick={() => setTelemetryOpen(true)} title="Neural Bridge Parameters">
+            <button className="btn-icon-ghost" onClick={() => setTelemetryOpen(true)} title="Neural Bridge & AI Mapping">
               <Icons.Activity size={18} color="#22d3ee" />
             </button>
 
-            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(234, 179, 8, 0.1)', border: '1px solid var(--line-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11.5, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-mono)', boxShadow: '0 0 12px rgba(234, 179, 8, 0.2)' }}>
+            <div className="op-avatar-pill" onClick={() => setClearanceModalOpen(true)} title="Sanctum Clearance">
               OP
             </div>
           </div>
@@ -1456,16 +1641,16 @@ export default function EpinoiaGeminiApp() {
         {/* --- CHAT WORKSPACE --- */}
         {currentView === 'chat' && (
           <div className="chat-container">
-            <div className="chat-scroll-area">
+            <div className="chat-scroll-area" ref={chatScrollAreaRef}>
               <div className="chat-scroll-content">
                 {activeConversation.messages.length === 0 ? (
                   <div className="starter-hero">
                     <div className="hero-glyph">
-                      <Icons.Eye size={28} color="#facc15" />
+                      <Icons.Eye size={26} color="#facc15" />
                     </div>
                     <h1 className="hero-title">Epinoia Sovereign Sanctum</h1>
                     <p className="hero-subtitle">
-                      Live Neural Bridge connected to <b>clariohub.id</b>. Invoke <b>Merlin</b> (DeepSeek-v4.1), <b>Nxelle Codex</b> (v4-Pro), or <b>Jie</b> (GLM-5.3) for instant sovereign cognition.
+                      Sovereign Neural Bridge Active. Invoke <b>Merlin</b> ({FLEET_MODELS.merlin.mappedLabel}), <b>Nxelle Codex</b> ({FLEET_MODELS.nxelle.mappedLabel}), or <b>Jie</b> ({FLEET_MODELS.jie.mappedLabel}) for instant cognition.
                     </p>
 
                     <div className="starter-grid">
@@ -1497,7 +1682,7 @@ export default function EpinoiaGeminiApp() {
                       ) : (
                         <div className="assistant-msg-block">
                           <div className="assistant-avatar">
-                            {React.createElement(FLEET_MODELS[msg.model || 'merlin'].icon, { size: 18, color: FLEET_MODELS[msg.model || 'merlin'].color })}
+                            {React.createElement(FLEET_MODELS[msg.model || 'merlin'].icon, { size: 17, color: FLEET_MODELS[msg.model || 'merlin'].color })}
                           </div>
                           <div className="assistant-body">
                             <div className="assistant-meta">
@@ -1505,14 +1690,14 @@ export default function EpinoiaGeminiApp() {
                               <span>•</span>
                               <span>{msg.timestamp}</span>
                               <span>•</span>
-                              <span style={{ fontFamily: 'var(--font-mono)' }}>{FLEET_MODELS[msg.model || 'merlin'].tag}</span>
+                              <span style={{ fontFamily: 'var(--font-mono)' }}>{msg.modelTag || FLEET_MODELS[msg.model || 'merlin'].tag}</span>
                             </div>
 
                             {msg.thought && (
                               <div className="thought-accordion">
                                 <div className="thought-header" onClick={() => toggleThought(msg.id)}>
                                   <div className="thought-title-group">
-                                    <Icons.Brain size={15} color="#22d3ee" />
+                                    <Icons.Brain size={14} color="#22d3ee" />
                                     <span>Thought for {msg.thought.duration}</span>
                                     <span className="thought-timing-pill">{msg.thought.steps.length} Arcane Gates</span>
                                   </div>
@@ -1524,7 +1709,7 @@ export default function EpinoiaGeminiApp() {
                                     {msg.thought.steps.map((st, sidx) => (
                                       <div key={sidx} className="thought-step-item">
                                         <div className="step-indicator" />
-                                        <div style={{ flex: 1 }}>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
                                           <div>
                                             <span className="step-name">{st.name}</span>
                                             <span className="step-time">({st.time})</span>
@@ -1551,114 +1736,117 @@ export default function EpinoiaGeminiApp() {
                     </div>
                   ))
                 )}
-                <div ref={chatBottomRef} />
               </div>
             </div>
 
-            <div className="prompt-floating-container">
-              <div className="prompt-pill-card">
-                <div className="prompt-upper-row">
-                  <textarea
-                    ref={textareaRef}
-                    className="prompt-textarea"
-                    placeholder={`Inscribe instruction to ${FLEET_MODELS[selectedModel].name}...`}
-                    rows={1}
-                    value={inputPrompt}
-                    onChange={handleInputChange}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendPrompt();
-                      }
-                    }}
-                  />
-                </div>
-
-                <div className="prompt-bottom-row">
-                  <div className="prompt-tools-group">
-                    <button
-                      className="tool-badge-btn"
-                      onClick={() => {
-                        const fakeName = `manifest_${Date.now().toString().slice(-4)}.ast`;
-                        setAttachedFiles([...attachedFiles, { name: fakeName, size: '24 KB' }]);
+            {/* DOCKED PROMPT BAR */}
+            <div className="prompt-dock-wrap">
+              <div className="prompt-floating-container">
+                <div className="prompt-pill-card">
+                  <div className="prompt-upper-row">
+                    <textarea
+                      ref={textareaRef}
+                      className="prompt-textarea"
+                      placeholder={`Inscribe instruction to ${FLEET_MODELS[selectedModel].name}...`}
+                      rows={1}
+                      value={inputPrompt}
+                      onChange={handleInputChange}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendPrompt();
+                        }
                       }}
-                      title="Attach Arcane AST"
-                    >
-                      <Icons.Paperclip size={14} />
-                      {attachedFiles.length > 0 && <span>{attachedFiles.length}</span>}
-                    </button>
+                    />
+                  </div>
 
-                    <button
-                      className={`tool-badge-btn ${deepSearchActive ? 'active' : ''}`}
-                      onClick={() => setDeepSearchActive(!deepSearchActive)}
-                      title="Deep Fleet Knowledge Synthesis"
-                    >
-                      <Icons.Globe size={14} />
-                      <span>Deep Search</span>
-                    </button>
-
-                    <div style={{ position: 'relative' }}>
+                  <div className="prompt-bottom-row">
+                    <div className="prompt-tools-group">
                       <button
                         className="tool-badge-btn"
-                        onClick={() => setThinkingPopoverOpen(!thinkingPopoverOpen)}
-                        title="Thinking Budget Allocation"
+                        onClick={() => {
+                          const fakeName = `manifest_${Date.now().toString().slice(-4)}.ast`;
+                          setAttachedFiles([...attachedFiles, { name: fakeName, size: '24 KB' }]);
+                        }}
+                        title="Attach Arcane AST"
                       >
-                        <Icons.Brain size={14} />
-                        <span style={{ textTransform: 'capitalize' }}>Cognitive: {thinkingBudget}</span>
-                        <Icons.ChevronDown size={11} />
+                        <Icons.Paperclip size={13} />
+                        {attachedFiles.length > 0 && <span>{attachedFiles.length}</span>}
                       </button>
 
-                      {thinkingPopoverOpen && (
-                        <div style={{
-                          position: 'absolute', bottom: '120%', left: 0, width: '230px',
-                          background: 'rgba(14, 10, 32, 0.98)', backdropFilter: 'blur(20px)', border: '1px solid var(--line-2)',
-                          borderRadius: '12px', padding: '8px', boxShadow: '0 12px 36px rgba(0,0,0,0.95), 0 0 20px rgba(234, 179, 8, 0.2)',
-                          zIndex: 40
-                        }}>
-                          {[
-                            { key: 'low', label: 'Low (Reflex Stream)', desc: 'Fast generation' },
-                            { key: 'mid', label: 'Mid (Balanced AST)', desc: 'Standard synthesis' },
-                            { key: 'high', label: 'High (Tier-3 Surgery)', desc: 'Deep cognition & verification' }
-                          ].map(t => (
-                            <div
-                              key={t.key}
-                              onClick={() => { setThinkingBudget(t.key); setThinkingPopoverOpen(false); }}
-                              style={{
-                                padding: '8px 12px', borderRadius: '8px', cursor: 'pointer',
-                                background: thinkingBudget === t.key ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
-                                border: `1px solid ${thinkingBudget === t.key ? 'var(--line-2)' : 'transparent'}`,
-                                display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 3, transition: 'all 0.18s ease'
-                              }}
-                            >
-                              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)' }}>{t.label}</div>
-                              <div style={{ fontSize: 10.5, color: 'var(--dim)' }}>{t.desc}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      <button
+                        className={`tool-badge-btn ${deepSearchActive ? 'active' : ''}`}
+                        onClick={() => setDeepSearchActive(!deepSearchActive)}
+                        title="Deep Fleet Knowledge Synthesis"
+                      >
+                        <Icons.Globe size={13} />
+                        <span>Deep Search</span>
+                      </button>
+
+                      <div style={{ position: 'relative' }}>
+                        <button
+                          className="tool-badge-btn"
+                          onClick={() => setThinkingPopoverOpen(!thinkingPopoverOpen)}
+                          title="Thinking Budget Allocation"
+                        >
+                          <Icons.Brain size={13} />
+                          <span style={{ textTransform: 'capitalize' }}>Cognitive: {thinkingBudget}</span>
+                          <Icons.ChevronDown size={11} />
+                        </button>
+
+                        {thinkingPopoverOpen && (
+                          <div style={{
+                            position: 'fixed', bottom: '84px', left: '50%', transform: 'translateX(-50%)',
+                            width: 'min(260px, calc(100vw - 32px))',
+                            background: 'rgba(14, 10, 32, 0.98)', backdropFilter: 'blur(20px)', border: '1px solid var(--line-2)',
+                            borderRadius: '12px', padding: '8px', boxShadow: '0 12px 36px rgba(0,0,0,0.95), 0 0 20px rgba(234, 179, 8, 0.2)',
+                            zIndex: 75
+                          }}>
+                            {[
+                              { key: 'low', label: 'Low (Reflex Stream)', desc: 'Fast generation' },
+                              { key: 'mid', label: 'Mid (Balanced AST)', desc: 'Standard synthesis' },
+                              { key: 'high', label: 'High (Tier-3 Surgery)', desc: 'Deep cognition & verification' }
+                            ].map(t => (
+                              <div
+                                key={t.key}
+                                onClick={() => { setThinkingBudget(t.key); setThinkingPopoverOpen(false); }}
+                                style={{
+                                  padding: '8px 12px', borderRadius: '8px', cursor: 'pointer',
+                                  background: thinkingBudget === t.key ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
+                                  border: `1px solid ${thinkingBudget === t.key ? 'var(--line-2)' : 'transparent'}`,
+                                  display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 3, transition: 'all 0.18s ease'
+                                }}
+                              >
+                                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)' }}>{t.label}</div>
+                                <div style={{ fontSize: 10.5, color: 'var(--dim)' }}>{t.desc}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        className={`tool-badge-btn ${isRecording ? 'active' : ''}`}
+                        onClick={() => setIsRecording(!isRecording)}
+                        title="Vocal Transcription"
+                      >
+                        <Icons.Mic size={13} />
+                      </button>
                     </div>
 
                     <button
-                      className={`tool-badge-btn ${isRecording ? 'active' : ''}`}
-                      onClick={() => setIsRecording(!isRecording)}
-                      title="Vocal Transcription"
+                      className="btn-send-pill"
+                      disabled={!inputPrompt.trim() || isStreaming}
+                      onClick={() => handleSendPrompt()}
+                      title="Send instruction to Live Model"
                     >
-                      <Icons.Mic size={14} />
+                      <Icons.ArrowUp size={15} />
                     </button>
                   </div>
-
-                  <button
-                    className="btn-send-pill"
-                    disabled={!inputPrompt.trim() || isStreaming}
-                    onClick={() => handleSendPrompt()}
-                    title="Send instruction to Live Model"
-                  >
-                    <Icons.ArrowUp size={16} />
-                  </button>
                 </div>
-              </div>
-              <div className="prompt-disclaimer">
-                Epinoia Sovereign Fleet · Live Neural Stream via clariohub.id ({DEFAULT_BRIDGE.modelMap[selectedModel] || 'auto'}).
+                <div className="prompt-disclaimer">
+                  Epinoia Sovereign Fleet · Active Engine: {FLEET_MODELS[selectedModel].mappedLabel}
+                </div>
               </div>
             </div>
           </div>
@@ -1670,16 +1858,16 @@ export default function EpinoiaGeminiApp() {
             <div className="overview-hero">
               <div className="overview-badge">
                 <Icons.Shield size={14} color="#facc15" />
-                <span>EPI-FLEET SPECIFICATION v4.2 · LIVE CLARIO BRIDGE ACTIVE</span>
+                <span>EPI-FLEET SPECIFICATION v4.2 · SOVEREIGN NEURAL BRIDGE ACTIVE</span>
               </div>
               <h1 className="overview-title">Enterprise Sovereign Fleet Architecture</h1>
               <p className="overview-subtitle">
-                A single-tenant, hardware-aware computational matrix. Powered directly by <b>clariohub.id</b> high-speed frontier model endpoints.
+                A single-tenant, hardware-aware computational matrix with customizable frontier AI model routing for each sovereign agent.
               </p>
             </div>
 
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, marginBottom: 20, color: 'var(--gold-soft)' }}>
-              Active Model Endpoints
+              Active Fleet Agents &amp; Mapped Engines
             </h2>
             <div className="matrix-grid">
               {Object.values(FLEET_MODELS).map(m => (
@@ -1696,12 +1884,12 @@ export default function EpinoiaGeminiApp() {
 
                   <div className="matrix-specs">
                     <div className="spec-item">
-                      <span>Live Backend</span>
-                      <span className="spec-val" style={{ color: 'var(--cyan)' }}>{DEFAULT_BRIDGE.modelMap[m.id]}</span>
+                      <span>Active AI Engine</span>
+                      <span className="spec-val" style={{ color: 'var(--cyan)' }}>{m.mappedLabel}</span>
                     </div>
                     <div className="spec-item">
-                      <span>Base Endpoint</span>
-                      <span className="spec-val">{apiBaseUrl}</span>
+                      <span>Context Window</span>
+                      <span className="spec-val">{m.context}</span>
                     </div>
                     <div className="spec-item">
                       <span>Kernel Target</span>
@@ -1725,7 +1913,7 @@ export default function EpinoiaGeminiApp() {
           </div>
         )}
 
-        {/* --- TELEMETRY & NEURAL BRIDGE DRAWER --- */}
+        {/* --- TELEMETRY & NEURAL BRIDGE DRAWER (BASE URL & API KEY HIDDEN; INTERACTIVE AI MODEL SELECTOR) --- */}
         {telemetryOpen && (
           <>
             <div className="drawer-overlay" onClick={() => setTelemetryOpen(false)} />
@@ -1742,43 +1930,98 @@ export default function EpinoiaGeminiApp() {
 
               <div className="metric-card">
                 <div className="metric-title">Live Bridge Status</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', boxShadow: '0 0 10px #22d3ee' }} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>ONLINE · CLARIOHUB</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', boxShadow: '0 0 10px #22d3ee' }} />
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>ONLINE · ENCRYPTED BRIDGE</span>
+                  </div>
+                  <span style={{ fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--gold-soft)', padding: '2px 8px', borderRadius: 999, background: 'rgba(234, 179, 8, 0.12)', border: '1px solid var(--line)' }}>
+                    TIER-0 LOCKED
+                  </span>
                 </div>
               </div>
 
               <div className="metric-card">
-                <label className="drawer-input-label">Base URL (OpenAI-compatible)</label>
-                <input
-                  className="drawer-input"
-                  value={apiBaseUrl}
-                  onChange={e => {
-                    setApiBaseUrl(e.target.value);
-                    localStorage.setItem('clario_base_url', e.target.value);
-                  }}
-                  placeholder="https://clariohub.id/v1"
-                />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div className="metric-title" style={{ marginBottom: 0 }}>Active Model Mapping</div>
+                  <button
+                    onClick={() => {
+                      setModelMap(DEFAULT_BRIDGE.modelMap);
+                      try { localStorage.removeItem('epinoia_model_map'); } catch (e) {}
+                    }}
+                    style={{
+                      background: 'transparent', border: 'none', color: 'var(--dim)',
+                      fontFamily: 'var(--font-mono)', fontSize: 10.5, cursor: 'pointer', textDecoration: 'underline'
+                    }}
+                  >
+                    Reset Default
+                  </button>
+                </div>
 
-                <label className="drawer-input-label" style={{ marginTop: 12 }}>API Secret Key</label>
-                <input
-                  className="drawer-input"
-                  type="password"
-                  value={apiKey}
-                  onChange={e => {
-                    setApiKey(e.target.value);
-                    localStorage.setItem('clario_api_key', e.target.value);
-                  }}
-                  placeholder="sk-clario-..."
-                />
-              </div>
+                {/* MERLIN SELECTOR */}
+                <div className="mapping-row">
+                  <div className="mapping-agent-header" style={{ color: '#facc15' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <Icons.Merlin size={15} color="#facc15" />
+                      <span>Merlin (Governor)</span>
+                    </span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>STRATEGIC</span>
+                  </div>
+                  <select
+                    className="mapping-select"
+                    value={modelMap.merlin}
+                    onChange={e => handleModelMapChange('merlin', e.target.value)}
+                  >
+                    {AVAILABLE_AI_MODELS.map(ai => (
+                      <option key={ai.id} value={ai.id}>
+                        {ai.label} — [{ai.provider}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="metric-card">
-                <div className="metric-title">Active Model Mapping</div>
-                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--muted)', display: 'grid', gap: 6, marginTop: 6 }}>
-                  <div>Merlin: <span style={{ color: 'var(--gold-soft)' }}>{DEFAULT_BRIDGE.modelMap.merlin}</span></div>
-                  <div>Nxelle: <span style={{ color: 'var(--cyan)' }}>{DEFAULT_BRIDGE.modelMap.nxelle}</span></div>
-                  <div>Jie: <span style={{ color: 'var(--purple)' }}>{DEFAULT_BRIDGE.modelMap.jie}</span></div>
+                {/* NXELLE SELECTOR */}
+                <div className="mapping-row">
+                  <div className="mapping-agent-header" style={{ color: '#22d3ee' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <Icons.Codex size={15} color="#22d3ee" />
+                      <span>Nxelle Codex (Systems)</span>
+                    </span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>SHADERS / CODE</span>
+                  </div>
+                  <select
+                    className="mapping-select"
+                    value={modelMap.nxelle}
+                    onChange={e => handleModelMapChange('nxelle', e.target.value)}
+                  >
+                    {AVAILABLE_AI_MODELS.map(ai => (
+                      <option key={ai.id} value={ai.id}>
+                        {ai.label} — [{ai.provider}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* JIE SELECTOR */}
+                <div className="mapping-row">
+                  <div className="mapping-agent-header" style={{ color: '#a78bfa' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <Icons.Jie size={15} color="#a78bfa" />
+                      <span>Jie (Reflex Stream)</span>
+                    </span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--dim)' }}>LOW-LATENCY</span>
+                  </div>
+                  <select
+                    className="mapping-select"
+                    value={modelMap.jie}
+                    onChange={e => handleModelMapChange('jie', e.target.value)}
+                  >
+                    {AVAILABLE_AI_MODELS.map(ai => (
+                      <option key={ai.id} value={ai.id}>
+                        {ai.label} — [{ai.provider}]
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -1804,7 +2047,7 @@ export default function EpinoiaGeminiApp() {
                 </h2>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-                Neural Bridge terhubung ke <b>clariohub.id</b>. Akses Tier-0 Sovereign mengaktifkan kompilasi instan dan bypass limit.
+                Sovereign Neural Bridge terhubung secara terenkripsi. Akses Tier-0 Sovereign mengaktifkan kompilasi instan dan bypass limit.
               </p>
 
               <div style={{ display: 'grid', gap: 10, margin: '20px 0 24px' }}>
