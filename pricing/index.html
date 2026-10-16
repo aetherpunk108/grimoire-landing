@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pricing — Epinoia Horizon | Merlin Open-Core Plans</title>
-  <meta name="description" content="Merlin Agent open-core pricing: the local harness is free forever. Pro, Fleet, and Enterprise plans add managed relay, fleet sync, LTS updates, RBAC, and audit.">
+  <title>Pricing — Epinoia Horizon | Free, Medium &amp; High Plans</title>
+  <meta name="description" content="Epinoia Horizon pricing: Free (Jie on DeepSeek V4.1 Flash), Medium ($6/mo, Merlin + Nxelle on every Flash model) and High ($24/mo, every AI model). The local Merlin harness stays free forever.">
   <link rel="canonical" href="https://epinoiahorizon.com/pricing/">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
   <!-- Fonts -->
@@ -319,6 +319,51 @@
     .promise-text b {
       color: #cbd5e1;
     }
+
+    /* Locked feature rows + fleet roles */
+    .features-list li.locked { opacity: .5; }
+    .features-list li.locked i { color: var(--dim); }
+    .tier-card.featured .features-list li.locked i { color: var(--dim); }
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-top: 40px;
+    }
+    .role-card {
+      padding: 22px 22px 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+    .role-card h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 4px;
+    }
+    .role-card .role-plan {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--cyan);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin: 0 0 10px;
+    }
+    .role-card p { font-size: 13px; color: #cbd5e1; line-height: 1.55; margin: 0; }
+    .role-card p.role-plan { color: var(--cyan); margin: 0 0 10px; font-size: 10.5px; }
+    .role-card b { color: #fff; }
+    .fine-print {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--dim);
+      line-height: 1.7;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .fine-print b { color: #cbd5e1; }
   </style>
 </head>
 <body>
@@ -357,7 +402,7 @@
     </div>
     <h1 class="pricing-title">CHOOSE YOUR TIER</h1>
     <p class="pricing-lede">
-      Everything running locally on your hardware is open source, private, and free forever. Paid tiers add managed multi-agent relays, encrypted fleet sync, LTS channels, and sovereign enterprise infrastructure.
+      The local Merlin harness is open source and free forever. The Sanctum web workspace runs on three plans: start free with <b>Jie</b>, unlock <b>Merlin</b> and <b>Nxelle Codex</b> on every Flash model with Medium, or open the whole fleet on every AI model with High.
     </p>
 
     <!-- Billing Interval Switcher -->
@@ -372,101 +417,101 @@
   <!-- 4-Column Tiers Grid -->
   <div class="tiers-grid">
 
-    <!-- TIER 1: CORE -->
+    <!-- TIER 1: FREE -->
     <div class="tier-card">
       <div class="card-top">
-        <span class="icon-box"><i class="fas fa-terminal"></i></span>
-        <span class="tag">OPEN SOURCE · MIT</span>
+        <span class="icon-box"><i class="fas fa-bolt"></i></span>
+        <span class="tag">FOREVER FREE</span>
       </div>
-      <h2 class="tier-name">Core</h2>
-      <p class="tier-tagline">Full local agent harness for 1 operator, 1 machine.</p>
+      <h2 class="tier-name">Free</h2>
+      <p class="tier-tagline">Light, sharp Q&amp;A with Jie — no card, no trial clock.</p>
 
       <div class="price-box">
         <div class="price-main">
-          <span class="price-val">FREE</span>
+          <span class="price-val">$0</span>
           <span class="price-sub">forever</span>
         </div>
         <div class="price-billed">No credit card required</div>
       </div>
 
       <ul class="features-list">
-        <li><i class="fas fa-check"></i> <b>Terminal TUI</b> + all local tools (shell, code, files)</li>
-        <li><i class="fas fa-check"></i> Unlimited local memory, skills, and cron</li>
-        <li><i class="fas fa-check"></i> Browser automation &amp; computer use (local)</li>
-        <li><i class="fas fa-check"></i> Multi-agent swarm orchestration — local</li>
-        <li><i class="fas fa-check"></i> Self-hosted messaging gateway (own keys)</li>
-        <li><i class="fas fa-check"></i> BYOK — bring your own LLM model keys</li>
-        <li><i class="fas fa-check"></i> Community support (GitHub · Discord)</li>
+        <li><i class="fas fa-check"></i><span><b>Jie</b> — short, sharp, substantive answers</span></li>
+        <li><i class="fas fa-check"></i><span>Engine: <b>DeepSeek V4.1 Flash</b></span></li>
+        <li><i class="fas fa-check"></i><span>30 messages / day</span></li>
+        <li><i class="fas fa-check"></i><span>Upload up to 2 text/code files (100 KB each)</span></li>
+        <li><i class="fas fa-check"></i><span>Voice input (mic dictation)</span></li>
+        <li class="locked"><i class="fas fa-lock"></i><span>Merlin — unlocks on Medium</span></li>
+        <li class="locked"><i class="fas fa-lock"></i><span>Nxelle Codex — unlocks on Medium</span></li>
       </ul>
 
-      <a class="tier-cta" href="/docs/tutorial-merlin-terminal-en.html">
-        <i class="fas fa-download"></i> Install Free Core
+      <a class="tier-cta" href="/app/">
+        <i class="fas fa-eye"></i> Open Free Workspace
       </a>
     </div>
 
-    <!-- TIER 2: PRO -->
-    <div class="tier-card">
-      <div class="card-top">
-        <span class="icon-box gold"><i class="fas fa-bolt"></i></span>
-        <span class="tag">INDIVIDUAL OPERATOR</span>
-      </div>
-      <h2 class="tier-name">Pro</h2>
-      <p class="tier-tagline">Convenience and power for 1 operator across all devices.</p>
-
-      <div class="price-box">
-        <div class="price-main">
-          <span class="price-val" id="price-pro">$29</span>
-          <span class="price-sub" id="period-pro">/month</span>
-        </div>
-        <div class="price-billed" id="billed-pro">Billed monthly</div>
-      </div>
-
-      <ul class="features-list">
-        <li><i class="fas fa-check"></i> <b>Managed Hermes Relay</b> — Telegram/Discord/WhatsApp without self-hosting</li>
-        <li><i class="fas fa-check"></i> <b>LTS update channel</b> — validated builds + rollback pinning</li>
-        <li><i class="fas fa-check"></i> <b>Fleet Sync (Light)</b> — memory + skills across 3 machines</li>
-        <li><i class="fas fa-check"></i> Optional prepaid model credits (no BYOK required)</li>
-        <li><i class="fas fa-check"></i> Commercial production deployment permit</li>
-        <li><i class="fas fa-check"></i> Priority issues + email support (48h SLA)</li>
-      </ul>
-
-      <a class="tier-cta" href="/#contact">
-        <i class="fas fa-bolt"></i> Join Pro Waitlist
-      </a>
-    </div>
-
-    <!-- TIER 3: FLEET (FEATURED) -->
+    <!-- TIER 2: MEDIUM (FEATURED) -->
     <div class="tier-card featured">
       <div class="featured-pill">
-        <i class="fas fa-crown"></i> POPULAR ARCHITECTURE
+        <i class="fas fa-crown"></i> BEST VALUE
       </div>
       <div class="card-top">
-        <span class="icon-box gold"><i class="fas fa-network-wired"></i></span>
-        <span class="tag">SWARMS &amp; TEAMS</span>
+        <span class="icon-box gold"><i class="fas fa-wand-magic-sparkles"></i></span>
+        <span class="tag">MERLIN UNLOCKED</span>
       </div>
-      <h2 class="tier-name" style="color:var(--gold);">Fleet</h2>
-      <p class="tier-tagline">Shared synaptic brain for your whole team up to 10 operators.</p>
+      <h2 class="tier-name" style="color:var(--gold);">Medium</h2>
+      <p class="tier-tagline">Merlin, Nxelle Codex and Jie on every Flash engine.</p>
 
       <div class="price-box">
         <div class="price-main">
-          <span class="price-val" id="price-fleet">$149</span>
-          <span class="price-sub" id="period-fleet">/month</span>
+          <span class="price-val" id="price-medium">$6</span>
+          <span class="price-sub" id="period-medium">/month</span>
         </div>
-        <div class="price-billed" id="billed-fleet" style="color:var(--gold-soft);">Billed monthly</div>
+        <div class="price-billed" id="billed-medium" style="color:var(--gold-soft);">Billed monthly</div>
       </div>
 
       <ul class="features-list">
-        <li><i class="fas fa-check"></i> <b>Everything in Pro</b>, scaled for teams</li>
-        <li><i class="fas fa-check"></i> <b>Fleet Sync Full</b> — unlimited machines, shared team memory &amp; skill library</li>
-        <li><i class="fas fa-check"></i> <b>Up to 100 agent slots</b> fleet-wide simultaneously</li>
-        <li><i class="fas fa-check"></i> <b>RBAC &amp; Policy</b> — owner/operator roles + tool enforcement</li>
-        <li><i class="fas fa-check"></i> <b>Immutable Audit Log</b> — cryptographic append-only journal</li>
-        <li><i class="fas fa-check"></i> Enterprise SSO (Google Workspace · Microsoft Entra)</li>
-        <li><i class="fas fa-check"></i> 24h SLA + dedicated engineering onboarding</li>
+        <li><i class="fas fa-check"></i><span><b>Everything in Free</b></span></li>
+        <li><i class="fas fa-check"></i><span><b>Merlin</b> — strategy, architecture &amp; deep reasoning</span></li>
+        <li><i class="fas fa-check"></i><span><b>Nxelle Codex</b> — dedicated coding engine</span></li>
+        <li><i class="fas fa-check"></i><span><b>All Flash models</b> — DeepSeek V4 / V4.1 Flash, GLM 5.3 Flash / FlashX, Gemini 3.7 / 3.8 Flash</span></li>
+        <li><i class="fas fa-check"></i><span>300 messages / day</span></li>
+        <li><i class="fas fa-check"></i><span>Upload up to 5 files (300 KB each)</span></li>
+        <li class="locked"><i class="fas fa-lock"></i><span>Frontier models (Opus, GPT, Gemini Pro) — High</span></li>
       </ul>
 
       <a class="tier-cta" href="/#contact">
-        <i class="fas fa-network-wired"></i> Join Fleet Waitlist
+        <i class="fas fa-wand-magic-sparkles"></i> Get Medium Access
+      </a>
+    </div>
+
+    <!-- TIER 3: HIGH -->
+    <div class="tier-card">
+      <div class="card-top">
+        <span class="icon-box gold"><i class="fas fa-network-wired"></i></span>
+        <span class="tag">FULL FLEET</span>
+      </div>
+      <h2 class="tier-name">High</h2>
+      <p class="tier-tagline">Every agent on every AI model — frontier engines included.</p>
+
+      <div class="price-box">
+        <div class="price-main">
+          <span class="price-val" id="price-high">$24</span>
+          <span class="price-sub" id="period-high">/month</span>
+        </div>
+        <div class="price-billed" id="billed-high">Billed monthly</div>
+      </div>
+
+      <ul class="features-list">
+        <li><i class="fas fa-check"></i><span><b>Everything in Medium</b></span></li>
+        <li><i class="fas fa-check"></i><span><b>Every AI model</b> — Claude Opus 5, GPT 6 Astra / 5.6, Gemini 3.1 Pro, DeepSeek V4 Pro, GLM 5.3, Kimi K3, MiniMax M3 &amp; more</span></li>
+        <li><i class="fas fa-check"></i><span>1,000 messages / day, incl. <b>100 frontier-model</b> messages</span></li>
+        <li><i class="fas fa-check"></i><span>Upload up to 10 files (1 MB each)</span></li>
+        <li><i class="fas fa-check"></i><span>Priority email support (48h)</span></li>
+        <li><i class="fas fa-check"></i><span>Early access to new engines</span></li>
+      </ul>
+
+      <a class="tier-cta" href="/#contact">
+        <i class="fas fa-network-wired"></i> Get High Access
       </a>
     </div>
 
@@ -488,11 +533,11 @@
       </div>
 
       <ul class="features-list">
-        <li><i class="fas fa-check"></i> <b>Self-Hosted Relay Container</b> — our code in your air-gapped VPC</li>
-        <li><i class="fas fa-check"></i> Unlimited operators, machines, and agents</li>
-        <li><i class="fas fa-check"></i> Custom spell AST &amp; pipeline compiler engineering</li>
-        <li><i class="fas fa-check"></i> Custom DPA, security audits, and procurement paperwork</li>
-        <li><i class="fas fa-check"></i> Dedicated private Slack/Discord channel (4h SLA)</li>
+        <li><i class="fas fa-check"></i><span><b>Self-Hosted Relay Container</b> — our code in your air-gapped VPC</span></li>
+        <li><i class="fas fa-check"></i><span>Unlimited operators, machines, and agents</span></li>
+        <li><i class="fas fa-check"></i><span>RBAC, SSO &amp; immutable audit log</span></li>
+        <li><i class="fas fa-check"></i><span>Custom DPA, security audits, and procurement paperwork</span></li>
+        <li><i class="fas fa-check"></i><span>Dedicated private Slack/Discord channel (4h SLA)</span></li>
       </ul>
 
       <a class="tier-cta" href="/#contact">
@@ -501,6 +546,29 @@
     </div>
 
   </div>
+
+  <!-- Fleet roles -->
+  <div class="roles-grid">
+    <div class="role-card">
+      <h3><i class="fas fa-comment-dots" style="color:#a78bfa;"></i> Jie</h3>
+      <p class="role-plan">Free · Medium · High</p>
+      <p>Light questions, <b>short, sharp and substantive</b>. Direct answer first, only the facts that matter.</p>
+    </div>
+    <div class="role-card">
+      <h3><i class="fas fa-gem" style="color:#facc15;"></i> Merlin</h3>
+      <p class="role-plan">Medium · High</p>
+      <p>The Governor: strategy, system architecture and deep multi-step reasoning on every Flash model — or any model on High.</p>
+    </div>
+    <div class="role-card">
+      <h3><i class="fas fa-code" style="color:#22d3ee;"></i> Nxelle Codex</h3>
+      <p class="role-plan">Medium · High</p>
+      <p><b>Coding only</b>: write, debug, review and refactor code, plus shaders. Off-topic requests are politely redirected.</p>
+    </div>
+  </div>
+  <p class="fine-print">
+    Limits reset daily at local midnight. Frontier models (Claude Opus, GPT, Gemini Pro and similar) are capped at 100 messages/day on High so prices stay sustainable; Flash engines are not capped separately.
+    After payment you receive an <b>activation code</b> — enter it under <b>Sanctum Plan</b> in the <a href="/app/" style="color:var(--cyan);text-decoration:underline;">workspace</a>. Annual billing saves 20%.
+  </p>
 
   <!-- What Stays Free Forever Guarantee -->
   <div class="free-guarantee">
@@ -545,44 +613,20 @@
 
 <script src="/assets/docs.js?v=4" defer></script>
 <script>
-  let currentBilling = 'monthly';
+  const PLANS = {
+    medium: { monthly: ['$6', 'Billed monthly'], annual: ['$5', 'Billed annually ($58/yr)'] },
+    high:   { monthly: ['$24', 'Billed monthly'], annual: ['$19', 'Billed annually ($230/yr)'] }
+  };
 
   function setBilling(interval) {
-    currentBilling = interval;
-    const btnM = document.getElementById('btn-monthly');
-    const btnA = document.getElementById('btn-annual');
-
-    const pricePro = document.getElementById('price-pro');
-    const periodPro = document.getElementById('period-pro');
-    const billedPro = document.getElementById('billed-pro');
-
-    const priceFleet = document.getElementById('price-fleet');
-    const periodFleet = document.getElementById('period-fleet');
-    const billedFleet = document.getElementById('billed-fleet');
-
-    if (interval === 'annual') {
-      btnM.classList.remove('active');
-      btnA.classList.add('active');
-
-      pricePro.textContent = '$24';
-      periodPro.textContent = '/month';
-      billedPro.textContent = 'Billed annually ($290/yr)';
-
-      priceFleet.textContent = '$124';
-      periodFleet.textContent = '/month';
-      billedFleet.textContent = 'Billed annually ($1,490/yr)';
-    } else {
-      btnA.classList.remove('active');
-      btnM.classList.add('active');
-
-      pricePro.textContent = '$29';
-      periodPro.textContent = '/month';
-      billedPro.textContent = 'Billed monthly';
-
-      priceFleet.textContent = '$149';
-      periodFleet.textContent = '/month';
-      billedFleet.textContent = 'Billed monthly';
-    }
+    document.getElementById('btn-monthly').classList.toggle('active', interval === 'monthly');
+    document.getElementById('btn-annual').classList.toggle('active', interval === 'annual');
+    Object.keys(PLANS).forEach(function (plan) {
+      var p = PLANS[plan][interval];
+      document.getElementById('price-' + plan).textContent = p[0];
+      document.getElementById('period-' + plan).textContent = '/month';
+      document.getElementById('billed-' + plan).textContent = p[1];
+    });
   }
 </script>
 </body>
