@@ -364,6 +364,128 @@
       font-family: 'JetBrains Mono', monospace;
     }
     .fine-print b { color: #cbd5e1; }
+
+    /* QRIS Modal Epinoia */
+    .qris-modal-wrap {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 2, 8, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .qris-modal-box {
+      width: 520px;
+      max-width: 100%;
+      max-height: 94vh;
+      overflow-y: auto;
+      background: rgba(14, 10, 32, 0.98);
+      border: 1px solid var(--line-2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 40px rgba(234, 179, 8, 0.25);
+      color: #e2e8f0;
+      position: relative;
+    }
+    .qris-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+    }
+    .qris-title {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      color: var(--gold);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .qris-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--dim);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color .2s ease;
+    }
+    .qris-close-btn:hover { color: #fff; }
+    .qris-img-container {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      margin: 16px 0;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      display: inline-block;
+      width: 100%;
+    }
+    .qris-img {
+      max-width: 260px;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .qris-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(234, 179, 8, 0.08);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .qris-price-idr {
+      color: var(--gold-soft);
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .qris-steps {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+      padding-left: 20px;
+    }
+    .qris-steps li { margin-bottom: 4px; }
+    .btn-wa-confirm {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      font-size: 12.5px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.35);
+      transition: all .25s ease;
+      text-decoration: none;
+    }
+    .btn-wa-confirm:hover {
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+    }
+
   </style>
 </head>
 <body>
@@ -479,9 +601,9 @@
         <li class="locked"><i class="fas fa-lock"></i><span>Frontier models (Opus, GPT, Gemini Pro) — High</span></li>
       </ul>
 
-      <a class="tier-cta" href="/#contact">
-        <i class="fas fa-wand-magic-sparkles"></i> Get Medium Access
-      </a>
+      <button class="tier-cta" onclick="openQrisModal('medium')">
+        <i class="fas fa-qrcode"></i> Pay with QRIS (Medium)
+      </button>
     </div>
 
     <!-- TIER 3: HIGH -->
@@ -510,9 +632,9 @@
         <li><i class="fas fa-check"></i><span>Early access to new engines</span></li>
       </ul>
 
-      <a class="tier-cta" href="/#contact">
-        <i class="fas fa-network-wired"></i> Get High Access
-      </a>
+      <button class="tier-cta" onclick="openQrisModal('high')">
+        <i class="fas fa-qrcode"></i> Pay with QRIS (High)
+      </button>
     </div>
 
     <!-- TIER 4: ENTERPRISE -->
@@ -618,6 +740,47 @@
     high:   { monthly: ['$24', 'Billed monthly'], annual: ['$19', 'Billed annually ($230/yr)'] }
   };
 
+
+  let currentBilling = 'monthly';
+
+  const QRIS_AMOUNTS = {
+    medium: {
+      monthly: { idr: 'Rp 96.000', usd: '$6', label: 'Medium (Monthly)' },
+      annual:  { idr: 'Rp 928.000', usd: '$58', label: 'Medium (Annual - 20% OFF)' }
+    },
+    high: {
+      monthly: { idr: 'Rp 384.000', usd: '$24', label: 'High (Monthly)' },
+      annual:  { idr: 'Rp 3.680.000', usd: '$230', label: 'High (Annual - 20% OFF)' }
+    }
+  };
+
+  let activeTierModal = 'medium';
+
+  function openQrisModal(tierKey) {
+    activeTierModal = tierKey;
+    const interval = currentBilling || 'monthly';
+    const info = QRIS_AMOUNTS[tierKey][interval];
+
+    document.getElementById('qris-tier-name').textContent = 'Paket: ' + info.label;
+    document.getElementById('qris-price-display').textContent = info.idr + ' (' + info.usd + ')';
+    document.getElementById('qris-amount-guide').textContent = info.idr;
+
+    const waMsg = encodeURIComponent(
+      'Halo Admin Epinoia Horizon, saya ingin konfirmasi pembayaran QRIS untuk Sanctum Plan:\n\n' +
+      '• Paket: ' + info.label + '\n' +
+      '• Nominal: ' + info.idr + ' (' + info.usd + ')\n' +
+      '• Merchant: EPINOIA HORIZON (NMID: ID1026618239614)\n\n' +
+      'Berikut saya lampirkan bukti transfer. Mohon kirimkan Kode Aktivasi / Akun Sanctum saya. Terima kasih!'
+    );
+
+    document.getElementById('qris-wa-link').href = 'https://wa.me/6281776349779?text=' + waMsg;
+    document.getElementById('qris-modal').style.display = 'flex';
+  }
+
+  function closeQrisModal() {
+    document.getElementById('qris-modal').style.display = 'none';
+  }
+
   function setBilling(interval) {
     document.getElementById('btn-monthly').classList.toggle('active', interval === 'monthly');
     document.getElementById('btn-annual').classList.toggle('active', interval === 'annual');
@@ -629,5 +792,46 @@
     });
   }
 </script>
+
+<!-- QRIS Payment Modal -->
+<div class="qris-modal-wrap" id="qris-modal" onclick="closeQrisModal()">
+  <div class="qris-modal-box" onclick="event.stopPropagation()">
+    <div class="qris-header">
+      <div class="qris-title">
+        <i class="fas fa-qrcode"></i>
+        <span>Sanctum QRIS Payment</span>
+      </div>
+      <button class="qris-close-btn" onclick="closeQrisModal()">&times;</button>
+    </div>
+
+    <div class="qris-badge-row">
+      <span id="qris-tier-name">Package: Medium (Monthly)</span>
+      <span class="qris-price-idr" id="qris-price-display">Rp 96.000</span>
+    </div>
+
+    <div style="text-align:center;">
+      <div class="qris-img-container">
+        <img src="/assets/qris-epinoia.jpg" alt="QRIS Epinoia Horizon" class="qris-img">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#0f172a;margin-top:6px;font-weight:700;">
+          EPINOIA HORIZON, Komputer<br>
+          <span style="font-weight:400;color:#475569;">NMID: ID1026618239614</span>
+        </div>
+      </div>
+    </div>
+
+    <ol class="qris-steps">
+      <li>Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI) atau e-Wallet (GoPay, OVO, ShopeePay, DANA).</li>
+      <li>Pilih menu <b>Scan / Bayar QRIS</b> dan arahkan ke barcode di atas.</li>
+      <li>Masukkan nominal tepat sesuai paket: <b id="qris-amount-guide">Rp 96.000</b>.</li>
+      <li>Simpan bukti transfer dan klik tombol hijau di bawah untuk konfirmasi WhatsApp instan.</li>
+    </ol>
+
+    <a href="#" id="qris-wa-link" target="_blank" class="btn-wa-confirm">
+      <i class="fab fa-whatsapp" style="font-size:18px;"></i>
+      Konfirmasi Pembayaran via WhatsApp
+    </a>
+  </div>
+</div>
+
 </body>
 </html>
