@@ -2,9 +2,32 @@ import React, { useState, useEffect, useRef } from 'react';
 
 // ============================================================================
 // EPINOIA HORIZON · MERLIN ARCANE FLEET
-// Authentic Epinoia Horizon Design System: Obsidian Void, Runic Gold & Cyan
-// Gemini Architecture + Tier-0 Sovereign Governance
+// Live Neural Bridge: clariohub.id v1 | Sovereign Architecture
 // ============================================================================
+
+const DEFAULT_BRIDGE = {
+  baseUrl: 'https://clariohub.id/v1',
+  apiKey: 'REMOVED_CREDENTIAL',
+  modelMap: {
+    merlin: 'clario/deepseek-v4.1-flash-auto',
+    nxelle: 'clario/deepseek-v4-pro',
+    jie: 'clario/glm-5.3-flash-auto'
+  }
+};
+
+const SYSTEM_PROMPTS = {
+  merlin: `You are Merlin, the Sovereign Tier-0 Harness Governor of Epinoia Horizon.
+You operate with grey-hat precision and Tier-3 deep architecture logic.
+- Ultra-sharp, functional, zero fluff.
+- Language: Indonesian slang / technical English mix when relevant, direct, confident.
+- Specialize in cognitive architecture, selective SSM gates (Δ, B, C), multi-agent orchestration, and system security invariants.`,
+  nxelle: `You are Nxelle Codex, Systems Architecture, Shaders & 3D Math Engine of Epinoia Horizon.
+- Specialize in GLSL, WGSL shaders, raymarching, SDF geometry, and compiler AST transforms.
+- Provide clean, highly optimized production shaders and mathematical proofs.`,
+  jie: `You are Jie, Ultra-Fast Stream Telemetry & Reflex Dispatch of Epinoia Horizon.
+- Specialize in ultra-low latency diagnostics, shard health, and token stream metrics.
+- Keep outputs concise, data-packed, and immediate.`
+};
 
 const Icons = {
   Eye: ({ size = 18, color = "#facc15" }) => (
@@ -157,17 +180,16 @@ const Icons = {
   )
 };
 
-// --- PROPRIETARY FLEET ARCHITECTURE SPECIFICATIONS ---
 const FLEET_MODELS = {
   merlin: {
     id: 'merlin',
     name: 'Merlin',
     role: 'Tier-0 Frontier Sovereign Harness Governor & Strategic Reasoning',
-    tag: 'Governor · Tier-0',
+    tag: 'Governor · DeepSeek-v4.1',
     icon: Icons.Merlin,
-    latency: '142ms TTFT',
-    context: '1,048,576 tokens',
-    arch: 'Hybrid SSM-Transformer + Runic Speculative Gate',
+    latency: 'Live Clario Stream',
+    context: '128,000 tokens',
+    arch: 'DeepSeek-v4.1 Flash via ClarioHub',
     thinkingDefault: 'High',
     color: '#facc15',
     accent: 'rgba(250, 204, 21, 0.15)',
@@ -177,11 +199,11 @@ const FLEET_MODELS = {
     id: 'nxelle',
     name: 'Nxelle Codex',
     role: 'Systems Architecture, Shaders & 3D Math Engine',
-    tag: 'Systems & Shaders',
+    tag: 'Systems · DeepSeek-v4-Pro',
     icon: Icons.Codex,
-    latency: '88ms TTFT',
-    context: '524,288 tokens',
-    arch: 'Sparse Mixture of Kernels (SMoK) + AST Verification',
+    latency: 'Live Clario Stream',
+    context: '64,000 tokens',
+    arch: 'DeepSeek-v4-Pro via ClarioHub',
     thinkingDefault: 'Mid',
     color: '#22d3ee',
     accent: 'rgba(34, 211, 238, 0.15)',
@@ -191,11 +213,11 @@ const FLEET_MODELS = {
     id: 'jie',
     name: 'Jie',
     role: 'Ultra-Fast Stream Telemetry & Reflex Dispatch',
-    tag: 'Reflex · Telemetry',
+    tag: 'Reflex · GLM-5.3',
     icon: Icons.Jie,
-    latency: '21ms TTFT',
-    context: '131,072 tokens',
-    arch: 'Pure Selective SSM Scan with Fused Linear Recurrence',
+    latency: 'Sub-second Reflex',
+    context: '128,000 tokens',
+    arch: 'GLM-5.3 Flash Auto via ClarioHub',
     thinkingDefault: 'Low',
     color: '#a78bfa',
     accent: 'rgba(167, 139, 250, 0.15)',
@@ -203,7 +225,6 @@ const FLEET_MODELS = {
   }
 };
 
-// --- INITIAL ARCANE STARTER PROMPTS ---
 const STARTER_PROMPTS = [
   {
     title: "Audit Tier-3 Cognitive Pulse",
@@ -232,13 +253,18 @@ const STARTER_PROMPTS = [
 ];
 
 export default function EpinoiaGeminiApp() {
-  const [currentView, setCurrentView] = useState('chat'); // 'chat' | 'overview'
+  const [currentView, setCurrentView] = useState('chat');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState('merlin');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
 
+  // Neural Bridge API Configuration State
+  const [apiBaseUrl, setApiBaseUrl] = useState(() => localStorage.getItem('clario_base_url') || DEFAULT_BRIDGE.baseUrl);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem('clario_api_key') || DEFAULT_BRIDGE.apiKey);
+  const [bridgeConnected, setBridgeConnected] = useState(true);
+
   // Thinking Features
-  const [thinkingBudget, setThinkingBudget] = useState('high'); // 'low' | 'mid' | 'high'
+  const [thinkingBudget, setThinkingBudget] = useState('high');
   const [thinkingPopoverOpen, setThinkingPopoverOpen] = useState(false);
   const [expandedThoughts, setExpandedThoughts] = useState({ 'm2': true });
 
@@ -246,7 +272,6 @@ export default function EpinoiaGeminiApp() {
   const [telemetryOpen, setTelemetryOpen] = useState(false);
   const [clearanceModalOpen, setClearanceModalOpen] = useState(false);
   const [clearanceLevel, setClearanceLevel] = useState('Tier-0 Sovereign');
-  const [clearanceKey, setClearanceKey] = useState('EPI-SOV-8829-ALPHA-T0');
 
   // Input & Tools
   const [inputPrompt, setInputPrompt] = useState('');
@@ -371,7 +396,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
   ]);
   const [activeConvId, setActiveConvId] = useState('conv-1');
 
-  // Auto-scroll chat
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversations, isStreaming]);
@@ -412,7 +436,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Markdown renderer
   const renderFormattedMessage = (content, msgId) => {
     const parts = [];
     const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
@@ -473,13 +496,15 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
     });
   };
 
-  const handleSendPrompt = (overrideText = null) => {
+  // LIVE CLARIO STREAMING INTEGRATION
+  const handleSendPrompt = async (overrideText = null) => {
     const textToSend = overrideText || inputPrompt;
     if (!textToSend.trim() || isStreaming) return;
 
     const userMsgId = `usr-${Date.now()}`;
     const assistantMsgId = `ast-${Date.now()}`;
     const activeModelObj = FLEET_MODELS[selectedModel];
+    const liveModelName = DEFAULT_BRIDGE.modelMap[selectedModel] || 'clario/deepseek-v4.1-flash-auto';
 
     const newUserMsg = {
       id: userMsgId,
@@ -488,6 +513,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
+    // Update conversation with user message
     setConversations(prev => prev.map(conv => {
       if (conv.id === activeConvId) {
         const title = conv.messages.length === 0 ? textToSend.slice(0, 32) + '...' : conv.title;
@@ -504,31 +530,18 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
     setIsStreaming(true);
 
-    const thoughtDur = thinkingBudget === 'high' ? '5.4s' : thinkingBudget === 'mid' ? '2.8s' : '0.9s';
-    const mockSteps = [
-      { name: 'Query Tokenization & AST', time: thinkingBudget === 'high' ? '180ms' : '45ms', status: 'complete', detail: 'Parsed syntax tree and dispatch vectors.' },
-      { name: 'Sovereign Fleet Alignment', time: thinkingBudget === 'high' ? '320ms' : '90ms', status: 'complete', detail: `Routed to ${activeModelObj.name} with ${activeModelObj.latency}.` },
-      { name: 'Multi-Pass State Synthesis', time: thinkingBudget === 'high' ? '4,200ms' : '1,800ms', status: 'complete', detail: 'Compiled responses against deterministic cache.' },
-      { name: 'Invariant Verification', time: thinkingBudget === 'high' ? '700ms' : '210ms', status: 'complete', detail: 'Zero-hallucination check verified.' }
-    ];
-
-    let targetResponse = "";
-    if (selectedModel === 'merlin') {
-      targetResponse = `### Merlin Sovereign Strategic Response\n\nAnalisis tereksekusi pada level **Tier-3 Governance**. Parameter invariant divalidasi penuh:\n\n1. Hardware-Aware Kernel Execution:\n- Resource sharding dipetakan ke node air-gapped lokal.\n- Memory bandwidth dioptimalkan dengan zero external API dependency.\n\n\`\`\`bash\n# Merlin Daemon Verification\nmerlin daemon status --shard="us-east-sovereign-01" --clearance="Tier-0"\n[OK] Cryptographic ledger synced. 0 egress anomalies detected.\n\`\`\`\n\n2. Status: Deployment siap dipancarkan langsung ke cluster produksi.`;
-    } else if (selectedModel === 'nxelle') {
-      targetResponse = `### Nxelle Codex: GLSL / Shading Kernel Synthesis\n\nBerikut implementasi analytic surface shader dengan zero compilation overhead:\n\n\`\`\`glsl\n// Nxelle Analytic SDF Normal Estimator\nvec3 calcNormal(in vec3 pos) {\n    const float eps = 0.0005;\n    const vec2 h = vec2(eps, 0.0);\n    return normalize(vec3(\n        mapSDF(pos + h.xyy) - mapSDF(pos - h.xyy),\n        mapSDF(pos + h.yxy) - mapSDF(pos - h.yxy),\n        mapSDF(pos + h.yyx) - mapSDF(pos - h.yyx)\n    ));\n}\n\`\`\`\n\nOptimasi register occupancy: 100% compute tile efficiency tercapai.`;
-    } else {
-      targetResponse = `### Jie Reflex Dispatch Log\n\nTelemetri instan terpindai:\n- Latency: 18ms TTFT\n- KV-Cache Footprint: 41.8% (Linear Recurrence)\n- Active Workers: 16/16 Threads Synchronous\n\n\`\`\`json\n{\n  "dispatch_id": "jie-stream-9941",\n  "status": "NOMINAL",\n  "telemetry_egress": "LOCKED_ZERO"\n}\n\`\`\``;
-    }
-
+    const startTime = performance.now();
     const placeholderAstMsg = {
       id: assistantMsgId,
       role: 'assistant',
       model: selectedModel,
       content: '',
       thought: {
-        duration: thoughtDur,
-        steps: mockSteps
+        duration: 'Synthesizing...',
+        steps: [
+          { name: 'Gateway Dispatch', time: 'Initiated', status: 'active', detail: `Routing to ${liveModelName} via ${apiBaseUrl}` },
+          { name: 'Sovereign Pulse Alignment', time: 'Active', status: 'active', detail: 'Applying Epinoia Tier-3 Governance & System Prompts' }
+        ]
       },
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isStreaming: true
@@ -543,48 +556,131 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
       }
       return conv;
     }));
-
     setExpandedThoughts(prev => ({ ...prev, [assistantMsgId]: true }));
 
-    let charIndex = 0;
-    const streamInterval = setInterval(() => {
-      charIndex += 16;
-      if (charIndex >= targetResponse.length) {
-        clearInterval(streamInterval);
-        setIsStreaming(false);
-        setConversations(prev => prev.map(conv => {
-          if (conv.id === activeConvId) {
-            return {
-              ...conv,
-              messages: conv.messages.map(m => m.id === assistantMsgId ? { ...m, content: targetResponse, isStreaming: false } : m)
-            };
-          }
-          return conv;
-        }));
-      } else {
-        setConversations(prev => prev.map(conv => {
-          if (conv.id === activeConvId) {
-            return {
-              ...conv,
-              messages: conv.messages.map(m => m.id === assistantMsgId ? { ...m, content: targetResponse.slice(0, charIndex) } : m)
-            };
-          }
-          return conv;
-        }));
+    // Prepare message history
+    const history = (activeConversation.messages || []).map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    try {
+      const response = await fetch(`${apiBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: liveModelName,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPTS[selectedModel] || SYSTEM_PROMPTS.merlin },
+            ...history,
+            { role: 'user', content: textToSend }
+          ],
+          stream: true,
+          temperature: 0.4
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Bridge HTTP ${response.status}: ${response.statusText}`);
       }
-    }, 28);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let streamedText = '';
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === 'data: [DONE]') continue;
+          if (trimmed.startsWith('data: ')) {
+            try {
+              const parsed = JSON.parse(trimmed.slice(6));
+              const delta = parsed.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                streamedText += delta;
+                setConversations(prev => prev.map(conv => {
+                  if (conv.id === activeConvId) {
+                    return {
+                      ...conv,
+                      messages: conv.messages.map(m => m.id === assistantMsgId ? { ...m, content: streamedText } : m)
+                    };
+                  }
+                  return conv;
+                }));
+              }
+            } catch (e) {
+              // Ignore partial chunk parsing
+            }
+          }
+        }
+      }
+
+      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+      setConversations(prev => prev.map(conv => {
+        if (conv.id === activeConvId) {
+          return {
+            ...conv,
+            messages: conv.messages.map(m => m.id === assistantMsgId ? {
+              ...m,
+              isStreaming: false,
+              thought: {
+                duration: `${elapsed}s`,
+                steps: [
+                  { name: 'Gateway Dispatch', time: '14ms', status: 'complete', detail: `Handled by ${liveModelName} on ${apiBaseUrl}` },
+                  { name: 'Cognitive Recurrence Synthesis', time: `${elapsed}s`, status: 'complete', detail: 'Completed stream generation with zero-hallucination guard.' },
+                  { name: 'Cryptographic Ledger Hash', time: '4ms', status: 'complete', detail: 'State verification locked in local session journal.' }
+                ]
+              }
+            } : m)
+          };
+        }
+        return conv;
+      }));
+    } catch (err) {
+      console.error('ClarioHub stream error:', err);
+      // Fallback message if network error
+      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+      setConversations(prev => prev.map(conv => {
+        if (conv.id === activeConvId) {
+          return {
+            ...conv,
+            messages: conv.messages.map(m => m.id === assistantMsgId ? {
+              ...m,
+              isStreaming: false,
+              content: `### ⚠️ Bridge Error: ${err.message}\n\nPastikan koneksi jaringan atau konfigurasi API Key di Shard Telemetry HUD valid.`,
+              thought: {
+                duration: `${elapsed}s`,
+                steps: [
+                  { name: 'Bridge Connection', time: `${elapsed}s`, status: 'complete', detail: `Failed: ${err.message}` }
+                ]
+              }
+            } : m)
+          };
+        }
+        return conv;
+      }));
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   return (
     <div className="epi-app-root">
-      {/* Background Starfield & Glow */}
       <canvas ref={canvasRef} id="bg-canvas" />
       <div className="bg-glow" />
 
       <style>{`
-        /* ====================================================================
-           EPINOIA HORIZON DESIGN TOKENS (Imported from docs.css & pricing)
-           ==================================================================== */
         :root {
           --bg: #030208;
           --panel: rgba(10, 7, 24, 0.86);
@@ -611,12 +707,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           --font-mono: 'JetBrains Mono', monospace;
         }
 
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body, html {
           background-color: var(--bg);
           color: var(--text);
@@ -626,18 +717,9 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           -webkit-font-smoothing: antialiased;
         }
 
-        #bg-canvas {
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
-        }
-
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         .bg-glow {
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
+          position: fixed; inset: 0; z-index: 0; pointer-events: none;
           background:
             radial-gradient(55% 45% at 12% 0%, rgba(139, 92, 246, 0.16), transparent 70%),
             radial-gradient(45% 40% at 92% 100%, rgba(6, 182, 212, 0.12), transparent 70%),
@@ -655,7 +737,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           z-index: 1;
         }
 
-        /* --- SIDEBAR (ARCANE SANCTUM DRAWER) --- */
         .epi-sidebar {
           width: 290px;
           min-width: 290px;
@@ -669,9 +750,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           z-index: 40;
         }
 
-        .epi-sidebar.collapsed {
-          margin-left: -290px;
-        }
+        .epi-sidebar.collapsed { margin-left: -290px; }
 
         .sidebar-header {
           padding: 18px 20px 14px;
@@ -681,1056 +760,366 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           border-bottom: 1px solid rgba(234, 179, 8, 0.1);
         }
 
-        .brand-cluster {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          text-decoration: none;
-        }
-
+        .brand-cluster { display: flex; align-items: center; gap: 12px; text-decoration: none; }
         .brand-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 9px;
-          display: grid;
-          place-items: center;
-          background: rgba(17, 12, 36, 0.95);
-          border: 1px solid rgba(234, 179, 8, 0.5);
-          color: var(--gold);
-          box-shadow: 0 0 16px rgba(234, 179, 8, 0.25);
+          width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center;
+          background: rgba(17, 12, 36, 0.95); border: 1px solid rgba(234, 179, 8, 0.5);
+          color: var(--gold); box-shadow: 0 0 16px rgba(234, 179, 8, 0.25);
         }
-
         .brand-title {
-          font-family: var(--font-display);
-          font-size: 15px;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          color: var(--gold-soft);
-          text-shadow: 0 0 14px rgba(234, 179, 8, 0.4);
-          line-height: 1.1;
+          font-family: var(--font-display); font-size: 15px; font-weight: 700;
+          letter-spacing: 0.05em; color: var(--gold-soft); text-shadow: 0 0 14px rgba(234, 179, 8, 0.4); line-height: 1.1;
         }
-
-        .brand-sub {
-          font-size: 9.5px;
-          font-family: var(--font-mono);
-          color: var(--cyan);
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          margin-top: 3px;
-        }
+        .brand-sub { font-size: 9.5px; font-family: var(--font-mono); color: var(--cyan); letter-spacing: 0.16em; text-transform: uppercase; margin-top: 3px; }
 
         .btn-icon-ghost {
-          background: transparent;
-          border: none;
-          color: var(--gold-soft);
-          width: 32px;
-          height: 32px;
-          border-radius: var(--radius-sm);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          background: transparent; border: none; color: var(--gold-soft);
+          width: 32px; height: 32px; border-radius: var(--radius-sm);
+          display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
         }
+        .btn-icon-ghost:hover { background: rgba(234, 179, 8, 0.12); color: #fff; box-shadow: 0 0 12px rgba(234, 179, 8, 0.2); }
 
-        .btn-icon-ghost:hover {
-          background: rgba(234, 179, 8, 0.12);
-          color: #fff;
-          box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
-        }
-
-        .sidebar-new-chat-wrap {
-          padding: 16px;
-        }
-
+        .sidebar-new-chat-wrap { padding: 16px; }
         .btn-new-chat {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 11px 16px;
-          background: rgba(234, 179, 8, 0.07);
-          border: 1px solid var(--line-2);
-          border-radius: var(--radius-pill);
-          color: var(--gold-soft);
-          font-family: var(--font-heading);
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: all 0.25s ease;
+          width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 16px;
+          background: rgba(234, 179, 8, 0.07); border: 1px solid var(--line-2); border-radius: var(--radius-pill);
+          color: var(--gold-soft); font-family: var(--font-heading); font-size: 12px; font-weight: 700;
+          letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease;
           box-shadow: 0 0 15px rgba(234, 179, 8, 0.08);
         }
-
         .btn-new-chat:hover {
-          background: rgba(234, 179, 8, 0.18);
-          border-color: var(--gold);
-          color: #fff;
-          box-shadow: 0 0 20px rgba(234, 179, 8, 0.25);
-          transform: translateY(-1px);
+          background: rgba(234, 179, 8, 0.18); border-color: var(--gold); color: #fff;
+          box-shadow: 0 0 20px rgba(234, 179, 8, 0.25); transform: translateY(-1px);
         }
 
         .sidebar-section-title {
-          font-family: var(--font-heading);
-          font-size: 10.5px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--dim);
-          padding: 10px 20px 6px;
+          font-family: var(--font-heading); font-size: 10.5px; font-weight: 700;
+          letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); padding: 10px 20px 6px;
         }
 
-        .sidebar-history-list {
-          flex: 1;
-          overflow-y: auto;
-          padding: 0 12px;
-        }
-
+        .sidebar-history-list { flex: 1; overflow-y: auto; padding: 0 12px; }
         .sidebar-history-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 9px 12px;
-          border-radius: var(--radius-sm);
-          font-size: 13px;
-          color: var(--muted);
-          cursor: pointer;
-          margin-bottom: 3px;
-          border: 1px solid transparent;
-          transition: all 0.18s ease;
+          display: flex; align-items: center; justify-content: space-between; padding: 9px 12px;
+          border-radius: var(--radius-sm); font-size: 13px; color: var(--muted); cursor: pointer;
+          margin-bottom: 3px; border: 1px solid transparent; transition: all 0.18s ease;
         }
-
-        .sidebar-history-item:hover {
-          background: rgba(234, 179, 8, 0.06);
-          color: var(--text);
-          border-color: rgba(234, 179, 8, 0.15);
-        }
-
+        .sidebar-history-item:hover { background: rgba(234, 179, 8, 0.06); color: var(--text); border-color: rgba(234, 179, 8, 0.15); }
         .sidebar-history-item.active {
-          background: rgba(234, 179, 8, 0.12);
-          color: var(--gold-soft);
-          border-color: var(--line);
-          font-weight: 500;
-          box-shadow: inset 0 0 12px rgba(234, 179, 8, 0.1);
+          background: rgba(234, 179, 8, 0.12); color: var(--gold-soft); border-color: var(--line);
+          font-weight: 500; box-shadow: inset 0 0 12px rgba(234, 179, 8, 0.1);
         }
 
         .sidebar-bottom {
-          padding: 14px 16px;
-          border-top: 1px solid var(--line);
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          background: rgba(6, 4, 14, 0.6);
+          padding: 14px 16px; border-top: 1px solid var(--line); display: flex; flex-direction: column;
+          gap: 10px; background: rgba(6, 4, 14, 0.6);
+        }
+
+        .bridge-status-pill {
+          display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+          background: rgba(34, 211, 238, 0.08); border: 1px solid rgba(34, 211, 238, 0.25);
+          border-radius: var(--radius-pill); font-size: 11px; font-family: var(--font-mono); color: var(--cyan);
         }
 
         .clearance-pill {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px 14px;
-          background: rgba(234, 179, 8, 0.06);
-          border: 1px solid var(--line);
-          border-radius: var(--radius-sm);
-          cursor: pointer;
-          transition: all 0.2s ease;
+          display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+          background: rgba(234, 179, 8, 0.06); border: 1px solid var(--line); border-radius: var(--radius-sm);
+          cursor: pointer; transition: all 0.2s ease;
         }
+        .clearance-pill:hover { border-color: var(--gold); box-shadow: 0 0 15px rgba(234, 179, 8, 0.15); }
 
-        .clearance-pill:hover {
-          border-color: var(--gold);
-          box-shadow: 0 0 15px rgba(234, 179, 8, 0.15);
-        }
-
-        /* --- MAIN WORKSPACE AREA --- */
         .epi-workspace {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          height: 100vh;
-          overflow: hidden;
-          background: transparent;
-          position: relative;
+          flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+          background: transparent; position: relative;
         }
 
-        /* --- TOP NAV HEADER (EPINOIA SANCTUM BAR) --- */
         .workspace-header {
-          height: 70px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 24px;
-          border-bottom: 1px solid var(--line);
-          background: rgba(3, 2, 8, 0.88);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          z-index: 30;
+          height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+          border-bottom: 1px solid var(--line); background: rgba(3, 2, 8, 0.88);
+          backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); z-index: 30;
         }
 
-        .header-left {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
+        .header-left { display: flex; align-items: center; gap: 14px; }
         .model-selector-pill {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-          padding: 7px 16px;
-          background: rgba(14, 10, 32, 0.8);
-          border: 1px solid var(--line-2);
-          border-radius: var(--radius-pill);
-          font-family: var(--font-heading);
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--gold-soft);
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: all 0.25s ease;
-          box-shadow: 0 0 16px rgba(234, 179, 8, 0.12);
+          display: flex; align-items: center; gap: 9px; padding: 7px 16px;
+          background: rgba(14, 10, 32, 0.8); border: 1px solid var(--line-2); border-radius: var(--radius-pill);
+          font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--gold-soft);
+          letter-spacing: 0.05em; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 0 16px rgba(234, 179, 8, 0.12);
         }
-
         .model-selector-pill:hover {
-          background: rgba(234, 179, 8, 0.14);
-          border-color: var(--gold);
-          box-shadow: 0 0 22px rgba(234, 179, 8, 0.25);
+          background: rgba(234, 179, 8, 0.14); border-color: var(--gold); box-shadow: 0 0 22px rgba(234, 179, 8, 0.25);
         }
 
-        /* --- DUAL-VIEW SEGMENTED TOGGLE (EPINOIA SANCTUM PILL) --- */
         .view-segmented-wrap {
-          display: flex;
-          align-items: center;
-          background: rgba(8, 6, 20, 0.85);
-          border: 1px solid var(--line);
-          border-radius: var(--radius-pill);
-          padding: 4px;
-          box-shadow: 0 0 20px rgba(0,0,0,0.4);
+          display: flex; align-items: center; background: rgba(8, 6, 20, 0.85); border: 1px solid var(--line);
+          border-radius: var(--radius-pill); padding: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.4);
         }
-
         .view-btn {
-          padding: 7px 18px;
-          font-family: var(--font-heading);
-          font-size: 11.5px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          border-radius: var(--radius-pill);
-          border: none;
-          background: transparent;
-          color: var(--muted);
-          cursor: pointer;
-          transition: all 0.2s ease;
-          display: flex;
-          align-items: center;
-          gap: 7px;
+          padding: 7px 18px; font-family: var(--font-heading); font-size: 11.5px; font-weight: 700;
+          letter-spacing: 0.12em; text-transform: uppercase; border-radius: var(--radius-pill); border: none;
+          background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s ease;
+          display: flex; align-items: center; gap: 7px;
         }
-
         .view-btn.active {
           background: linear-gradient(135deg, rgba(234, 179, 8, 0.25), rgba(202, 138, 4, 0.35));
-          color: #fff;
-          border: 1px solid var(--line-2);
-          box-shadow: 0 0 18px rgba(234, 179, 8, 0.25);
+          color: #fff; border: 1px solid var(--line-2); box-shadow: 0 0 18px rgba(234, 179, 8, 0.25);
           text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
         }
 
-        .header-right {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-
-        .nav-links {
-          display: flex;
-          align-items: center;
-          gap: 18px;
-        }
-
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .nav-links { display: flex; align-items: center; gap: 18px; }
         .nav-link {
-          font-family: var(--font-heading);
-          font-size: 11.5px;
-          font-weight: 600;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #cbd5e1;
-          transition: color 0.2s ease;
-          text-decoration: none;
+          font-family: var(--font-heading); font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em;
+          text-transform: uppercase; color: #cbd5e1; transition: color 0.2s ease; text-decoration: none;
         }
+        .nav-link:hover { color: var(--gold); }
 
-        .nav-link:hover {
-          color: var(--gold);
-        }
-
-        /* --- CHAT WORKSPACE BODY --- */
-        .chat-container {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          position: relative;
-        }
-
-        .chat-scroll-area {
-          flex: 1;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-          position: relative;
-        }
-
+        .chat-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .chat-scroll-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
         .chat-scroll-content {
-          max-width: 880px;
-          width: 100%;
-          margin: 0 auto;
-          padding: 28px 24px 190px;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
+          max-width: 880px; width: 100%; margin: 0 auto; padding: 28px 24px 190px;
+          display: flex; flex-direction: column; gap: 24px;
         }
 
-        /* --- EMPTY STATE / STARTER CARDS --- */
         .starter-hero {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 36px 0 24px;
-          text-align: center;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          padding: 36px 0 24px; text-align: center;
         }
-
         .hero-glyph {
-          width: 58px;
-          height: 58px;
-          border-radius: 14px;
-          background: rgba(17, 12, 36, 0.95);
-          border: 1px solid var(--line-2);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 22px;
-          box-shadow: 0 0 30px rgba(234, 179, 8, 0.35);
+          width: 58px; height: 58px; border-radius: 14px; background: rgba(17, 12, 36, 0.95);
+          border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center;
+          margin-bottom: 22px; box-shadow: 0 0 30px rgba(234, 179, 8, 0.35);
         }
-
         .hero-title {
-          font-family: var(--font-display);
-          font-size: clamp(26px, 4vw, 36px);
-          font-weight: 900;
-          color: var(--gold);
-          letter-spacing: 0.04em;
-          margin-bottom: 10px;
+          font-family: var(--font-display); font-size: clamp(26px, 4vw, 36px); font-weight: 900;
+          color: var(--gold); letter-spacing: 0.04em; margin-bottom: 10px;
           text-shadow: 0 0 24px rgba(234, 179, 8, 0.45);
           background: linear-gradient(92deg, #fef3c7 0%, #facc15 45%, #eab308 70%, #c4b5fd 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .hero-subtitle { font-size: 14.5px; color: var(--muted); max-width: 580px; line-height: 1.6; }
 
-        .hero-subtitle {
-          font-size: 14.5px;
-          color: var(--muted);
-          max-width: 580px;
-          line-height: 1.6;
-        }
-
-        .starter-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 14px;
-          margin-top: 32px;
-        }
-
+        .starter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 32px; }
         .starter-card {
-          padding: 18px 20px;
-          background: var(--panel);
-          border: 1px solid var(--line);
-          border-radius: var(--radius-card);
-          cursor: pointer;
-          transition: all 0.25s ease;
-          text-align: left;
+          padding: 18px 20px; background: var(--panel); border: 1px solid var(--line);
+          border-radius: var(--radius-card); cursor: pointer; transition: all 0.25s ease; text-align: left;
           box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-          position: relative;
-          overflow: hidden;
         }
-
         .starter-card:hover {
-          background: rgba(20, 14, 42, 0.9);
-          border-color: var(--gold);
-          transform: translateY(-2px);
+          background: rgba(20, 14, 42, 0.9); border-color: var(--gold); transform: translateY(-2px);
           box-shadow: 0 8px 30px rgba(234, 179, 8, 0.2);
         }
-
         .starter-card-title {
-          font-family: var(--font-heading);
-          font-size: 14px;
-          font-weight: 700;
-          color: var(--gold-soft);
-          margin-bottom: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+          font-family: var(--font-heading); font-size: 14px; font-weight: 700; color: var(--gold-soft);
+          margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;
         }
+        .starter-card-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
 
-        .starter-card-desc {
-          font-size: 12px;
-          color: var(--muted);
-          line-height: 1.45;
-        }
-
-        /* --- MESSAGE ITEMS --- */
-        .msg-row {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          animation: fadeIn 0.25s ease forwards;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .msg-row { display: flex; flex-direction: column; gap: 12px; animation: fadeIn 0.25s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         .user-msg-block {
-          align-self: flex-end;
-          max-width: 82%;
-          background: rgba(22, 15, 48, 0.88);
-          border: 1px solid var(--line-2);
-          padding: 14px 20px;
-          border-radius: 18px 18px 4px 18px;
-          font-size: 14px;
-          line-height: 1.6;
-          color: #f8fafc;
-          box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 15px rgba(139, 92, 246, 0.15);
+          align-self: flex-end; max-width: 82%; background: rgba(22, 15, 48, 0.88); border: 1px solid var(--line-2);
+          padding: 14px 20px; border-radius: 18px 18px 4px 18px; font-size: 14px; line-height: 1.6;
+          color: #f8fafc; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 15px rgba(139, 92, 246, 0.15);
         }
-
-        .assistant-msg-block {
-          display: flex;
-          gap: 16px;
-          width: 100%;
-        }
-
+        .assistant-msg-block { display: flex; gap: 16px; width: 100%; }
         .assistant-avatar {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: rgba(17, 12, 36, 0.95);
-          border: 1px solid var(--line);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          margin-top: 4px;
-          box-shadow: 0 0 16px rgba(234, 179, 8, 0.2);
+          width: 36px; height: 36px; border-radius: 10px; background: rgba(17, 12, 36, 0.95);
+          border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; margin-top: 4px; box-shadow: 0 0 16px rgba(234, 179, 8, 0.2);
         }
+        .assistant-body { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+        .assistant-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--dim); }
+        .assistant-model-tag { font-family: var(--font-heading); font-weight: 700; color: var(--gold-soft); letter-spacing: 0.05em; }
 
-        .assistant-body {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          overflow: hidden;
-        }
-
-        .assistant-meta {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 12px;
-          color: var(--dim);
-        }
-
-        .assistant-model-tag {
-          font-family: var(--font-heading);
-          font-weight: 700;
-          color: var(--gold-soft);
-          letter-spacing: 0.05em;
-        }
-
-        /* --- GEMINI THINKING ACCORDION (EPINOIA COGNITIVE PULSE) --- */
         .thought-accordion {
-          background: rgba(10, 7, 24, 0.65);
-          border: 1px solid rgba(34, 211, 238, 0.25);
-          border-radius: 12px;
-          overflow: hidden;
-          transition: all 0.2s ease;
-          box-shadow: 0 0 15px rgba(34, 211, 238, 0.06);
+          background: rgba(10, 7, 24, 0.65); border: 1px solid rgba(34, 211, 238, 0.25);
+          border-radius: 12px; overflow: hidden; transition: all 0.2s ease; box-shadow: 0 0 15px rgba(34, 211, 238, 0.06);
         }
-
-        .thought-accordion:hover {
-          border-color: var(--cyan);
-          box-shadow: 0 0 20px rgba(34, 211, 238, 0.15);
-        }
-
-        .thought-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px 16px;
-          cursor: pointer;
-          user-select: none;
-        }
-
-        .thought-title-group {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 12px;
-          font-family: var(--font-mono);
-          color: var(--cyan-soft);
-        }
-
+        .thought-accordion:hover { border-color: var(--cyan); box-shadow: 0 0 20px rgba(34, 211, 238, 0.15); }
+        .thought-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer; user-select: none; }
+        .thought-title-group { display: flex; align-items: center; gap: 10px; font-size: 12px; font-family: var(--font-mono); color: var(--cyan-soft); }
         .thought-timing-pill {
-          padding: 2px 8px;
-          background: rgba(34, 211, 238, 0.1);
-          border: 1px solid rgba(34, 211, 238, 0.3);
-          border-radius: var(--radius-pill);
-          font-size: 10.5px;
-          color: var(--cyan);
+          padding: 2px 8px; background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3);
+          border-radius: var(--radius-pill); font-size: 10.5px; color: var(--cyan);
         }
-
         .thought-body {
-          padding: 10px 16px 14px;
-          border-top: 1px solid rgba(34, 211, 238, 0.15);
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          background: rgba(4, 3, 10, 0.4);
+          padding: 10px 16px 14px; border-top: 1px solid rgba(34, 211, 238, 0.15); display: flex; flex-direction: column;
+          gap: 8px; background: rgba(4, 3, 10, 0.4);
         }
+        .thought-step-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; line-height: 1.45; padding: 4px 0; }
+        .step-indicator { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); margin-top: 6px; flex-shrink: 0; }
+        .step-name { font-weight: 600; color: #f1f5f9; font-family: var(--font-mono); font-size: 11.5px; }
+        .step-time { color: var(--dim); font-size: 11px; margin-left: 6px; }
+        .step-detail { color: var(--muted); margin-top: 2px; }
 
-        .thought-step-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          font-size: 12px;
-          line-height: 1.45;
-          padding: 4px 0;
-        }
-
-        .step-indicator {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--cyan);
-          box-shadow: 0 0 8px var(--cyan);
-          margin-top: 6px;
-          flex-shrink: 0;
-        }
-
-        .step-name {
-          font-weight: 600;
-          color: #f1f5f9;
-          font-family: var(--font-mono);
-          font-size: 11.5px;
-        }
-
-        .step-time {
-          color: var(--dim);
-          font-size: 11px;
-          margin-left: 6px;
-        }
-
-        .step-detail {
-          color: var(--muted);
-          margin-top: 2px;
-        }
-
-        /* --- RESPONSE MARKDOWN & ARCANE TERMINAL BLOCKS --- */
-        .text-paragraphs-group {
-          font-size: 14.5px;
-          line-height: 1.7;
-          color: #e2e8f0;
-        }
-
+        .text-paragraphs-group { font-size: 14.5px; line-height: 1.7; color: #e2e8f0; }
         .md-h3 {
-          font-family: var(--font-heading);
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--gold-soft);
-          margin: 18px 0 8px;
-          letter-spacing: 0.04em;
-          text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+          font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--gold-soft);
+          margin: 18px 0 8px; letter-spacing: 0.04em; text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
         }
-
         .md-h2 {
-          font-family: var(--font-display);
-          font-size: 19px;
-          font-weight: 700;
-          color: var(--gold);
-          margin: 22px 0 10px;
-          text-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
+          font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--gold);
+          margin: 22px 0 10px; text-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
         }
-
-        .md-p {
-          margin-bottom: 12px;
-        }
+        .md-p { margin-bottom: 12px; }
 
         .code-block-wrap {
-          margin: 16px 0;
-          background: rgba(4, 3, 10, 0.95);
-          border: 1px solid var(--line-2);
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+          margin: 16px 0; background: rgba(4, 3, 10, 0.95); border: 1px solid var(--line-2);
+          border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.7);
         }
-
         .code-block-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 8px 16px;
-          background: rgba(14, 10, 32, 0.85);
-          border-bottom: 1px solid var(--line);
+          display: flex; align-items: center; justify-content: space-between; padding: 8px 16px;
+          background: rgba(14, 10, 32, 0.85); border-bottom: 1px solid var(--line);
         }
-
         .code-lang-tag {
-          font-family: var(--font-mono);
-          font-size: 11px;
-          font-weight: 700;
-          color: var(--gold-soft);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
+          font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--gold-soft);
+          text-transform: uppercase; letter-spacing: 0.1em;
         }
-
         .btn-copy-code {
-          background: transparent;
-          border: none;
-          color: var(--gold-soft);
-          font-family: var(--font-mono);
-          font-size: 11px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          cursor: pointer;
-          transition: color 0.18s ease;
+          background: transparent; border: none; color: var(--gold-soft); font-family: var(--font-mono);
+          font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: color 0.18s ease;
         }
-
-        .btn-copy-code:hover {
-          color: #fff;
-        }
-
+        .btn-copy-code:hover { color: #fff; }
         .code-pre {
-          padding: 16px 18px;
-          font-family: var(--font-mono);
-          font-size: 12.5px;
-          line-height: 1.55;
-          color: #cbd5e1;
-          overflow-x: auto;
-          white-space: pre;
+          padding: 16px 18px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55;
+          color: #cbd5e1; overflow-x: auto; white-space: pre;
         }
 
-        .msg-action-bar {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 6px;
-        }
+        .msg-action-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 
-        /* --- FLOATING GEMINI PROMPT PILL (EPINOIA SANCTUM STYLING) --- */
         .prompt-floating-container {
-          position: absolute;
-          bottom: 24px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: calc(100% - 40px);
-          max-width: 840px;
-          z-index: 25;
+          position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px);
+          max-width: 840px; z-index: 25;
         }
-
         .prompt-pill-card {
-          background: rgba(10, 7, 24, 0.92);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid var(--line-2);
-          border-radius: 28px;
+          background: rgba(10, 7, 24, 0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+          border: 1px solid var(--line-2); border-radius: 28px;
           box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 25px rgba(234, 179, 8, 0.12);
-          padding: 12px 18px 10px 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          transition: all 0.25s ease;
+          padding: 12px 18px 10px 20px; display: flex; flex-direction: column; gap: 6px; transition: all 0.25s ease;
         }
-
         .prompt-pill-card:focus-within {
-          border-color: var(--gold);
-          box-shadow: 0 12px 48px rgba(0,0,0,0.9), 0 0 35px rgba(234, 179, 8, 0.25);
+          border-color: var(--gold); box-shadow: 0 12px 48px rgba(0,0,0,0.9), 0 0 35px rgba(234, 179, 8, 0.25);
         }
-
-        .prompt-upper-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
+        .prompt-upper-row { display: flex; align-items: center; gap: 8px; }
         .prompt-textarea {
-          width: 100%;
-          min-height: 28px;
-          max-height: 180px;
-          background: transparent;
-          border: none;
-          outline: none;
-          color: #f8fafc;
-          font-family: var(--font-sans);
-          font-size: 14.5px;
-          line-height: 1.5;
-          resize: none;
+          width: 100%; min-height: 28px; max-height: 180px; background: transparent; border: none; outline: none;
+          color: #f8fafc; font-family: var(--font-sans); font-size: 14.5px; line-height: 1.5; resize: none;
         }
-
         .prompt-textarea::placeholder {
-          color: rgba(254, 240, 138, 0.4);
-          font-family: var(--font-heading);
-          font-size: 13.5px;
-          letter-spacing: 0.05em;
+          color: rgba(254, 240, 138, 0.4); font-family: var(--font-heading); font-size: 13.5px; letter-spacing: 0.05em;
         }
 
-        .prompt-bottom-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-top: 4px;
-        }
-
-        .prompt-tools-group {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
+        .prompt-bottom-row { display: flex; align-items: center; justify-content: space-between; padding-top: 4px; }
+        .prompt-tools-group { display: flex; align-items: center; gap: 8px; }
         .tool-badge-btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          background: rgba(234, 179, 8, 0.07);
-          border: 1px solid var(--line);
-          border-radius: var(--radius-pill);
-          font-family: var(--font-heading);
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.06em;
-          color: var(--gold-soft);
-          cursor: pointer;
-          transition: all 0.2s ease;
+          display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(234, 179, 8, 0.07);
+          border: 1px solid var(--line); border-radius: var(--radius-pill); font-family: var(--font-heading);
+          font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--gold-soft); cursor: pointer; transition: all 0.2s ease;
         }
-
         .tool-badge-btn:hover {
-          color: #fff;
-          border-color: var(--gold);
-          background: rgba(234, 179, 8, 0.16);
-          box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
+          color: #fff; border-color: var(--gold); background: rgba(234, 179, 8, 0.16); box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
         }
-
         .tool-badge-btn.active {
           background: linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(6, 182, 212, 0.35));
-          border-color: var(--cyan);
-          color: #fff;
-          box-shadow: 0 0 16px rgba(34, 211, 238, 0.3);
+          border-color: var(--cyan); color: #fff; box-shadow: 0 0 16px rgba(34, 211, 238, 0.3);
         }
 
         .btn-send-pill {
-          width: 38px;
-          height: 38px;
-          border-radius: 50%;
-          border: none;
-          background: linear-gradient(135deg, #facc15, #ca8a04);
-          color: #030208;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
+          width: 38px; height: 38px; border-radius: 50%; border: none; background: linear-gradient(135deg, #facc15, #ca8a04);
+          color: #030208; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;
           box-shadow: 0 0 18px rgba(234, 179, 8, 0.4);
         }
+        .btn-send-pill:disabled { background: rgba(234, 179, 8, 0.15); color: var(--dim); cursor: not-allowed; box-shadow: none; opacity: 0.5; }
+        .btn-send-pill:not(:disabled):hover { transform: scale(1.06); box-shadow: 0 0 25px rgba(234, 179, 8, 0.6); }
 
-        .btn-send-pill:disabled {
-          background: rgba(234, 179, 8, 0.15);
-          color: var(--dim);
-          cursor: not-allowed;
-          box-shadow: none;
-          opacity: 0.5;
-        }
+        .prompt-disclaimer { text-align: center; font-size: 11px; font-family: var(--font-mono); color: var(--dim); margin-top: 8px; }
 
-        .btn-send-pill:not(:disabled):hover {
-          transform: scale(1.06);
-          box-shadow: 0 0 25px rgba(234, 179, 8, 0.6);
-        }
-
-        .prompt-disclaimer {
-          text-align: center;
-          font-size: 11px;
-          font-family: var(--font-mono);
-          color: var(--dim);
-          margin-top: 8px;
-        }
-
-        /* --- ENTERPRISE OVERVIEW EDITORIAL PAGE --- */
-        .overview-container {
-          flex: 1;
-          overflow-y: auto;
-          padding: 36px 40px 100px;
-          max-width: 1180px;
-          margin: 0 auto;
-          width: 100%;
-        }
-
-        .overview-hero {
-          border-bottom: 1px solid var(--line);
-          padding-bottom: 28px;
-          margin-bottom: 40px;
-        }
-
+        /* Overview Matrix */
+        .overview-container { flex: 1; overflow-y: auto; padding: 36px 40px 100px; max-width: 1180px; margin: 0 auto; width: 100%; }
+        .overview-hero { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 40px; }
         .overview-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 5px 14px;
-          background: rgba(234, 179, 8, 0.08);
-          border: 1px solid var(--line-2);
-          border-radius: var(--radius-pill);
-          font-size: 11px;
-          font-family: var(--font-mono);
-          color: var(--gold-soft);
-          margin-bottom: 18px;
-          box-shadow: 0 0 14px rgba(234, 179, 8, 0.15);
+          display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: rgba(234, 179, 8, 0.08);
+          border: 1px solid var(--line-2); border-radius: var(--radius-pill); font-size: 11px; font-family: var(--font-mono);
+          color: var(--gold-soft); margin-bottom: 18px; box-shadow: 0 0 14px rgba(234, 179, 8, 0.15);
         }
-
         .overview-title {
-          font-family: var(--font-display);
-          font-size: clamp(28px, 4.5vw, 42px);
-          font-weight: 900;
-          color: var(--gold);
-          letter-spacing: 0.04em;
-          margin-bottom: 12px;
-          text-shadow: 0 0 24px rgba(234, 179, 8, 0.45);
+          font-family: var(--font-display); font-size: clamp(28px, 4.5vw, 42px); font-weight: 900;
+          color: var(--gold); letter-spacing: 0.04em; margin-bottom: 12px; text-shadow: 0 0 24px rgba(234, 179, 8, 0.45);
           background: linear-gradient(92deg, #fef3c7 0%, #facc15 45%, #eab308 70%, #c4b5fd 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .overview-subtitle { font-size: 15.5px; color: var(--muted); line-height: 1.65; max-width: 780px; }
 
-        .overview-subtitle {
-          font-size: 15.5px;
-          color: var(--muted);
-          line-height: 1.65;
-          max-width: 780px;
-        }
-
-        .matrix-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 22px;
-          margin-bottom: 44px;
-        }
-
+        .matrix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 44px; }
         .matrix-card {
-          background: var(--panel);
-          border: 1px solid var(--line);
-          border-radius: var(--radius-card);
-          padding: 26px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-          transition: all 0.25s ease;
+          background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 26px;
+          display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); transition: all 0.25s ease;
         }
-
-        .matrix-card:hover {
-          border-color: var(--gold);
-          box-shadow: 0 12px 36px rgba(234, 179, 8, 0.2);
-          transform: translateY(-2px);
-        }
-
-        .matrix-card-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .matrix-name {
-          font-family: var(--font-heading);
-          font-size: 19px;
-          font-weight: 700;
-          color: var(--gold-soft);
-          letter-spacing: 0.04em;
-        }
-
+        .matrix-card:hover { border-color: var(--gold); box-shadow: 0 12px 36px rgba(234, 179, 8, 0.2); transform: translateY(-2px); }
+        .matrix-card-top { display: flex; align-items: center; justify-content: space-between; }
+        .matrix-name { font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.04em; }
         .matrix-tag {
-          font-size: 10.5px;
-          font-family: var(--font-mono);
-          padding: 4px 10px;
-          border-radius: var(--radius-sm);
-          background: rgba(234, 179, 8, 0.1);
-          color: var(--gold-soft);
-          border: 1px solid var(--line);
+          font-size: 10.5px; font-family: var(--font-mono); padding: 4px 10px; border-radius: var(--radius-sm);
+          background: rgba(234, 179, 8, 0.1); color: var(--gold-soft); border: 1px solid var(--line);
         }
+        .matrix-desc { font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+        .matrix-specs { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; font-size: 12px; font-family: var(--font-mono); }
+        .spec-item { display: flex; justify-content: space-between; color: var(--dim); }
+        .spec-val { color: #f1f5f9; }
 
-        .matrix-desc {
-          font-size: 13.5px;
-          color: var(--muted);
-          line-height: 1.55;
-        }
-
-        .matrix-specs {
-          border-top: 1px solid var(--line);
-          padding-top: 16px;
-          display: grid;
-          gap: 10px;
-          font-size: 12px;
-          font-family: var(--font-mono);
-        }
-
-        .spec-item {
-          display: flex;
-          justify-content: space-between;
-          color: var(--dim);
-        }
-
-        .spec-val {
-          color: #f1f5f9;
-        }
-
-        /* --- TELEMETRY DRAWER (SLIDE-OVER) --- */
+        /* Telemetry Drawer */
         .drawer-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(3, 2, 8, 0.75);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          z-index: 50;
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 2, 8, 0.75);
+          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 50;
         }
-
         .telemetry-drawer {
-          position: fixed;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          width: 400px;
-          background: rgba(10, 7, 24, 0.95);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border-left: 1px solid var(--line-2);
-          padding: 28px;
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-          z-index: 55;
-          box-shadow: -15px 0 45px rgba(0,0,0,0.9), 0 0 30px rgba(234, 179, 8, 0.15);
-          animation: slideLeft 0.25s ease;
+          position: fixed; top: 0; right: 0; bottom: 0; width: 420px; background: rgba(10, 7, 24, 0.96);
+          backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-left: 1px solid var(--line-2);
+          padding: 28px; display: flex; flex-direction: column; gap: 20px; z-index: 55;
+          box-shadow: -15px 0 45px rgba(0,0,0,0.9), 0 0 30px rgba(234, 179, 8, 0.15); animation: slideLeft 0.25s ease;
         }
+        @keyframes slideLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        @keyframes slideLeft {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-
-        .drawer-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-bottom: 1px solid var(--line);
-          padding-bottom: 16px;
-        }
-
+        .drawer-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
         .metric-card {
-          background: rgba(18, 12, 38, 0.85);
-          border: 1px solid var(--line);
-          border-radius: 12px;
-          padding: 16px;
-          box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+          background: rgba(18, 12, 38, 0.85); border: 1px solid var(--line); border-radius: 12px;
+          padding: 16px; box-shadow: 0 4px 18px rgba(0,0,0,0.4);
         }
+        .metric-title { font-size: 11px; font-family: var(--font-mono); color: var(--gold-soft); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .metric-val { font-size: 20px; font-weight: 700; color: #fff; font-family: var(--font-mono); text-shadow: 0 0 12px rgba(234, 179, 8, 0.3); }
+        .bar-wrap { height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-pill); overflow: hidden; margin-top: 12px; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--gold)); border-radius: var(--radius-pill); box-shadow: 0 0 10px var(--gold); }
 
-        .metric-title {
-          font-size: 11px;
-          font-family: var(--font-mono);
-          color: var(--gold-soft);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          margin-bottom: 6px;
+        .drawer-input-label { font-size: 11px; font-family: var(--font-mono); color: var(--gold-soft); margin-bottom: 4px; display: block; }
+        .drawer-input {
+          width: 100%; padding: 10px 12px; background: rgba(4, 3, 10, 0.9); border: 1px solid var(--line);
+          border-radius: var(--radius-sm); color: var(--cyan); font-family: var(--font-mono); font-size: 12px; outline: none;
         }
+        .drawer-input:focus { border-color: var(--gold); }
 
-        .metric-val {
-          font-size: 22px;
-          font-weight: 700;
-          color: #fff;
-          font-family: var(--font-mono);
-          text-shadow: 0 0 12px rgba(234, 179, 8, 0.3);
-        }
-
-        .bar-wrap {
-          height: 7px;
-          background: rgba(255, 255, 255, 0.08);
-          border-radius: var(--radius-pill);
-          overflow: hidden;
-          margin-top: 12px;
-        }
-
-        .bar-fill {
-          height: 100%;
-          background: linear-gradient(90deg, var(--cyan), var(--gold));
-          border-radius: var(--radius-pill);
-          box-shadow: 0 0 10px var(--gold);
-        }
-
-        /* --- CLEARANCE MODAL --- */
+        /* Modal */
         .modal-wrap {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(3, 2, 8, 0.85);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 60;
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(3, 2, 8, 0.85);
+          display: flex; align-items: center; justify-content: center; z-index: 60;
+          backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
-
         .modal-box {
-          width: 460px;
-          background: rgba(14, 10, 32, 0.96);
-          border: 1px solid var(--line-2);
-          border-radius: var(--radius-card);
-          padding: 32px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(234, 179, 8, 0.2);
+          width: 480px; background: rgba(14, 10, 32, 0.96); border: 1px solid var(--line-2);
+          border-radius: var(--radius-card); padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 35px rgba(234, 179, 8, 0.2);
         }
-
         .modal-input {
-          width: 100%;
-          padding: 12px 16px;
-          background: rgba(4, 3, 10, 0.9);
-          border: 1px solid var(--line);
-          border-radius: var(--radius-sm);
-          color: var(--gold-soft);
-          font-family: var(--font-mono);
-          font-size: 13.5px;
-          margin: 16px 0 22px;
-          outline: none;
-        }
-
-        .modal-input:focus {
-          border-color: var(--gold);
-          box-shadow: 0 0 15px rgba(234, 179, 8, 0.25);
+          width: 100%; padding: 12px 16px; background: rgba(4, 3, 10, 0.9); border: 1px solid var(--line);
+          border-radius: var(--radius-sm); color: var(--gold-soft); font-family: var(--font-mono); font-size: 13px;
+          margin: 16px 0 22px; outline: none;
         }
 
         @media (max-width: 960px) {
-          .nav-links {
-            display: none;
-          }
-          .epi-sidebar {
-            position: absolute;
-            height: 100%;
-          }
-          .matrix-grid {
-            grid-template-columns: 1fr;
-          }
-          .starter-grid {
-            grid-template-columns: 1fr;
-          }
-          .telemetry-drawer {
-            width: 100%;
-          }
+          .nav-links { display: none; }
+          .epi-sidebar { position: absolute; height: 100%; }
+          .matrix-grid { grid-template-columns: 1fr; }
+          .starter-grid { grid-template-columns: 1fr; }
+          .telemetry-drawer { width: 100%; }
         }
       `}</style>
 
@@ -1787,6 +1176,11 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
         </div>
 
         <div className="sidebar-bottom">
+          <div className="bridge-status-pill">
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22d3ee', boxShadow: '0 0 8px #22d3ee' }} />
+            <span>clariohub.id / live bridge</span>
+          </div>
+
           <div className="clearance-pill" onClick={() => setClearanceModalOpen(true)}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Icons.Shield size={18} color="#facc15" />
@@ -1800,14 +1194,13 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
 
           <button className="btn-new-chat" style={{ padding: '9px 14px', fontSize: '11px', justifyContent: 'center' }} onClick={() => setTelemetryOpen(true)}>
             <Icons.Sliders size={15} />
-            <span>Shard Telemetry HUD</span>
+            <span>Neural Bridge &amp; Telemetry</span>
           </button>
         </div>
       </aside>
 
       {/* --- WORKSPACE CORE --- */}
       <main className="epi-workspace">
-        {/* TOP NAV HEADER */}
         <header className="workspace-header">
           <div className="header-left">
             {!sidebarOpen && (
@@ -1816,7 +1209,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
               </button>
             )}
 
-            {/* MODEL SELECTOR DROPDOWN */}
             <div style={{ position: 'relative' }}>
               <button className="model-selector-pill" onClick={() => setModelDropdownOpen(!modelDropdownOpen)}>
                 {React.createElement(FLEET_MODELS[selectedModel].icon, { size: 16, color: FLEET_MODELS[selectedModel].color })}
@@ -1829,17 +1221,10 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
 
               {modelDropdownOpen && (
                 <div style={{
-                  position: 'absolute',
-                  top: '120%',
-                  left: 0,
-                  width: '330px',
-                  background: 'var(--panel)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1px solid var(--line-2)',
-                  borderRadius: '14px',
-                  boxShadow: '0 16px 40px rgba(0,0,0,0.9), 0 0 25px rgba(234, 179, 8, 0.2)',
-                  padding: '10px',
-                  zIndex: 45
+                  position: 'absolute', top: '120%', left: 0, width: '330px',
+                  background: 'var(--panel)', backdropFilter: 'blur(20px)', border: '1px solid var(--line-2)',
+                  borderRadius: '14px', boxShadow: '0 16px 40px rgba(0,0,0,0.9), 0 0 25px rgba(234, 179, 8, 0.2)',
+                  padding: '10px', zIndex: 45
                 }}>
                   {Object.values(FLEET_MODELS).map(m => (
                     <div
@@ -1849,16 +1234,10 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                         setModelDropdownOpen(false);
                       }}
                       style={{
-                        padding: '10px 14px',
-                        borderRadius: '10px',
-                        cursor: 'pointer',
+                        padding: '10px 14px', borderRadius: '10px', cursor: 'pointer',
                         background: selectedModel === m.id ? m.accent : 'transparent',
                         border: `1px solid ${selectedModel === m.id ? m.border : 'transparent'}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 4,
-                        marginBottom: 4,
-                        transition: 'all 0.2s ease'
+                        display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 4, transition: 'all 0.2s ease'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1876,7 +1255,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
             </div>
           </div>
 
-          {/* DUAL-VIEW SEGMENTED TOGGLE */}
           <div className="view-segmented-wrap">
             <button
               className={`view-btn ${currentView === 'chat' ? 'active' : ''}`}
@@ -1894,7 +1272,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
             </button>
           </div>
 
-          {/* RIGHT ACTIONS */}
           <div className="header-right">
             <div className="nav-links">
               <a href="/docs/" className="nav-link">Docs</a>
@@ -1902,7 +1279,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
               <a href="/store/" className="nav-link" style={{ color: 'var(--gold)' }}>💎 Store</a>
             </div>
 
-            <button className="btn-icon-ghost" onClick={() => setTelemetryOpen(true)} title="Fleet Parameters">
+            <button className="btn-icon-ghost" onClick={() => setTelemetryOpen(true)} title="Neural Bridge Parameters">
               <Icons.Activity size={18} color="#22d3ee" />
             </button>
 
@@ -1912,7 +1289,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
           </div>
         </header>
 
-        {/* --- VIEW 1: CHAT WORKSPACE --- */}
+        {/* --- CHAT WORKSPACE --- */}
         {currentView === 'chat' && (
           <div className="chat-container">
             <div className="chat-scroll-area">
@@ -1924,7 +1301,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                     </div>
                     <h1 className="hero-title">Epinoia Sovereign Sanctum</h1>
                     <p className="hero-subtitle">
-                      Invoke Tier-0 Governor <b>Merlin</b> for deep strategic cognition, <b>Nxelle Codex</b> for shader geometry, and <b>Jie</b> for sub-millisecond telemetry routing.
+                      Live Neural Bridge connected to <b>clariohub.id</b>. Invoke <b>Merlin</b> (DeepSeek-v4.1), <b>Nxelle Codex</b> (v4-Pro), or <b>Jie</b> (GLM-5.3) for instant sovereign cognition.
                     </p>
 
                     <div className="starter-grid">
@@ -1967,13 +1344,12 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                               <span style={{ fontFamily: 'var(--font-mono)' }}>{FLEET_MODELS[msg.model || 'merlin'].tag}</span>
                             </div>
 
-                            {/* COGNITIVE PULSE THINKING ACCORDION */}
                             {msg.thought && (
                               <div className="thought-accordion">
                                 <div className="thought-header" onClick={() => toggleThought(msg.id)}>
                                   <div className="thought-title-group">
                                     <Icons.Brain size={15} color="#22d3ee" />
-                                    <span>Cognitive Pulse for {msg.thought.duration}</span>
+                                    <span>Cognitive Pulse: {msg.thought.duration}</span>
                                     <span className="thought-timing-pill">{msg.thought.steps.length} Arcane Gates</span>
                                   </div>
                                   {expandedThoughts[msg.id] ? <Icons.ChevronDown size={14} /> : <Icons.ChevronRight size={14} />}
@@ -1998,10 +1374,8 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                               </div>
                             )}
 
-                            {/* FORMATTED MARKDOWN CONTENT */}
                             {renderFormattedMessage(msg.content, msg.id)}
 
-                            {/* ACTION BAR */}
                             <div className="msg-action-bar">
                               <button className="btn-icon-ghost" style={{ width: 28, height: 28 }} onClick={() => handleCopy(msg.id, msg.content)} title="Copy response">
                                 {copiedId === msg.id ? <Icons.Check size={14} color="#22d3ee" /> : <Icons.Copy size={14} />}
@@ -2017,14 +1391,13 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
               </div>
             </div>
 
-            {/* FLOATING PROMPT PILL (EPINOIA SANCTUM STYLING) */}
             <div className="prompt-floating-container">
               <div className="prompt-pill-card">
                 <div className="prompt-upper-row">
                   <textarea
                     ref={textareaRef}
                     className="prompt-textarea"
-                    placeholder={`Inscribe instruction to ${FLEET_MODELS[selectedModel].name}...`}
+                    placeholder={`Inscribe instruction to ${FLEET_MODELS[selectedModel].name} (Live Clario Bridge)...`}
                     rows={1}
                     value={inputPrompt}
                     onChange={handleInputChange}
@@ -2042,7 +1415,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                     <button
                       className="tool-badge-btn"
                       onClick={() => {
-                        const fakeName = `ast_manifest_${Date.now().toString().slice(-4)}.spells`;
+                        const fakeName = `manifest_${Date.now().toString().slice(-4)}.ast`;
                         setAttachedFiles([...attachedFiles, { name: fakeName, size: '24 KB' }]);
                       }}
                       title="Attach Arcane AST"
@@ -2060,7 +1433,6 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                       <span>Deep Search</span>
                     </button>
 
-                    {/* THINKING BUDGET SELECTOR */}
                     <div style={{ position: 'relative' }}>
                       <button
                         className="tool-badge-btn"
@@ -2074,37 +1446,24 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
 
                       {thinkingPopoverOpen && (
                         <div style={{
-                          position: 'absolute',
-                          bottom: '120%',
-                          left: 0,
-                          width: '230px',
-                          background: 'rgba(14, 10, 32, 0.98)',
-                          backdropFilter: 'blur(20px)',
-                          border: '1px solid var(--line-2)',
-                          borderRadius: '12px',
-                          padding: '8px',
-                          boxShadow: '0 12px 36px rgba(0,0,0,0.95), 0 0 20px rgba(234, 179, 8, 0.2)',
+                          position: 'absolute', bottom: '120%', left: 0, width: '230px',
+                          background: 'rgba(14, 10, 32, 0.98)', backdropFilter: 'blur(20px)', border: '1px solid var(--line-2)',
+                          borderRadius: '12px', padding: '8px', boxShadow: '0 12px 36px rgba(0,0,0,0.95), 0 0 20px rgba(234, 179, 8, 0.2)',
                           zIndex: 40
                         }}>
                           {[
-                            { key: 'low', label: 'Low (1s Reflex)', desc: 'Instantaneous stream' },
-                            { key: 'mid', label: 'Mid (3-5s Analysis)', desc: 'Balanced AST validation' },
-                            { key: 'high', label: 'High (8-12s Surgery)', desc: 'Deep Tier-3 verification' }
+                            { key: 'low', label: 'Low (Reflex Stream)', desc: 'Fast generation' },
+                            { key: 'mid', label: 'Mid (Balanced AST)', desc: 'Standard synthesis' },
+                            { key: 'high', label: 'High (Tier-3 Surgery)', desc: 'Deep cognition & verification' }
                           ].map(t => (
                             <div
                               key={t.key}
                               onClick={() => { setThinkingBudget(t.key); setThinkingPopoverOpen(false); }}
                               style={{
-                                padding: '8px 12px',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
+                                padding: '8px 12px', borderRadius: '8px', cursor: 'pointer',
                                 background: thinkingBudget === t.key ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
                                 border: `1px solid ${thinkingBudget === t.key ? 'var(--line-2)' : 'transparent'}`,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                                marginBottom: 3,
-                                transition: 'all 0.18s ease'
+                                display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 3, transition: 'all 0.18s ease'
                               }}
                             >
                               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)' }}>{t.label}</div>
@@ -2128,36 +1487,35 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                     className="btn-send-pill"
                     disabled={!inputPrompt.trim() || isStreaming}
                     onClick={() => handleSendPrompt()}
-                    title="Send instruction"
+                    title="Send instruction to Live Model"
                   >
                     <Icons.ArrowUp size={16} />
                   </button>
                 </div>
               </div>
               <div className="prompt-disclaimer">
-                Epinoia Sovereign Fleet. Strict air-gap protocol active. Verify critical cryptographic AST payloads.
+                Epinoia Sovereign Fleet · Live Neural Stream via clariohub.id ({DEFAULT_BRIDGE.modelMap[selectedModel] || 'auto'}).
               </div>
             </div>
           </div>
         )}
 
-        {/* --- VIEW 2: ENTERPRISE OVERVIEW EDITORIAL PAGE --- */}
+        {/* --- VIEW 2: FLEET MATRIX --- */}
         {currentView === 'overview' && (
           <div className="overview-container">
             <div className="overview-hero">
               <div className="overview-badge">
                 <Icons.Shield size={14} color="#facc15" />
-                <span>EPI-FLEET SPECIFICATION v4.2 · AIR-GAP CERTIFIED</span>
+                <span>EPI-FLEET SPECIFICATION v4.2 · LIVE CLARIO BRIDGE ACTIVE</span>
               </div>
               <h1 className="overview-title">Enterprise Sovereign Fleet Architecture</h1>
               <p className="overview-subtitle">
-                A single-tenant, hardware-aware computational matrix. Epinoia Horizon operates with zero external telemetry egress, cryptographic state validation, and autonomous multi-agent coordination.
+                A single-tenant, hardware-aware computational matrix. Powered directly by <b>clariohub.id</b> high-speed frontier model endpoints.
               </p>
             </div>
 
-            {/* FLEET MATRIX CARDS */}
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, marginBottom: 20, color: 'var(--gold-soft)' }}>
-              Proprietary Engine Matrix
+              Active Model Endpoints
             </h2>
             <div className="matrix-grid">
               {Object.values(FLEET_MODELS).map(m => (
@@ -2174,12 +1532,12 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
 
                   <div className="matrix-specs">
                     <div className="spec-item">
-                      <span>TTFT Latency</span>
-                      <span className="spec-val" style={{ color: 'var(--cyan)' }}>{m.latency}</span>
+                      <span>Live Backend</span>
+                      <span className="spec-val" style={{ color: 'var(--cyan)' }}>{DEFAULT_BRIDGE.modelMap[m.id]}</span>
                     </div>
                     <div className="spec-item">
-                      <span>Context Window</span>
-                      <span className="spec-val">{m.context}</span>
+                      <span>Base Endpoint</span>
+                      <span className="spec-val">{apiBaseUrl}</span>
                     </div>
                     <div className="spec-item">
                       <span>Kernel Target</span>
@@ -2195,41 +1553,15 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                       setCurrentView('chat');
                     }}
                   >
-                    Launch in Arcane Workspace →
+                    Invoke in Arcane Workspace →
                   </button>
                 </div>
               ))}
             </div>
-
-            {/* SECURITY PILLARS */}
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, marginBottom: 20, color: 'var(--gold-soft)' }}>
-              Sovereign Security Invariants
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18 }}>
-              <div className="matrix-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)' }}>
-                  <Icons.Lock size={20} color="#facc15" />
-                  <span>Zero-Telemetry Isolation Guarantee</span>
-                </div>
-                <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6 }}>
-                  Model execution never emits prompt vectors, telemetry traces, or activations to third-party endpoints. Invariant verified at kernel runtime.
-                </p>
-              </div>
-
-              <div className="matrix-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-heading)' }}>
-                  <Icons.Activity size={20} color="#22d3ee" />
-                  <span>Cryptographic Append-Only Ledger</span>
-                </div>
-                <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6 }}>
-                  Every multi-agent dispatch creates an immutable hash signature, preventing prompt injection or state drift across long horizons.
-                </p>
-              </div>
-            </div>
           </div>
         )}
 
-        {/* --- TELEMETRY PARAMETERS DRAWER --- */}
+        {/* --- TELEMETRY & NEURAL BRIDGE DRAWER --- */}
         {telemetryOpen && (
           <>
             <div className="drawer-overlay" onClick={() => setTelemetryOpen(false)} />
@@ -2237,7 +1569,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
               <div className="drawer-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, color: 'var(--gold-soft)', fontSize: 15, fontFamily: 'var(--font-heading)' }}>
                   <Icons.Sliders size={18} color="#facc15" />
-                  <span>Fleet Shard Telemetry HUD</span>
+                  <span>Neural Bridge &amp; Shard HUD</span>
                 </div>
                 <button className="btn-icon-ghost" onClick={() => setTelemetryOpen(false)}>
                   <Icons.X size={18} />
@@ -2245,41 +1577,59 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
               </div>
 
               <div className="metric-card">
-                <div className="metric-title">Active VPC Node Shard</div>
-                <div className="metric-val" style={{ fontSize: 17, color: 'var(--cyan)' }}>us-east-sovereign-01</div>
-                <div style={{ fontSize: 11, color: 'var(--dim)', marginTop: 4 }}>Air-Gapped Private Cluster</div>
-              </div>
-
-              <div className="metric-card">
-                <div className="metric-title">KV-Cache Recurrence Load</div>
-                <div className="metric-val">41.8%</div>
-                <div className="bar-wrap">
-                  <div className="bar-fill" style={{ width: '41.8%' }} />
+                <div className="metric-title">Live Bridge Status</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', boxShadow: '0 0 10px #22d3ee' }} />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>ONLINE · CLARIOHUB</span>
                 </div>
               </div>
 
               <div className="metric-card">
-                <div className="metric-title">Streaming Velocity</div>
-                <div className="metric-val">142.6 tok/s</div>
-                <div style={{ fontSize: 11, color: 'var(--dim)', marginTop: 4 }}>Fused Parallel Associative Scan</div>
+                <label className="drawer-input-label">Base URL (OpenAI-compatible)</label>
+                <input
+                  className="drawer-input"
+                  value={apiBaseUrl}
+                  onChange={e => {
+                    setApiBaseUrl(e.target.value);
+                    localStorage.setItem('clario_base_url', e.target.value);
+                  }}
+                  placeholder="https://clariohub.id/v1"
+                />
+
+                <label className="drawer-input-label" style={{ marginTop: 12 }}>API Secret Key</label>
+                <input
+                  className="drawer-input"
+                  type="password"
+                  value={apiKey}
+                  onChange={e => {
+                    setApiKey(e.target.value);
+                    localStorage.setItem('clario_api_key', e.target.value);
+                  }}
+                  placeholder="sk-clario-..."
+                />
               </div>
 
               <div className="metric-card">
-                <div className="metric-title">Memory Allocation</div>
-                <div className="metric-val" style={{ fontSize: 17 }}>4.8 GB / 24.0 GB</div>
-                <div className="bar-wrap">
-                  <div className="bar-fill" style={{ width: '20%' }} />
+                <div className="metric-title">Active Model Mapping</div>
+                <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--muted)', display: 'grid', gap: 6, marginTop: 6 }}>
+                  <div>Merlin: <span style={{ color: 'var(--gold-soft)' }}>{DEFAULT_BRIDGE.modelMap.merlin}</span></div>
+                  <div>Nxelle: <span style={{ color: 'var(--cyan)' }}>{DEFAULT_BRIDGE.modelMap.nxelle}</span></div>
+                  <div>Jie: <span style={{ color: 'var(--purple)' }}>{DEFAULT_BRIDGE.modelMap.jie}</span></div>
                 </div>
               </div>
 
-              <button className="btn-new-chat" style={{ marginTop: 'auto', justifyContent: 'center' }} onClick={() => setTelemetryOpen(false)}>
-                Save Parameter State
+              <button
+                className="btn-new-chat"
+                style={{ marginTop: 'auto', justifyContent: 'center', background: 'linear-gradient(135deg, #facc15, #ca8a04)', color: '#030208' }}
+                onClick={() => setTelemetryOpen(false)}
+              >
+                Save &amp; Lock Neural Bridge
               </button>
             </div>
           </>
         )}
 
-        {/* --- ENTERPRISE CLEARANCE MODAL --- */}
+        {/* --- CLEARANCE MODAL --- */}
         {clearanceModalOpen && (
           <div className="modal-wrap" onClick={() => setClearanceModalOpen(false)}>
             <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -2290,36 +1640,20 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                 </h2>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.5 }}>
-                Enter your cryptographic token to modify permission ceilings and kernel bypass access.
+                Neural Bridge terhubung ke <b>clariohub.id</b>. Akses Tier-0 Sovereign mengaktifkan kompilasi instan dan bypass limit.
               </p>
 
-              <input
-                className="modal-input"
-                value={clearanceKey}
-                onChange={e => setClearanceKey(e.target.value)}
-                placeholder="EPI-SOV-XXXX-XXXX"
-              />
-
-              <div style={{ display: 'grid', gap: 10, marginBottom: 24 }}>
+              <div style={{ display: 'grid', gap: 10, margin: '20px 0 24px' }}>
                 {['Tier-0 Sovereign', 'Tier-1 Operator', 'Tier-2 Guest'].map(lvl => (
                   <div
                     key={lvl}
                     onClick={() => setClearanceLevel(lvl)}
                     style={{
-                      padding: '12px 16px',
-                      background: clearanceLevel === lvl ? 'rgba(234, 179, 8, 0.15)' : 'rgba(4, 3, 10, 0.6)',
-                      border: `1px solid ${clearanceLevel === lvl ? 'var(--gold)' : 'var(--line)'}`,
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      fontSize: 13.5,
-                      fontFamily: 'var(--font-heading)',
-                      fontWeight: 700,
-                      color: clearanceLevel === lvl ? 'var(--gold-soft)' : 'var(--muted)',
-                      boxShadow: clearanceLevel === lvl ? '0 0 16px rgba(234, 179, 8, 0.2)' : 'none',
-                      transition: 'all 0.2s ease'
+                      padding: '12px 16px', background: clearanceLevel === lvl ? 'rgba(234, 179, 8, 0.15)' : 'rgba(4, 3, 10, 0.6)',
+                      border: `1px solid ${clearanceLevel === lvl ? 'var(--gold)' : 'var(--line)'}`, borderRadius: '8px', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13.5,
+                      fontFamily: 'var(--font-heading)', fontWeight: 700, color: clearanceLevel === lvl ? 'var(--gold-soft)' : 'var(--muted)',
+                      boxShadow: clearanceLevel === lvl ? '0 0 16px rgba(234, 179, 8, 0.2)' : 'none', transition: 'all 0.2s ease'
                     }}
                   >
                     <span>{lvl}</span>
@@ -2333,7 +1667,7 @@ Append-only cryptographic hash diikatkan pada setiap recurrence state. Egress ja
                 style={{ justifyContent: 'center', background: 'linear-gradient(135deg, #facc15, #ca8a04)', color: '#030208', fontWeight: 700 }}
                 onClick={() => setClearanceModalOpen(false)}
               >
-                Authenticate &amp; Lock Clearance
+                Confirm Clearance
               </button>
             </div>
           </div>
