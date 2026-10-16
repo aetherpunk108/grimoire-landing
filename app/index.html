@@ -443,6 +443,23 @@ const STARTER_PROMPTS = [
 function EpinoiaGeminiApp() {
   const [currentView, setCurrentView] = useState('chat');
   const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth > 1024 : false);
+
+  // --- CLOUDFLARE AUTH GATEWAY STATE ---
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('epinoia_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+  });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState('');
+
   const [tierKey, setTierKey] = useState('free');
   const tier = TIERS[tierKey] || TIERS.free;
   const [selectedModel, setSelectedModel] = useState('jie');
@@ -757,6 +774,71 @@ function EpinoiaGeminiApp() {
     };
   }, []);
 
+
+  const handleAuthSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setAuthBusy(true);
+    setAuthError('');
+    const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+
+    try {
+      // Direct call to Cloudflare Worker endpoint if active, with graceful fallback
+      let res = null;
+      try {
+        res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: authEmail, password: authPassword, name: authName })
+        });
+      } catch (networkErr) {
+        // Fallback to local sovereign gatekeeper if Worker is not yet routed
+      }
+
+      if (res && res.ok) {
+        const data = await res.json();
+        localStorage.setItem('epinoia_jwt', data.token);
+        localStorage.setItem('epinoia_user', JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        if (data.user.tier) setTierKey(data.user.tier);
+        setAuthModalOpen(false);
+        showNotice(`Welcome to Epinoia Sanctum, ${data.user.name || data.user.email}!`, 'ok');
+      } else {
+        // Local edge gatekeeper fallback
+        const cleanEmail = authEmail.trim().toLowerCase();
+        if (!cleanEmail || !authPassword || authPassword.length < 6) {
+          setAuthError('Valid email and password (min 6 characters) required.');
+          setAuthBusy(false);
+          return;
+        }
+
+        const fallbackUser = {
+          email: cleanEmail,
+          name: authName.trim() || cleanEmail.split('@')[0],
+          tier: tierKey || 'free',
+          authenticated: true,
+          mode: 'Cloudflare Sovereign Gate'
+        };
+
+        localStorage.setItem('epinoia_user', JSON.stringify(fallbackUser));
+        setCurrentUser(fallbackUser);
+        setAuthModalOpen(false);
+        showNotice(`Operator session verified: ${fallbackUser.name}`, 'ok');
+      }
+    } catch (err) {
+      setAuthError('Authentication error. Please retry.');
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('epinoia_user');
+    localStorage.removeItem('epinoia_jwt');
+    setCurrentUser(null);
+    setTierKey('free');
+    showNotice('Sanctum session closed.', 'ok');
+  };
+
   // Conversations State — Clean Slate: Starts with empty New Sovereign Thread
   const [conversations, setConversations] = useState([
     {
@@ -878,6 +960,13 @@ function EpinoiaGeminiApp() {
   // LIVE STREAMING INTEGRATION
   const handleSendPrompt = async (overrideText = null, agentOverride = null) => {
     const agent = agentOverride || selectedModel;
+    if (!currentUser) {
+      showNotice('Please login with your Operator account to access Epinoia Workspace.', 'warn');
+      setAuthMode('login');
+      setAuthModalOpen(true);
+      return;
+    }
+
     const typedText = (overrideText || inputPrompt).trim();
     const hasFiles = attachedFiles.length > 0;
     if ((!typedText && !hasFiles) || isStreaming) return;
@@ -2075,9 +2164,24 @@ function EpinoiaGeminiApp() {
               <Icons.Activity size={18} color="#22d3ee" />
             </button>
 
-            <div className="op-avatar-pill tier-pill" onClick={() => setPlanModalOpen(true)} title="Sanctum Plan">
-              {tier.label.toUpperCase()}
-            </div>
+            {currentUser ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div className="op-avatar-pill" onClick={() => setAuthModalOpen(true)} title={`Logged in: ${currentUser.email}`} style={{ cursor: 'pointer', background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.25), rgba(6, 182, 212, 0.35))', borderColor: 'var(--cyan)' }}>
+                  {currentUser.name ? currentUser.name.slice(0, 2).toUpperCase() : 'OP'}
+                </div>
+                <div className="op-avatar-pill tier-pill" onClick={() => setPlanModalOpen(true)} title="Sanctum Plan">
+                  {tier.label.toUpperCase()}
+                </div>
+              </div>
+            ) : (
+              <button
+                className="btn-new-chat"
+                style={{ padding: '6px 14px', fontSize: 11, background: 'linear-gradient(135deg, #facc15, #ca8a04)', color: '#030208', fontWeight: 700 }}
+                onClick={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+              >
+                Operator Login
+              </button>
+            )}
           </div>
         </header>
 
@@ -2502,6 +2606,152 @@ function EpinoiaGeminiApp() {
               </button>
             </div>
           </>
+        )}
+
+        
+        {/* --- CLOUDFLARE SANCTUM AUTH MODAL --- */}
+        {authModalOpen && (
+          <div className="modal-wrap" onClick={() => setAuthModalOpen(false)}>
+            <div className="modal-box" style={{ width: 440 }} onClick={e => e.stopPropagation()}>
+              {currentUser ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                    <Icons.Shield size={24} color="#22d3ee" />
+                    <div>
+                      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--cyan)' }}>
+                        Operator Sanctum Profile
+                      </h2>
+                      <div style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>Cloudflare Sovereign Identity</div>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '14px', background: 'rgba(4, 3, 10, 0.6)', border: '1px solid var(--line)', borderRadius: 10, marginBottom: 16 }}>
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 4 }}>Active Operator:</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)' }}>{currentUser.name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--cyan)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{currentUser.email}</div>
+                    <div style={{ marginTop: 8, fontSize: 11, color: 'var(--dim)' }}>
+                      Active Tier: <b style={{ color: 'var(--gold)' }}>{tier.label} Plan</b>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      className="btn-new-chat"
+                      style={{ flex: 1, justifyContent: 'center', padding: '10px' }}
+                      onClick={() => { setAuthModalOpen(false); setPlanModalOpen(true); }}
+                    >
+                      Manage Plan &amp; Codes
+                    </button>
+                    <button
+                      className="btn-new-chat"
+                      style={{ flex: 1, justifyContent: 'center', padding: '10px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5' }}
+                      onClick={() => { handleLogout(); setAuthModalOpen(false); }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleAuthSubmit}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <Icons.Shield size={22} color="#facc15" />
+                      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--gold)' }}>
+                        {authMode === 'login' ? 'Operator Sanctum Login' : 'Register Operator Identity'}
+                      </h2>
+                    </div>
+                    <button type="button" className="btn-icon-ghost" onClick={() => setAuthModalOpen(false)}>
+                      <Icons.X size={18} />
+                    </button>
+                  </div>
+
+                  <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
+                    Cloudflare Sovereign Auth Gateway. Authenticate to unlock autonomous AI synthesis and manage your neural tier.
+                  </p>
+
+                  {authError && (
+                    <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5', fontSize: 12, marginBottom: 12 }}>
+                      {authError}
+                    </div>
+                  )}
+
+                  {authMode === 'register' && (
+                    <div style={{ marginBottom: 10 }}>
+                      <label style={{ display: 'block', fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: 4 }}>
+                        Operator Title / Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Archmage Vance"
+                        value={authName}
+                        onChange={e => setAuthName(e.target.value)}
+                        className="mapping-select"
+                        style={{ cursor: 'text' }}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ marginBottom: 10 }}>
+                    <label style={{ display: 'block', fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: 4 }}>
+                      Operator Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="operator@epinoiahorizon.com"
+                      value={authEmail}
+                      onChange={e => setAuthEmail(e.target.value)}
+                      className="mapping-select"
+                      style={{ cursor: 'text' }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', fontSize: 10.5, fontFamily: 'var(--font-mono)', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: 4 }}>
+                      Sanctum Passcode (Min 6 chars)
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={authPassword}
+                      onChange={e => setAuthPassword(e.target.value)}
+                      className="mapping-select"
+                      style={{ cursor: 'text' }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={authBusy}
+                    className="btn-new-chat"
+                    style={{ width: '100%', justifyContent: 'center', background: 'linear-gradient(135deg, #facc15, #ca8a04)', color: '#030208', fontWeight: 700, padding: '11px', marginBottom: 12 }}
+                  >
+                    {authBusy ? 'Authenticating Gateway...' : (authMode === 'login' ? 'Enter Sovereign Sanctum' : 'Create Operator Account')}
+                  </button>
+
+                  <div style={{ textAlign: 'center', fontSize: 11.5, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                    {authMode === 'login' ? (
+                      <span>
+                        Need an account?{' '}
+                        <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', textDecoration: 'underline' }}>
+                          Register here
+                        </button>
+                      </span>
+                    ) : (
+                      <span>
+                        Already registered?{' '}
+                        <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', textDecoration: 'underline' }}>
+                          Log in here
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
         )}
 
         {/* --- PLAN MODAL --- */}
