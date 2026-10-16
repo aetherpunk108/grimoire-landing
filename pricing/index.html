@@ -761,16 +761,16 @@
     const interval = currentBilling || 'monthly';
     const info = QRIS_AMOUNTS[tierKey][interval];
 
-    document.getElementById('qris-tier-name').textContent = 'Paket: ' + info.label;
+    document.getElementById('qris-tier-name').textContent = 'Plan: ' + info.label;
     document.getElementById('qris-price-display').textContent = info.idr + ' (' + info.usd + ')';
     document.getElementById('qris-amount-guide').textContent = info.idr;
 
     const waMsg = encodeURIComponent(
-      'Halo Admin Epinoia Horizon, saya ingin konfirmasi pembayaran QRIS untuk Sanctum Plan:\n\n' +
-      '• Paket: ' + info.label + '\n' +
-      '• Nominal: ' + info.idr + ' (' + info.usd + ')\n' +
+      'Hello Epinoia Horizon Sanctum Desk, I would like to confirm my QRIS payment for Sanctum Plan:\n\n' +
+      '• Plan: ' + info.label + '\n' +
+      '• Amount: ' + info.idr + ' (' + info.usd + ')\n' +
       '• Merchant: EPINOIA HORIZON (NMID: ID1026618239614)\n\n' +
-      'Berikut saya lampirkan bukti transfer. Mohon kirimkan Kode Aktivasi / Akun Sanctum saya. Terima kasih!'
+      'Please find my payment proof attached. Kindly transmit my Activation Code / Sanctum Operator credentials. Thank you!'
     );
 
     document.getElementById('qris-wa-link').href = 'https://wa.me/6281776349779?text=' + waMsg;
@@ -805,7 +805,7 @@
     </div>
 
     <div class="qris-badge-row">
-      <span id="qris-tier-name">Package: Medium (Monthly)</span>
+      <span id="qris-tier-name">Plan: Medium (Monthly)</span>
       <span class="qris-price-idr" id="qris-price-display">Rp 96.000</span>
     </div>
 
@@ -820,15 +820,15 @@
     </div>
 
     <ol class="qris-steps">
-      <li>Buka aplikasi m-Banking (BCA, Mandiri, BRI, BNI) atau e-Wallet (GoPay, OVO, ShopeePay, DANA).</li>
-      <li>Pilih menu <b>Scan / Bayar QRIS</b> dan arahkan ke barcode di atas.</li>
-      <li>Masukkan nominal tepat sesuai paket: <b id="qris-amount-guide">Rp 96.000</b>.</li>
-      <li>Simpan bukti transfer dan klik tombol hijau di bawah untuk konfirmasi WhatsApp instan.</li>
+      <li>Open your Mobile Banking app (BCA, Mandiri, BRI, BNI) or e-Wallet (GoPay, OVO, ShopeePay, DANA).</li>
+      <li>Select <b>Scan / Pay QRIS</b> and scan the barcode above.</li>
+      <li>Enter the exact amount for your plan: <b id="qris-amount-guide">Rp 96.000</b>.</li>
+      <li>Save your transfer receipt and click the green button below for instant WhatsApp confirmation.</li>
     </ol>
 
     <a href="#" id="qris-wa-link" target="_blank" class="btn-wa-confirm">
       <i class="fab fa-whatsapp" style="font-size:18px;"></i>
-      Konfirmasi Pembayaran via WhatsApp
+      Confirm Payment via WhatsApp
     </a>
   </div>
 </div>
