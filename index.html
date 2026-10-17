@@ -1128,16 +1128,45 @@
         scene.add(cubeGroup);
         cubeGroup.position.set(-8, -2, -6);
 
-        // AMBIENT PARTICLES
-        const particleCount = 1800;
+        // AMBIENT PARTICLES — Tiny Glowing Colorful Circular Orbs
+        function createGlowingOrbTexture() {
+            const size = 64;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const half = size / 2;
+            const grad = ctx.createRadialGradient(half, half, 0, half, half, half);
+            grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+            grad.addColorStop(0.16, 'rgba(255, 255, 255, 0.95)');
+            grad.addColorStop(0.34, 'rgba(255, 255, 255, 0.65)');
+            grad.addColorStop(0.62, 'rgba(255, 255, 255, 0.22)');
+            grad.addColorStop(0.85, 'rgba(255, 255, 255, 0.05)');
+            grad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(half, half, half, 0, Math.PI * 2);
+            ctx.fill();
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.needsUpdate = true;
+            return tex;
+        }
+
+        const glowingOrbTexture = createGlowingOrbTexture();
+
+        const particleCount = 1900;
         const particleGeo = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
 
         const colorPalette = [
-            new THREE.Color(0x8b5cf6),
-            new THREE.Color(0x06b6d4),
-            new THREE.Color(0xeab308)
+            new THREE.Color(0xfacc15), // Sovereign Gold
+            new THREE.Color(0x22d3ee), // Electric Cyan
+            new THREE.Color(0xa855f7), // Arcane Violet
+            new THREE.Color(0xf472b6), // Nebula Rose
+            new THREE.Color(0x38bdf8), // Celestial Sky Blue
+            new THREE.Color(0x34d399), // Aether Emerald
+            new THREE.Color(0xfb923c)  // Solar Amber
         ];
 
         for(let i = 0; i < particleCount * 3; i += 3) {
@@ -1155,26 +1184,33 @@
         particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
         const particleMat = new THREE.PointsMaterial({
-            size: 0.075,
+            size: 0.24,
+            map: glowingOrbTexture,
             vertexColors: true,
             transparent: true,
-            opacity: 0.75,
+            opacity: 0.92,
+            depthWrite: false,
             blending: THREE.AdditiveBlending
         });
 
         const particleSystem = new THREE.Points(particleGeo, particleMat);
         scene.add(particleSystem);
 
-        // CLICK BURST PARTICLES
+        // CLICK BURST PARTICLES — Glowing Colorful Circular Orbs
         const burstCount = 70;
         const burstGeo = new THREE.BufferGeometry();
         const burstPos = new Float32Array(burstCount * 3);
+        const burstColors = new Float32Array(burstCount * 3);
         const burstVel = [];
 
         for(let i=0; i<burstCount; i++) {
             burstPos[i*3] = 0;
             burstPos[i*3+1] = 0;
             burstPos[i*3+2] = 0;
+            const bc = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            burstColors[i*3] = bc.r;
+            burstColors[i*3+1] = bc.g;
+            burstColors[i*3+2] = bc.b;
             burstVel.push(new THREE.Vector3(
                 (Math.random() - 0.5) * 0.25,
                 (Math.random() - 0.5) * 0.25,
@@ -1183,11 +1219,14 @@
         }
 
         burstGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
+        burstGeo.setAttribute('color', new THREE.BufferAttribute(burstColors, 3));
         const burstMat = new THREE.PointsMaterial({
-            size: 0.16,
-            color: 0xeab308,
+            size: 0.34,
+            map: glowingOrbTexture,
+            vertexColors: true,
             transparent: true,
             opacity: 1,
+            depthWrite: false,
             blending: THREE.AdditiveBlending
         });
         const burstSystem = new THREE.Points(burstGeo, burstMat);
