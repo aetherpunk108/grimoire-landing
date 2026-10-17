@@ -228,11 +228,409 @@
       const overlay = document.getElementById('cart-overlay');
       if (drawer) drawer.classList.remove('open');
       if (overlay) overlay.classList.remove('open');
+    },
+
+    getCurrentUser: function() {
+      try {
+        const raw = localStorage.getItem('eh_sanctum_buyer_account');
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    },
+
+    pendingCheckoutItems: null,
+    lastInvoice: null,
+
+    ensureStoreModals: function() {
+      if (document.getElementById('eh-store-auth-modal')) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <!-- Store Auth Modal -->
+        <div id="eh-store-auth-modal" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+          <div style="max-width:460px;width:100%;background:rgba(10,7,24,0.96);border:1px solid rgba(234,179,8,0.45);border-radius:24px;padding:26px 22px;position:relative;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,0.9);">
+            <button onclick="window.EpinoiaStore.closeAuthModal()" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;"><i class="fas fa-times"></i></button>
+            <div style="text-align:center;margin-bottom:16px;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#22d3ee;letter-spacing:.12em;text-transform:uppercase;"><i class="fas fa-shield-halved"></i> Epinoia Buyer Protection</span>
+              <h3 id="eh-store-auth-title" style="font-family:'Cinzel Decorative',serif;font-size:20px;color:#facc15;margin-top:4px;">SANCTUM ACCOUNT</h3>
+            </div>
+            <div id="eh-store-auth-notice" style="display:none;margin-bottom:14px;padding:10px 12px;border-radius:10px;background:rgba(234,179,8,0.14);border:1px solid rgba(234,179,8,0.4);font-size:12px;color:#fde047;line-height:1.45;">
+              <i class="fas fa-lock"></i> Silakan <strong>Login</strong> atau <strong>Sign Up</strong> terlebih dahulu agar pesanan &amp; invoice Anda tercatat dengan aman.
+            </div>
+            <div id="eh-store-auth-err" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.45);font-size:12px;color:#fca5a5;"></div>
+
+            <div id="eh-store-tabs" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px;border-radius:12px;background:#030208;border:1px solid rgba(234,179,8,0.22);margin-bottom:16px;">
+              <button type="button" id="eh-tab-login" onclick="window.EpinoiaStore.switchAuthTab('login')" style="padding:9px;border-radius:8px;border:none;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;background:#eab308;color:#000;">LOGIN</button>
+              <button type="button" id="eh-tab-signup" onclick="window.EpinoiaStore.switchAuthTab('signup')" style="padding:9px;border-radius:8px;border:none;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:#94a3b8;">SIGN UP</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="eh-form-login" onsubmit="window.EpinoiaStore.submitLogin(event)" style="display:flex;flex-direction:column;gap:12px;">
+              <div>
+                <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">EMAIL ADDRESS *</label>
+                <input type="email" id="eh-login-email" required placeholder="you@domain.com" class="form-input">
+              </div>
+              <div>
+                <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">PASSWORD *</label>
+                <input type="password" id="eh-login-pass" required minlength="6" placeholder="••••••••" class="form-input">
+              </div>
+              <button type="submit" style="width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">
+                <i class="fas fa-right-to-bracket"></i> Sign In to Sanctum
+              </button>
+            </form>
+
+            <!-- Sign Up Registration Form -->
+            <form id="eh-form-signup" onsubmit="window.EpinoiaStore.submitSignup(event)" style="display:none;flex-direction:column;gap:11px;">
+              <div>
+                <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">FULL NAME (NAMA LENGKAP) *</label>
+                <input type="text" id="eh-reg-name" required placeholder="e.g. Arya Wijaya" class="form-input">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">EMAIL *</label>
+                  <input type="email" id="eh-reg-email" required placeholder="you@domain.com" class="form-input">
+                </div>
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">WHATSAPP / PHONE *</label>
+                  <input type="tel" id="eh-reg-phone" required placeholder="+62 812..." class="form-input">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">PASSWORD *</label>
+                  <input type="password" id="eh-reg-pass" required minlength="6" placeholder="Min. 6 chars" class="form-input">
+                </div>
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">CONFIRM *</label>
+                  <input type="password" id="eh-reg-confirm" required minlength="6" placeholder="Repeat password" class="form-input">
+                </div>
+              </div>
+              <button type="submit" style="width:100%;padding:13px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:4px;">
+                <i class="fas fa-user-shield"></i> Create Safe Buyer Account
+              </button>
+            </form>
+
+            <!-- Logged In Profile View -->
+            <div id="eh-view-profile" style="display:none;">
+              <div id="eh-profile-card" style="padding:14px;border-radius:12px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.3);margin-bottom:14px;font-size:12px;"></div>
+              <button type="button" onclick="window.EpinoiaStore.logout()" style="width:100%;padding:11px;border-radius:10px;background:rgba(239,68,68,0.16);border:1px solid rgba(239,68,68,0.45);color:#fca5a5;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;">
+                <i class="fas fa-right-from-bracket"></i> Logout Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Safe Checkout & Invoice Modal -->
+        <div id="eh-store-checkout-modal" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+          <div style="max-width:540px;width:100%;background:rgba(10,7,24,0.97);border:1px solid rgba(234,179,8,0.5);border-radius:24px;padding:26px 22px;position:relative;color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,0.95);">
+            <button onclick="window.EpinoiaStore.closeCheckoutModal()" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;"><i class="fas fa-times"></i></button>
+
+            <div id="eh-co-step1">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#22d3ee;text-transform:uppercase;letter-spacing:.1em;"><i class="fas fa-lock"></i> Encrypted Vault Checkout</span>
+              <h3 style="font-family:'Cinzel Decorative',serif;font-size:20px;color:#facc15;margin:4px 0;">AUTHORIZE VAULT ORDER</h3>
+              <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Pesanan Anda dicatat di akun resmi Anda dan menerbitkan Invoice Resmi di layar ini.</p>
+
+              <div id="eh-co-summary" style="padding:12px;border-radius:12px;background:#030208;border:1px solid rgba(234,179,8,0.25);margin-bottom:14px;font-size:12px;"></div>
+
+              <form onsubmit="window.EpinoiaStore.submitStoreOrder(event)" style="display:flex;flex-direction:column;gap:11px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                  <div>
+                    <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">BUYER NAME *</label>
+                    <input type="text" id="eh-co-name" required class="form-input">
+                  </div>
+                  <div>
+                    <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">WHATSAPP / PHONE *</label>
+                    <input type="tel" id="eh-co-phone" required class="form-input">
+                  </div>
+                </div>
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">EMAIL PENERIMA INVOICE *</label>
+                  <input type="email" id="eh-co-email" required class="form-input">
+                </div>
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">METODE PEMBAYARAN *</label>
+                  <select id="eh-co-payment" class="form-select">
+                    <option value="QRIS Instant (BCA / Mandiri / GoPay / OVO)">QRIS Instant (BCA / Mandiri / GoPay / OVO / Dana)</option>
+                    <option value="Bank Transfer (BCA / Mandiri Official)">Bank Transfer (BCA / Mandiri Official Desk)</option>
+                    <option value="International Card / PayPal / USDT">International Card / PayPal / USDT</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">ALAMAT PENGIRIMAN PENDANT / CATATAN KOMISI 3D *</label>
+                  <textarea id="eh-co-notes" rows="2" required class="form-textarea" placeholder="Alamat lengkap pengiriman atau detail komisi 3D..."></textarea>
+                </div>
+                <button type="submit" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:4px;">
+                  <i class="fas fa-file-invoice-dollar"></i> Terbitkan Invoice Resmi &amp; Kunci Pesanan
+                </button>
+              </form>
+            </div>
+
+            <div id="eh-co-step2" style="display:none;">
+              <div style="text-align:center;margin-bottom:14px;">
+                <h3 style="font-family:'Cinzel Decorative',serif;font-size:20px;color:#facc15;">OFFICIAL VAULT INVOICE</h3>
+                <p style="font-size:12px;color:#94a3b8;">Pesanan Anda telah tercatat dengan aman di akun Anda.</p>
+              </div>
+              <div id="eh-co-receipt" style="padding:14px;border-radius:12px;background:#030208;border:1px solid rgba(234,179,8,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;margin-bottom:14px;"></div>
+              <div style="padding:11px 12px;border-radius:10px;background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.35);font-size:11px;color:#cbd5e1;line-height:1.45;margin-bottom:14px;">
+                <i class="fas fa-headset" style="color:#22d3ee;"></i> <strong>Official Epinoia Horizon Admin Desk:</strong> Nomor WhatsApp Resmi Admin kami adalah <strong style="color:#fde047;">+62 817-7634-9779</strong>.
+              </div>
+              <button type="button" onclick="window.EpinoiaStore.sendInvoiceWA()" style="width:100%;padding:13px;border-radius:12px;background:linear-gradient(90deg,#16a34a,#15803d);border:1px solid rgba(74,222,128,0.4);color:#fff;font-family:'Cinzel',serif;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-bottom:8px;">
+                <i class="fab fa-whatsapp"></i> Konfirmasi Salinan Invoice ke WhatsApp Admin (+62 817-7634-9779)
+              </button>
+              <button type="button" onclick="window.EpinoiaStore.closeCheckoutModal()" style="width:100%;padding:11px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(234,179,8,0.3);color:#fde047;font-family:'Cinzel',serif;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;">
+                Selesai &amp; Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(wrapper);
+    },
+
+    renderHeaderAuthButtons: function() {
+      const actions = document.querySelector('.header-actions');
+      if (!actions) return;
+      let slot = document.getElementById('eh-store-auth-slot');
+      if (!slot) {
+        slot = document.createElement('div');
+        slot.id = 'eh-store-auth-slot';
+        slot.style.display = 'inline-flex';
+        slot.style.alignItems = 'center';
+        slot.style.gap = '8px';
+        actions.insertBefore(slot, actions.firstChild);
+      }
+      const user = this.getCurrentUser();
+      if (user && user.email) {
+        slot.innerHTML = `
+          <button onclick="window.EpinoiaStore.openAuthModal('profile')" class="btn-cart" style="border-color:rgba(34,211,238,0.45);color:#a5f3fc;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+            <span>${user.name || user.email.split('@')[0]}</span>
+          </button>
+        `;
+      } else {
+        slot.innerHTML = `
+          <button onclick="window.EpinoiaStore.openAuthModal('login')" class="btn-cart">
+            <i class="fas fa-right-to-bracket" style="color:var(--cyan);"></i> <span>Login</span>
+          </button>
+          <button onclick="window.EpinoiaStore.openAuthModal('signup')" class="btn-buy" style="border-radius:999px;padding:8px 14px;">
+            <i class="fas fa-user-plus"></i> <span>Sign Up</span>
+          </button>
+        `;
+      }
+    },
+
+    openAuthModal: function(mode, fromCheckout) {
+      this.ensureStoreModals();
+      const modal = document.getElementById('eh-store-auth-modal');
+      const notice = document.getElementById('eh-store-auth-notice');
+      if (notice) notice.style.display = fromCheckout ? 'block' : 'none';
+      this.switchAuthTab(mode || 'login');
+      modal.style.display = 'flex';
+    },
+
+    closeAuthModal: function() {
+      const modal = document.getElementById('eh-store-auth-modal');
+      if (modal) modal.style.display = 'none';
+    },
+
+    switchAuthTab: function(mode) {
+      const err = document.getElementById('eh-store-auth-err');
+      if (err) err.style.display = 'none';
+      const tabs = document.getElementById('eh-store-tabs');
+      const fLogin = document.getElementById('eh-form-login');
+      const fSignup = document.getElementById('eh-form-signup');
+      const vProf = document.getElementById('eh-view-profile');
+      const tLogin = document.getElementById('eh-tab-login');
+      const tSignup = document.getElementById('eh-tab-signup');
+      const user = this.getCurrentUser();
+
+      if (mode === 'profile' && user) {
+        tabs.style.display = 'none';
+        fLogin.style.display = 'none';
+        fSignup.style.display = 'none';
+        vProf.style.display = 'block';
+        document.getElementById('eh-profile-card').innerHTML = `
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#22d3ee;">VERIFIED SANCTUM BUYER</div>
+          <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:#fff;margin-top:4px;">${user.name}</div>
+          <div style="color:#94a3b8;margin-top:2px;">${user.email}</div>
+          <div style="color:#fde047;margin-top:2px;">${user.phone || ''}</div>
+        `;
+        return;
+      }
+
+      tabs.style.display = 'grid';
+      vProf.style.display = 'none';
+      if (mode === 'signup') {
+        fLogin.style.display = 'none';
+        fSignup.style.display = 'flex';
+        tSignup.style.background = '#eab308';
+        tSignup.style.color = '#000';
+        tLogin.style.background = 'transparent';
+        tLogin.style.color = '#94a3b8';
+      } else {
+        fLogin.style.display = 'flex';
+        fSignup.style.display = 'none';
+        tLogin.style.background = '#eab308';
+        tLogin.style.color = '#000';
+        tSignup.style.background = 'transparent';
+        tSignup.style.color = '#94a3b8';
+      }
+    },
+
+    submitLogin: function(e) {
+      e.preventDefault();
+      const email = document.getElementById('eh-login-email').value.trim();
+      const pass = document.getElementById('eh-login-pass').value;
+      const dir = JSON.parse(localStorage.getItem('eh_registered_buyers_dir') || '{}');
+      const found = dir[email.toLowerCase()];
+      if (!found || found.password !== pass) {
+        const err = document.getElementById('eh-store-auth-err');
+        err.style.display = 'block';
+        err.innerText = 'Akun belum terdaftar atau password tidak sesuai. Silakan klik tab SIGN UP untuk mendaftar.';
+        return;
+      }
+      localStorage.setItem('eh_sanctum_buyer_account', JSON.stringify(found));
+      this.renderHeaderAuthButtons();
+      this.closeAuthModal();
+      if (this.pendingCheckoutItems) {
+        const items = this.pendingCheckoutItems;
+        this.pendingCheckoutItems = null;
+        this.openSafeCheckout(items);
+      }
+    },
+
+    submitSignup: function(e) {
+      e.preventDefault();
+      const name = document.getElementById('eh-reg-name').value.trim();
+      const email = document.getElementById('eh-reg-email').value.trim();
+      const phone = document.getElementById('eh-reg-phone').value.trim();
+      const pass = document.getElementById('eh-reg-pass').value;
+      const conf = document.getElementById('eh-reg-confirm').value;
+      if (pass !== conf) {
+        const err = document.getElementById('eh-store-auth-err');
+        err.style.display = 'block';
+        err.innerText = 'Konfirmasi password tidak cocok.';
+        return;
+      }
+      const buyer = { id: 'EH-' + Date.now(), name, email, phone, password: pass };
+      const dir = JSON.parse(localStorage.getItem('eh_registered_buyers_dir') || '{}');
+      dir[email.toLowerCase()] = buyer;
+      localStorage.setItem('eh_registered_buyers_dir', JSON.stringify(dir));
+      localStorage.setItem('eh_sanctum_buyer_account', JSON.stringify(buyer));
+      this.renderHeaderAuthButtons();
+      this.closeAuthModal();
+      if (this.pendingCheckoutItems) {
+        const items = this.pendingCheckoutItems;
+        this.pendingCheckoutItems = null;
+        this.openSafeCheckout(items);
+      }
+    },
+
+    logout: function() {
+      localStorage.removeItem('eh_sanctum_buyer_account');
+      this.renderHeaderAuthButtons();
+      this.closeAuthModal();
+    },
+
+    openSafeCheckout: function(customItems) {
+      const items = customItems || this.getCart();
+      if (!items || items.length === 0) {
+        alert('Silakan pilih produk ke dalam Vault terlebih dahulu.');
+        return;
+      }
+      this.closeCart();
+      const user = this.getCurrentUser();
+      if (!user || !user.email) {
+        this.pendingCheckoutItems = items;
+        this.openAuthModal('signup', true);
+        return;
+      }
+      this.ensureStoreModals();
+      this.pendingCheckoutItems = items;
+      document.getElementById('eh-co-step1').style.display = 'block';
+      document.getElementById('eh-co-step2').style.display = 'none';
+      document.getElementById('eh-co-name').value = user.name || '';
+      document.getElementById('eh-co-email').value = user.email || '';
+      document.getElementById('eh-co-phone').value = user.phone || '';
+
+      const total = items.reduce((s, i) => s + (i.price * (i.qty || 1)), 0);
+      const idrTotal = (total * 16000).toLocaleString('id-ID');
+      document.getElementById('eh-co-summary').innerHTML = items.map(i => `
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(234,179,8,0.15);">
+          <span>${i.title} x ${i.qty || 1}</span>
+          <strong style="color:#fde047;">$${i.price * (i.qty || 1)} USD</strong>
+        </div>
+      `).join('') + `<div style="display:flex;justify-content:space-between;padding-top:8px;color:#facc15;font-family:'JetBrains Mono',monospace;"><strong>TOTAL:</strong><strong>$${total} USD (≈ Rp ${idrTotal})</strong></div>`;
+
+      document.getElementById('eh-store-checkout-modal').style.display = 'flex';
+    },
+
+    closeCheckoutModal: function() {
+      const modal = document.getElementById('eh-store-checkout-modal');
+      if (modal) modal.style.display = 'none';
+    },
+
+    submitStoreOrder: function(e) {
+      e.preventDefault();
+      const items = this.pendingCheckoutItems || this.getCart();
+      const buyerName = document.getElementById('eh-co-name').value.trim();
+      const buyerPhone = document.getElementById('eh-co-phone').value.trim();
+      const buyerEmail = document.getElementById('eh-co-email').value.trim();
+      const paymentMethod = document.getElementById('eh-co-payment').value;
+      const buyerNotes = document.getElementById('eh-co-notes').value.trim();
+      const total = items.reduce((s, i) => s + (i.price * (i.qty || 1)), 0);
+      const idrTotal = (total * 16000).toLocaleString('id-ID');
+      const invoiceId = 'INV-EH-2026-' + Math.floor(1000 + Math.random() * 9000);
+      const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+
+      const ord = { invoiceId, date: dateStr, buyerName, buyerPhone, buyerEmail, paymentMethod, buyerNotes, items, total, idrTotal };
+      this.lastInvoice = ord;
+
+      const orders = JSON.parse(localStorage.getItem('eh_vault_orders') || '[]');
+      orders.unshift(ord);
+      localStorage.setItem('eh_vault_orders', JSON.stringify(orders));
+
+      localStorage.setItem('epinoia_cart', '[]');
+      this.updateCartUI();
+
+      document.getElementById('eh-co-receipt').innerHTML = `
+        <div style="display:flex;justify-content:space-between;border-bottom:1px dashed rgba(234,179,8,0.4);padding-bottom:6px;margin-bottom:6px;">
+          <span>INVOICE: <strong style="color:#fde047;">${invoiceId}</strong></span>
+          <span style="color:#22d3ee;">AUTHORIZED</span>
+        </div>
+        <div><strong>Pembeli:</strong> ${buyerName} (${buyerPhone})</div>
+        <div><strong>Email:</strong> ${buyerEmail}</div>
+        <div><strong>Metode:</strong> ${paymentMethod}</div>
+        <div><strong>Catatan:</strong> ${buyerNotes}</div>
+        <div style="border-top:1px dashed rgba(234,179,8,0.4);margin-top:6px;padding-top:6px;color:#fde047;">
+          <strong>TOTAL: $${total} USD (≈ Rp ${idrTotal})</strong>
+        </div>
+      `;
+      document.getElementById('eh-co-step1').style.display = 'none';
+      document.getElementById('eh-co-step2').style.display = 'block';
+    },
+
+    sendInvoiceWA: function() {
+      if (!this.lastInvoice) return;
+      const o = this.lastInvoice;
+      const lines = o.items.map(i => `- ${i.title} x ${i.qty || 1}: $${i.price * (i.qty || 1)} USD`).join('\n');
+      const msg = encodeURIComponent(
+        `Halo Admin Resmi Epinoia Horizon (+62 817-7634-9779),\n\n` +
+        `Konfirmasi Invoice Resmi Website:\n` +
+        `No. Invoice: ${o.invoiceId}\n` +
+        `Pembeli: ${o.buyerName} (${o.buyerPhone})\n` +
+        `Email: ${o.buyerEmail}\n` +
+        `Metode Pembayaran: ${o.paymentMethod}\n\n` +
+        `Pesanan:\n${lines}\n` +
+        `Total: $${o.total} USD (≈ Rp ${o.idrTotal})\n\n` +
+        `Alamat / Catatan:\n${o.buyerNotes}`
+      );
+      window.open(`https://wa.me/6281776349779?text=${msg}`, '_blank');
     }
   };
 
-  // Init cart badge on page load
+  // Init cart badge & header auth buttons on page load
   document.addEventListener('DOMContentLoaded', function() {
     window.EpinoiaStore.updateCartUI();
+    window.EpinoiaStore.renderHeaderAuthButtons();
   });
 })();
