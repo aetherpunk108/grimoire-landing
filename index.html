@@ -1106,7 +1106,7 @@
         orbGroup.add(shellMesh);
 
         scene.add(orbGroup);
-        orbGroup.position.set(2.8, 0.3, -1.0);
+        orbGroup.position.set(3.4, 0.3, -1.0);
         orbGroup.scale.setScalar(0.9);
 
         // NEURAL CUBE ARTIFACT
@@ -1245,13 +1245,13 @@
             }
         });
 
-        mainTL.to(orbGroup.position, { x: 2.0, y: 0, z: 0.9, duration: 2 }, 0)
+        mainTL.to(orbGroup.position, { x: 3.0, y: 0, z: 0.9, duration: 2 }, 0)
               .to(orbGroup.rotation, { y: Math.PI * 2, x: Math.PI / 3, duration: 2 }, 0)
               .to(orbGroup.position, { x: 8, y: -3, z: -4, duration: 2.5 }, 2)
               .to(cubeGroup.position, { x: -2.0, y: 0, z: 0.9, duration: 2.5 }, 2)
               .to(cubeGroup.rotation, { y: Math.PI / 3, x: Math.PI / 4, duration: 2.5 }, 2)
               .to(cubeGroup.position, { x: 0, y: -2, z: -3, duration: 2 }, 4.5)
-              .to(orbGroup.position, { x: 2, y: 2.5, z: -3, duration: 2 }, 4.5);
+              .to(orbGroup.position, { x: 3.0, y: 2.5, z: -3, duration: 2 }, 4.5);
 
         // --- 5. INTERACTION LOGIC ---
         let mouseX = 0, mouseY = 0;
@@ -1946,15 +1946,15 @@
             const w = window.innerWidth;
             if (w < 640) {
                 camera.position.z = 11.2;
-                orbGroup.position.set(0, 1.35, -1.8);
+                if (window.scrollY < 50) orbGroup.position.set(0, 1.35, -1.8);
                 orbGroup.scale.setScalar(0.68);
             } else if (w < 1024) {
                 camera.position.z = 9.6;
-                orbGroup.position.set(1.2, 0.8, -1.4);
+                if (window.scrollY < 50) orbGroup.position.set(1.6, 0.8, -1.4);
                 orbGroup.scale.setScalar(0.78);
             } else {
                 camera.position.z = 8.0;
-                orbGroup.position.set(2.8, 0.3, -1.0);
+                if (window.scrollY < 50) orbGroup.position.set(3.4, 0.3, -1.0);
                 orbGroup.scale.setScalar(0.9);
             }
         }
