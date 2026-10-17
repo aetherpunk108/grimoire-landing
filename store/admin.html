@@ -153,7 +153,7 @@
 
 </main>
 
-<script src="/assets/store.js?v=1"></script>
+<script src="/assets/store.js?v=2"></script>
 <script>
   function checkAuth() {
     const input = document.getElementById('auth-passcode').value.trim();
@@ -324,6 +324,7 @@
   function resetDefaults() {
     if (!confirm('Reset catalog to factory default sovereign & handmade specimens?')) return;
     localStorage.removeItem('epinoia_custom_products');
+    localStorage.removeItem('epinoia_custom_products_v2');
     renderAdminList();
     alert('Catalog reset to sovereign defaults.');
   }

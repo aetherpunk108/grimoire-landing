@@ -27,6 +27,8 @@
     </a>
     <nav class="nav-links">
       <a href="/store/" class="nav-link"><i class="fas fa-arrow-left"></i> Vault Store</a>
+      <a href="/app/" class="nav-link">App</a>
+      <a href="/pricing/" class="nav-link">Pricing</a>
       <a href="/docs/" class="nav-link">Docs</a>
       <a href="/store/admin.html" class="nav-link" style="color:var(--gold);"><i class="fas fa-screwdriver-wrench"></i> Admin</a>
     </nav>
@@ -84,7 +86,7 @@
   <p>© 2026 EPINOIA HORIZON INC. ARTISAN ATELIER &amp; HARNESS VAULT.</p>
 </footer>
 
-<script src="/assets/store.js?v=1"></script>
+<script src="/assets/store.js?v=2"></script>
 <script>
   let currentProduct = null;
 
@@ -187,8 +189,8 @@
 
   function directCheckout() {
     if (!currentProduct) return;
-    const msg = encodeURIComponent(`Greetings Epinoia Horizon,\n\nI am interested in acquiring:\n${currentProduct.title} ($${currentProduct.price})\n\nPlease advise on availability and private dispatch.`);
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    const msg = encodeURIComponent(`Halo Epinoia Horizon,\n\nSaya tertarik untuk memesan:\n${currentProduct.title} ($${currentProduct.price} USD)\n\nMohon info pembayaran (QRIS / Bank Transfer) dan aktivasi.`);
+    window.open(`https://wa.me/6281776349779?text=${msg}`, '_blank');
   }
 
   function checkoutWhatsApp() {
@@ -196,8 +198,8 @@
     if (cart.length === 0) return;
     const lines = cart.map(i => `- ${i.title} ($${i.price} x ${i.qty || 1})`).join('\n');
     const total = cart.reduce((s, i) => s + (i.price * (i.qty || 1)), 0);
-    const msg = encodeURIComponent(`Greetings Epinoia Horizon Sanctum,\n\nI wish to acquire the following relics from the Vault:\n${lines}\n\nTotal: $${total}`);
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    const msg = encodeURIComponent(`Halo Epinoia Horizon Sanctum,\n\nSaya ingin memesan item berikut dari The Horizon Vault:\n${lines}\n\nTotal: $${total} USD\n\nMohon info pembayaran (QRIS / Bank Transfer) dan aktivasi.`);
+    window.open(`https://wa.me/6281776349779?text=${msg}`, '_blank');
   }
 
   if (document.readyState === 'loading') {
