@@ -254,7 +254,7 @@
               <h3 id="eh-store-auth-title" style="font-family:'Cinzel Decorative',serif;font-size:20px;color:#facc15;margin-top:4px;">SANCTUM ACCOUNT</h3>
             </div>
             <div id="eh-store-auth-notice" style="display:none;margin-bottom:14px;padding:10px 12px;border-radius:10px;background:rgba(234,179,8,0.14);border:1px solid rgba(234,179,8,0.4);font-size:12px;color:#fde047;line-height:1.45;">
-              <i class="fas fa-lock"></i> Silakan <strong>Login</strong> atau <strong>Sign Up</strong> terlebih dahulu agar pesanan &amp; invoice Anda tercatat dengan aman.
+              <i class="fas fa-lock"></i> Please <strong>Sign In</strong> or <strong>Sign Up</strong> first so your order and official invoice are securely linked to your buyer profile.
             </div>
             <div id="eh-store-auth-err" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.45);font-size:12px;color:#fca5a5;"></div>
 
@@ -281,8 +281,8 @@
             <!-- Sign Up Registration Form -->
             <form id="eh-form-signup" onsubmit="window.EpinoiaStore.submitSignup(event)" style="display:none;flex-direction:column;gap:11px;">
               <div>
-                <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">FULL NAME (NAMA LENGKAP) *</label>
-                <input type="text" id="eh-reg-name" required placeholder="e.g. Arya Wijaya" class="form-input">
+                <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">FULL NAME *</label>
+                <input type="text" id="eh-reg-name" required placeholder="e.g. Alexander Vance" class="form-input">
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                 <div>
@@ -291,7 +291,7 @@
                 </div>
                 <div>
                   <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">WHATSAPP / PHONE *</label>
-                  <input type="tel" id="eh-reg-phone" required placeholder="+62 812..." class="form-input">
+                  <input type="tel" id="eh-reg-phone" required placeholder="+1 / +62 ..." class="form-input">
                 </div>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -327,14 +327,14 @@
             <div id="eh-co-step1">
               <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#22d3ee;text-transform:uppercase;letter-spacing:.1em;"><i class="fas fa-lock"></i> Encrypted Vault Checkout</span>
               <h3 style="font-family:'Cinzel Decorative',serif;font-size:20px;color:#facc15;margin:4px 0;">AUTHORIZE VAULT ORDER</h3>
-              <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Pesanan Anda dicatat di akun resmi Anda dan menerbitkan Invoice Resmi di layar ini.</p>
+              <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Your order is securely logged to your Epinoia Horizon account and generates an official invoice right here on screen.</p>
 
               <div id="eh-co-summary" style="padding:12px;border-radius:12px;background:#030208;border:1px solid rgba(234,179,8,0.25);margin-bottom:14px;font-size:12px;"></div>
 
               <form onsubmit="window.EpinoiaStore.submitStoreOrder(event)" style="display:flex;flex-direction:column;gap:11px;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                   <div>
-                    <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">BUYER NAME *</label>
+                    <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">BUYER FULL NAME *</label>
                     <input type="text" id="eh-co-name" required class="form-input">
                   </div>
                   <div>
@@ -343,11 +343,11 @@
                   </div>
                 </div>
                 <div>
-                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">EMAIL PENERIMA INVOICE *</label>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">EMAIL FOR INVOICE &amp; LICENSE *</label>
                   <input type="email" id="eh-co-email" required class="form-input">
                 </div>
                 <div>
-                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">METODE PEMBAYARAN *</label>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">PREFERRED PAYMENT METHOD *</label>
                   <select id="eh-co-payment" class="form-select">
                     <option value="QRIS Instant (BCA / Mandiri / GoPay / OVO)">QRIS Instant (BCA / Mandiri / GoPay / OVO / Dana)</option>
                     <option value="Bank Transfer (BCA / Mandiri Official)">Bank Transfer (BCA / Mandiri Official Desk)</option>
@@ -355,11 +355,11 @@
                   </select>
                 </div>
                 <div>
-                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">ALAMAT PENGIRIMAN PENDANT / CATATAN KOMISI 3D *</label>
-                  <textarea id="eh-co-notes" rows="2" required class="form-textarea" placeholder="Alamat lengkap pengiriman atau detail komisi 3D..."></textarea>
+                  <label style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#cbd5e1;display:block;margin-bottom:4px;">SHIPPING ADDRESS (PENDANT) / 3D COMMISSION NOTES *</label>
+                  <textarea id="eh-co-notes" rows="2" required class="form-textarea" placeholder="Full shipping address or 3D animation commission brief..."></textarea>
                 </div>
                 <button type="submit" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:4px;">
-                  <i class="fas fa-file-invoice-dollar"></i> Terbitkan Invoice Resmi &amp; Kunci Pesanan
+                  <i class="fas fa-file-invoice-dollar"></i> Generate Official Invoice &amp; Lock Order
                 </button>
               </form>
             </div>
@@ -367,17 +367,17 @@
             <div id="eh-co-step2" style="display:none;">
               <div style="text-align:center;margin-bottom:14px;">
                 <h3 style="font-family:'Cinzel Decorative',serif;font-size:20px;color:#facc15;">OFFICIAL VAULT INVOICE</h3>
-                <p style="font-size:12px;color:#94a3b8;">Pesanan Anda telah tercatat dengan aman di akun Anda.</p>
+                <p style="font-size:12px;color:#94a3b8;">Your order has been securely recorded in your buyer account.</p>
               </div>
               <div id="eh-co-receipt" style="padding:14px;border-radius:12px;background:#030208;border:1px solid rgba(234,179,8,0.4);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;margin-bottom:14px;"></div>
               <div style="padding:11px 12px;border-radius:10px;background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.35);font-size:11px;color:#cbd5e1;line-height:1.45;margin-bottom:14px;">
-                <i class="fas fa-headset" style="color:#22d3ee;"></i> <strong>Official Epinoia Horizon Admin Desk:</strong> Nomor WhatsApp Resmi Admin kami adalah <strong style="color:#fde047;">+62 817-7634-9779</strong>.
+                <i class="fas fa-headset" style="color:#22d3ee;"></i> <strong>Official Epinoia Horizon Admin Desk:</strong> Our verified Concierge WhatsApp is <strong style="color:#fde047;">+62 817-7634-9779</strong>.
               </div>
               <button type="button" onclick="window.EpinoiaStore.sendInvoiceWA()" style="width:100%;padding:13px;border-radius:12px;background:linear-gradient(90deg,#16a34a,#15803d);border:1px solid rgba(74,222,128,0.4);color:#fff;font-family:'Cinzel',serif;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-bottom:8px;">
-                <i class="fab fa-whatsapp"></i> Konfirmasi Salinan Invoice ke WhatsApp Admin (+62 817-7634-9779)
+                <i class="fab fa-whatsapp"></i> Forward Invoice Copy to Admin Desk (+62 817-7634-9779)
               </button>
               <button type="button" onclick="window.EpinoiaStore.closeCheckoutModal()" style="width:100%;padding:11px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(234,179,8,0.3);color:#fde047;font-family:'Cinzel',serif;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;">
-                Selesai &amp; Tutup
+                Done &amp; Close
               </button>
             </div>
           </div>
@@ -485,7 +485,7 @@
       if (!found || found.password !== pass) {
         const err = document.getElementById('eh-store-auth-err');
         err.style.display = 'block';
-        err.innerText = 'Akun belum terdaftar atau password tidak sesuai. Silakan klik tab SIGN UP untuk mendaftar.';
+        err.innerText = 'Account not found or invalid password. Please switch to the SIGN UP tab to create a new account.';
         return;
       }
       localStorage.setItem('eh_sanctum_buyer_account', JSON.stringify(found));
@@ -508,7 +508,7 @@
       if (pass !== conf) {
         const err = document.getElementById('eh-store-auth-err');
         err.style.display = 'block';
-        err.innerText = 'Konfirmasi password tidak cocok.';
+        err.innerText = 'Password confirmation does not match.';
         return;
       }
       const buyer = { id: 'EH-' + Date.now(), name, email, phone, password: pass };
@@ -534,7 +534,7 @@
     openSafeCheckout: function(customItems) {
       const items = customItems || this.getCart();
       if (!items || items.length === 0) {
-        alert('Silakan pilih produk ke dalam Vault terlebih dahulu.');
+        alert('Please add items to your Vault selection first.');
         return;
       }
       this.closeCart();
@@ -553,13 +553,13 @@
       document.getElementById('eh-co-phone').value = user.phone || '';
 
       const total = items.reduce((s, i) => s + (i.price * (i.qty || 1)), 0);
-      const idrTotal = (total * 16000).toLocaleString('id-ID');
+      const idrTotal = (total * 16000).toLocaleString('en-US');
       document.getElementById('eh-co-summary').innerHTML = items.map(i => `
         <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(234,179,8,0.15);">
           <span>${i.title} x ${i.qty || 1}</span>
           <strong style="color:#fde047;">$${i.price * (i.qty || 1)} USD</strong>
         </div>
-      `).join('') + `<div style="display:flex;justify-content:space-between;padding-top:8px;color:#facc15;font-family:'JetBrains Mono',monospace;"><strong>TOTAL:</strong><strong>$${total} USD (≈ Rp ${idrTotal})</strong></div>`;
+      `).join('') + `<div style="display:flex;justify-content:space-between;padding-top:8px;color:#facc15;font-family:'JetBrains Mono',monospace;"><strong>TOTAL:</strong><strong>$${total} USD (≈ IDR ${idrTotal})</strong></div>`;
 
       document.getElementById('eh-store-checkout-modal').style.display = 'flex';
     },
@@ -578,9 +578,9 @@
       const paymentMethod = document.getElementById('eh-co-payment').value;
       const buyerNotes = document.getElementById('eh-co-notes').value.trim();
       const total = items.reduce((s, i) => s + (i.price * (i.qty || 1)), 0);
-      const idrTotal = (total * 16000).toLocaleString('id-ID');
+      const idrTotal = (total * 16000).toLocaleString('en-US');
       const invoiceId = 'INV-EH-2026-' + Math.floor(1000 + Math.random() * 9000);
-      const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+      const dateStr = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
       const ord = { invoiceId, date: dateStr, buyerName, buyerPhone, buyerEmail, paymentMethod, buyerNotes, items, total, idrTotal };
       this.lastInvoice = ord;
@@ -597,12 +597,12 @@
           <span>INVOICE: <strong style="color:#fde047;">${invoiceId}</strong></span>
           <span style="color:#22d3ee;">AUTHORIZED</span>
         </div>
-        <div><strong>Pembeli:</strong> ${buyerName} (${buyerPhone})</div>
+        <div><strong>Buyer:</strong> ${buyerName} (${buyerPhone})</div>
         <div><strong>Email:</strong> ${buyerEmail}</div>
-        <div><strong>Metode:</strong> ${paymentMethod}</div>
-        <div><strong>Catatan:</strong> ${buyerNotes}</div>
+        <div><strong>Payment:</strong> ${paymentMethod}</div>
+        <div><strong>Notes:</strong> ${buyerNotes}</div>
         <div style="border-top:1px dashed rgba(234,179,8,0.4);margin-top:6px;padding-top:6px;color:#fde047;">
-          <strong>TOTAL: $${total} USD (≈ Rp ${idrTotal})</strong>
+          <strong>TOTAL: $${total} USD (≈ IDR ${idrTotal})</strong>
         </div>
       `;
       document.getElementById('eh-co-step1').style.display = 'none';
@@ -614,15 +614,15 @@
       const o = this.lastInvoice;
       const lines = o.items.map(i => `- ${i.title} x ${i.qty || 1}: $${i.price * (i.qty || 1)} USD`).join('\n');
       const msg = encodeURIComponent(
-        `Halo Admin Resmi Epinoia Horizon (+62 817-7634-9779),\n\n` +
-        `Konfirmasi Invoice Resmi Website:\n` +
-        `No. Invoice: ${o.invoiceId}\n` +
-        `Pembeli: ${o.buyerName} (${o.buyerPhone})\n` +
+        `Hello Epinoia Horizon Official Admin Desk (+62 817-7634-9779),\n\n` +
+        `Official Website Invoice Confirmation:\n` +
+        `Invoice ID: ${o.invoiceId}\n` +
+        `Buyer: ${o.buyerName} (${o.buyerPhone})\n` +
         `Email: ${o.buyerEmail}\n` +
-        `Metode Pembayaran: ${o.paymentMethod}\n\n` +
-        `Pesanan:\n${lines}\n` +
-        `Total: $${o.total} USD (≈ Rp ${o.idrTotal})\n\n` +
-        `Alamat / Catatan:\n${o.buyerNotes}`
+        `Payment Method: ${o.paymentMethod}\n\n` +
+        `Ordered Items:\n${lines}\n` +
+        `Total Amount: $${o.total} USD (≈ IDR ${o.idrTotal})\n\n` +
+        `Shipping / Commission Notes:\n${o.buyerNotes}`
       );
       window.open(`https://wa.me/6281776349779?text=${msg}`, '_blank');
     }

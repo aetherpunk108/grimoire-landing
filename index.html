@@ -738,7 +738,7 @@
 
             <!-- Security Prompt Banner (shown if redirected from Checkout) -->
             <div id="auth-checkout-notice" style="display: none; margin-bottom: 16px; padding: 12px 14px; border-radius: 12px; background: rgba(234, 179, 8, 0.12); border: 1px solid rgba(234, 179, 8, 0.4); font-size: 12px; color: #fde047; line-height: 1.45;">
-                <i class="fas fa-lock text-gold-400"></i> <strong>Safe Checkout Required:</strong> Silakan <strong>Login</strong> atau <strong>Daftar Akun (Sign Up)</strong> terlebih dahulu agar pesanan &amp; invoice resmi Anda tercatat dengan aman.
+                <i class="fas fa-lock text-gold-400"></i> <strong>Safe Checkout Required:</strong> Please <strong>Sign In</strong> or <strong>Create an Account (Sign Up)</strong> first so your order and official invoice are securely linked to your buyer profile.
             </div>
 
             <!-- Feedback Alert Box -->
@@ -790,8 +790,8 @@
             <div id="auth-view-signup" style="display: none;">
                 <form onsubmit="handleSignupSubmit(event)" style="display: flex; flex-direction: column; gap: 12px;">
                     <div>
-                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; letter-spacing: 0.08em; display: block; margin-bottom: 5px;">Full Name (Nama Lengkap) *</label>
-                        <input type="text" id="signup-name" required placeholder="e.g. Arya Wijaya" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 13px; box-sizing: border-box;">
+                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; letter-spacing: 0.08em; display: block; margin-bottom: 5px;">Full Name *</label>
+                        <input type="text" id="signup-name" required placeholder="e.g. Alexander Vance" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 13px; box-sizing: border-box;">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
@@ -800,7 +800,7 @@
                         </div>
                         <div>
                             <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; letter-spacing: 0.08em; display: block; margin-bottom: 5px;">WhatsApp / Phone *</label>
-                            <input type="tel" id="signup-phone" required placeholder="+62 812..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 13px; box-sizing: border-box;">
+                            <input type="tel" id="signup-phone" required placeholder="+1 / +62 ..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 13px; box-sizing: border-box;">
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -815,7 +815,7 @@
                     </div>
                     <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: #9ca3af; cursor: pointer; margin-top: 2px;">
                         <input type="checkbox" required style="margin-top: 3px;">
-                        <span>Saya menyetujui pembuatan akun resmi Epinoia Horizon agar setiap transaksi perhiasan 925, komisi 3D, dan lisensi Merlin AI tercatat aman.</span>
+                        <span>I agree to register an official Epinoia Horizon buyer account to keep my 925 jewelry orders, 3D commissions, and Merlin AI licenses protected.</span>
                     </label>
                     <button type="submit" id="signup-submit-btn" style="width: 100%; padding: 13px; border-radius: 12px; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px;" class="bg-gradient-to-r from-gold-500 to-amber-600 text-horizon-bg hover:brightness-110 transition-all shadow-[0_0_20px_rgba(234,179,8,0.35)]">
                         <i class="fas fa-user-shield"></i> Create Safe Buyer Account
@@ -849,10 +849,10 @@
 
                 <div style="margin-bottom: 16px;">
                     <h5 class="font-mono text-xs text-gold-300 uppercase" style="margin-bottom: 8px; letter-spacing: 0.08em;">
-                        <i class="fas fa-receipt"></i> Riwayat Pesanan &amp; Invoice Anda
+                        <i class="fas fa-receipt"></i> Your Order &amp; Invoice History
                     </h5>
                     <div id="profile-orders-list" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
-                        <p class="font-mono text-xs text-gray-500" style="text-align: center; padding: 16px 0;">Belum ada riwayat pesanan.</p>
+                        <p class="font-mono text-xs text-gray-500" style="text-align: center; padding: 16px 0;">No orders recorded yet.</p>
                     </div>
                 </div>
 
@@ -882,7 +882,7 @@
                         <i class="fas fa-lock"></i> Encrypted Vault Checkout
                     </span>
                     <h3 class="font-title text-2xl text-gold-300 glow-gold" style="margin-top: 4px;">AUTHORIZE VAULT ORDER</h3>
-                    <p class="text-xs text-gray-400">Pesanan Anda dicatat langsung di akun Epinoia Horizon &amp; menerbitkan Invoice Resmi di layar ini (tidak langsung melompat keluar).</p>
+                    <p class="text-xs text-gray-400">Your order is securely logged to your Epinoia Horizon account and generates an official invoice right here on screen.</p>
                 </div>
 
                 <!-- Order Items Summary -->
@@ -891,20 +891,20 @@
                 <form onsubmit="submitOfficialOrder(event)" style="display: flex; flex-direction: column; gap: 12px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
-                            <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Buyer Name *</label>
+                            <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Buyer Full Name *</label>
                             <input type="text" id="co-buyer-name" required style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 12px; box-sizing: border-box;">
                         </div>
                         <div>
                             <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">WhatsApp / Phone *</label>
-                            <input type="tel" id="co-buyer-phone" required placeholder="+62 812..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 12px; box-sizing: border-box;">
+                            <input type="tel" id="co-buyer-phone" required placeholder="+1 / +62 ..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 12px; box-sizing: border-box;">
                         </div>
                     </div>
                     <div>
-                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Email Penerima Invoice &amp; Lisensi *</label>
+                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Email for Invoice &amp; License Delivery *</label>
                         <input type="email" id="co-buyer-email" required style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 12px; box-sizing: border-box;">
                     </div>
                     <div>
-                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Metode Pembayaran Resmi *</label>
+                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Preferred Payment Method *</label>
                         <select id="co-payment-method" required style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.95); border: 1px solid rgba(234, 179, 8, 0.35); color: #fde047; font-size: 12px; box-sizing: border-box;">
                             <option value="QRIS Instant (BCA / Mandiri / GoPay / OVO)">QRIS Instant (BCA / Mandiri / GoPay / OVO / Dana)</option>
                             <option value="Bank Transfer (BCA / Mandiri Official)">Bank Transfer (BCA / Mandiri Official Desk)</option>
@@ -912,12 +912,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Alamat Pengiriman Pendant / Catatan Komisi 3D *</label>
-                        <textarea id="co-buyer-notes" rows="2" required placeholder="Tuliskan alamat lengkap pengiriman (untuk Pendant 925) atau detail brief animasi 3D / email workspace Anda..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 12px; box-sizing: border-box; resize: none;"></textarea>
+                        <label class="font-mono text-gray-300 uppercase" style="font-size: 10px; display: block; margin-bottom: 4px;">Shipping Address (Pendant) / 3D Commission Notes *</label>
+                        <textarea id="co-buyer-notes" rows="2" required placeholder="Enter full shipping address (for 925 Pendants), 3D animation commission brief, or workspace email..." style="width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(3, 2, 8, 0.85); border: 1px solid rgba(234, 179, 8, 0.3); color: #fff; font-size: 12px; box-sizing: border-box; resize: none;"></textarea>
                     </div>
 
                     <button type="submit" style="width: 100%; padding: 14px; border-radius: 12px; font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px;" class="bg-gradient-to-r from-gold-500 to-amber-600 text-horizon-bg hover:brightness-110 transition-all shadow-[0_0_25px_rgba(234,179,8,0.4)]">
-                        <i class="fas fa-file-invoice-dollar"></i> Terbitkan Invoice Resmi &amp; Kunci Pesanan
+                        <i class="fas fa-file-invoice-dollar"></i> Generate Official Invoice &amp; Lock Order
                     </button>
                 </form>
             </div>
@@ -929,22 +929,22 @@
                         <i class="fas fa-check"></i>
                     </div>
                     <h3 class="font-title text-xl text-gold-300 glow-gold">OFFICIAL VAULT INVOICE</h3>
-                    <p class="text-xs text-gray-400">Pesanan Anda telah tersimpan dengan aman di akun Anda.</p>
+                    <p class="text-xs text-gray-400">Your order has been securely saved to your buyer account.</p>
                 </div>
 
                 <div id="invoice-receipt-box" style="padding: 16px; border-radius: 14px; background: rgba(3, 2, 8, 0.9); border: 1px solid rgba(234, 179, 8, 0.4); font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #e2e8f0; line-height: 1.6; margin-bottom: 16px;"></div>
 
                 <div style="padding: 12px 14px; border-radius: 12px; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.35); font-size: 11px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px;">
                     <i class="fas fa-headset text-cyan-400"></i> <strong>Official Epinoia Horizon Admin Desk:</strong><br>
-                    Nomor WhatsApp Resmi Admin kami adalah <strong class="text-gold-300">+62 817-7634-9779</strong>. Jika Anda sedang mengetes menggunakan nomor HP yang sama dengan nomor Admin, menekan tombol WhatsApp akan membuka ruang chat nomor Anda sendiri.
+                    Our verified Concierge &amp; Payment Verification WhatsApp is <strong class="text-gold-300">+62 817-7634-9779</strong>. You may optionally forward your invoice copy below for instant payment settlement.
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <button type="button" onclick="sendInvoiceWhatsApp()" style="width: 100%; padding: 13px; border-radius: 12px; background: linear-gradient(90deg, #16a34a, #15803d); color: #fff; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(74, 222, 128, 0.4);">
-                        <i class="fab fa-whatsapp text-base"></i> Kirim Salinan Invoice ke WhatsApp Admin (+62 817-7634-9779)
+                        <i class="fab fa-whatsapp text-base"></i> Forward Invoice Copy to Admin Desk (+62 817-7634-9779)
                     </button>
                     <button type="button" onclick="closeCheckoutOrderModal()" style="width: 100%; padding: 11px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(234, 179, 8, 0.3); color: #fde047; font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer;">
-                        Selesai &amp; Kembali ke Galeri
+                        Done &amp; Return to Vault
                     </button>
                 </div>
             </div>
@@ -1607,13 +1607,13 @@
                         if (localDir[email.toLowerCase()] && localDir[email.toLowerCase()].password === password) {
                             loggedUser = localDir[email.toLowerCase()];
                         } else if (error) {
-                            throw new Error(error.message || 'Email atau password tidak sesuai.');
+                            throw new Error(error.message || 'Invalid email or password.');
                         }
                     }
                 }
 
                 if (!loggedUser) {
-                    throw new Error('Akun belum terdaftar. Silakan klik tab Sign Up untuk membuat akun baru.');
+                    throw new Error('Account not found. Please switch to the Sign Up tab to register a new buyer account.');
                 }
 
                 currentSanctumUser = loggedUser;
@@ -1645,7 +1645,7 @@
             const confirm = document.getElementById('signup-confirm').value;
 
             if (password !== confirm) {
-                showAuthAlert('<i class="fas fa-triangle-exclamation"></i> Konfirmasi password tidak cocok dengan password Anda.');
+                showAuthAlert('<i class="fas fa-triangle-exclamation"></i> Password confirmation does not match your password.');
                 return;
             }
 
@@ -1732,7 +1732,7 @@
                 : orders;
 
             if (myOrders.length === 0) {
-                listEl.innerHTML = `<p class="font-mono text-xs text-gray-500" style="text-align: center; padding: 16px 0;">Belum ada riwayat pesanan di akun ini.</p>`;
+                listEl.innerHTML = `<p class="font-mono text-xs text-gray-500" style="text-align: center; padding: 16px 0;">No orders recorded on this account yet.</p>`;
                 return;
             }
 
@@ -1776,7 +1776,7 @@
             }
 
             const total = cart.reduce((sum, item) => sum + item.price, 0);
-            const idrTotal = (total * 16000).toLocaleString('id-ID');
+            const idrTotal = (total * 16000).toLocaleString('en-US');
             const previewEl = document.getElementById('checkout-items-preview');
             previewEl.innerHTML = cart.map(item => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(234, 179, 8, 0.12); font-size: 12px;">
@@ -1785,8 +1785,8 @@
                 </div>
             `).join('') + `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-                    <span class="text-gray-400">TOTAL PEMBAYARAN:</span>
-                    <strong class="text-gold-300">$${total} USD (≈ Rp ${idrTotal})</strong>
+                    <span class="text-gray-400">TOTAL AMOUNT DUE:</span>
+                    <strong class="text-gold-300">$${total} USD (≈ IDR ${idrTotal})</strong>
                 </div>
             `;
 
@@ -1813,10 +1813,10 @@
             const buyerNotes = document.getElementById('co-buyer-notes').value.trim();
 
             const total = cart.reduce((sum, item) => sum + item.price, 0);
-            const idrTotal = (total * 16000).toLocaleString('id-ID');
+            const idrTotal = (total * 16000).toLocaleString('en-US');
             const randomCode = Math.floor(1000 + Math.random() * 9000);
             const invoiceId = `INV-EH-2026-${randomCode}`;
-            const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+            const dateStr = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
             const orderRecord = {
                 invoiceId,
@@ -1853,16 +1853,16 @@
                     <span>INVOICE ID: <strong class="text-gold-300">${invoiceId}</strong></span>
                     <span class="text-cyan-300">STATUS: AUTHORIZED</span>
                 </div>
-                <div><strong>Pembeli:</strong> ${buyerName} (${buyerPhone})</div>
-                <div><strong>Email Akun:</strong> ${buyerEmail}</div>
-                <div><strong>Metode Bayar:</strong> ${paymentMethod}</div>
-                <div><strong>Alamat / Catatan:</strong> ${buyerNotes}</div>
+                <div><strong>Buyer:</strong> ${buyerName} (${buyerPhone})</div>
+                <div><strong>Account Email:</strong> ${buyerEmail}</div>
+                <div><strong>Payment Method:</strong> ${paymentMethod}</div>
+                <div><strong>Shipping / Notes:</strong> ${buyerNotes}</div>
                 <div style="border-top: 1px dashed rgba(234, 179, 8, 0.35); margin: 8px 0; padding-top: 8px;">
                     ${orderRecord.items.map(i => `<div>• ${i.title} (${i.category}) — <strong>$${i.price} USD</strong></div>`).join('')}
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 13px; color: #fde047; padding-top: 4px;">
-                    <strong>TOTAL TAGIHAN:</strong>
-                    <strong>$${total} USD (≈ Rp ${idrTotal})</strong>
+                    <strong>TOTAL AMOUNT:</strong>
+                    <strong>$${total} USD (≈ IDR ${idrTotal})</strong>
                 </div>
             `;
 
@@ -1872,7 +1872,7 @@
 
             document.getElementById('checkout-step-form').style.display = 'none';
             document.getElementById('checkout-step-invoice').style.display = 'block';
-            showToast(`Invoice ${invoiceId} diterbitkan & disimpan di akun Anda!`);
+            showToast(`Official Invoice ${invoiceId} generated & saved to your account!`);
             playSpellSound(880, 'triangle', 0.55);
         }
 
@@ -1881,16 +1881,16 @@
             const o = lastGeneratedInvoice;
             const lines = o.items.map(item => `- ${item.title} (${item.category}): $${item.price} USD`).join('\n');
             const msg = encodeURIComponent(
-                `Halo Admin Resmi Epinoia Horizon (+62 817-7634-9779),\n\n` +
-                `Berikut konfirmasi Invoice Resmi saya dari Website:\n` +
-                `No. Invoice: ${o.invoiceId}\n` +
-                `Nama Pembeli: ${o.buyerName}\n` +
-                `Email Akun: ${o.buyerEmail}\n` +
-                `No. WhatsApp Pembeli: ${o.buyerPhone}\n` +
-                `Metode Pembayaran: ${o.paymentMethod}\n\n` +
-                `Daftar Pesanan:\n${lines}\n` +
-                `Total: $${o.total} USD (≈ Rp ${o.idrTotal})\n\n` +
-                `Alamat / Catatan:\n${o.buyerNotes}`
+                `Hello Epinoia Horizon Official Admin Desk (+62 817-7634-9779),\n\n` +
+                `Here is my Official Website Invoice confirmation:\n` +
+                `Invoice ID: ${o.invoiceId}\n` +
+                `Buyer Name: ${o.buyerName}\n` +
+                `Account Email: ${o.buyerEmail}\n` +
+                `Buyer Phone / WhatsApp: ${o.buyerPhone}\n` +
+                `Payment Method: ${o.paymentMethod}\n\n` +
+                `Ordered Items:\n${lines}\n` +
+                `Total Amount: $${o.total} USD (≈ IDR ${o.idrTotal})\n\n` +
+                `Shipping Address / Commission Notes:\n${o.buyerNotes}`
             );
             window.open(`https://wa.me/6281776349779?text=${msg}`, '_blank');
         }
