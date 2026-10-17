@@ -1024,16 +1024,91 @@ function EpinoiaGeminiApp() {
     showNotice('Sanctum session closed.', 'ok');
   };
 
-  // Conversations State — Clean Slate: Starts with empty New Sovereign Thread
-  const [conversations, setConversations] = useState([
-    {
-      id: 'conv-init',
-      title: 'New Sovereign Thread',
-      date: 'Just now',
-      messages: []
+  // Persistent Conversations Storage Engine
+  const getConvStorageKey = (u) => {
+    if (u && u.id) return `epinoia_conversations_${u.id}`;
+    if (u && u.email) return `epinoia_conversations_${u.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    return 'epinoia_conversations_guest';
+  };
+
+  const loadSavedConversations = (userObj) => {
+    try {
+      const userKey = getConvStorageKey(userObj);
+      let raw = localStorage.getItem(userKey);
+
+      if (!raw && userObj) {
+        const guestRaw = localStorage.getItem('epinoia_conversations_guest') || localStorage.getItem('epinoia_conversations');
+        if (guestRaw) {
+          raw = guestRaw;
+          localStorage.setItem(userKey, guestRaw);
+        }
+      } else if (!raw && !userObj) {
+        raw = localStorage.getItem('epinoia_conversations');
+      }
+
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(c => ({
+            ...c,
+            messages: (c.messages || []).map(m => ({ ...m, isStreaming: false }))
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Error restoring conversations from local storage:', e);
     }
-  ]);
-  const [activeConvId, setActiveConvId] = useState('conv-init');
+    return [
+      {
+        id: `conv-${Date.now()}`,
+        title: 'New Sovereign Thread',
+        date: 'Just now',
+        messages: []
+      }
+    ];
+  };
+
+  const [conversations, setConversations] = useState(() => loadSavedConversations(currentUser));
+  const [activeConvId, setActiveConvId] = useState(() => {
+    try {
+      const initialConvs = loadSavedConversations(currentUser);
+      const savedActiveId = localStorage.getItem('epinoia_active_conv_id');
+      if (savedActiveId && initialConvs.some(c => c.id === savedActiveId)) {
+        return savedActiveId;
+      }
+      return initialConvs[0]?.id || 'conv-init';
+    } catch (e) {
+      return 'conv-init';
+    }
+  });
+
+  // When currentUser logs in or out, automatically switch to that user's saved journals
+  useEffect(() => {
+    const userConvs = loadSavedConversations(currentUser);
+    setConversations(userConvs);
+    if (userConvs.length > 0) {
+      const savedActiveId = localStorage.getItem('epinoia_active_conv_id');
+      if (savedActiveId && userConvs.some(c => c.id === savedActiveId)) {
+        setActiveConvId(savedActiveId);
+      } else {
+        setActiveConvId(userConvs[0].id);
+      }
+    }
+  }, [currentUser?.id, currentUser?.email]);
+
+  // Persist conversations to localStorage whenever updated
+  useEffect(() => {
+    if (!conversations || conversations.length === 0) return;
+    try {
+      const key = getConvStorageKey(currentUser);
+      localStorage.setItem(key, JSON.stringify(conversations));
+      if (activeConvId) {
+        localStorage.setItem('epinoia_active_conv_id', activeConvId);
+      }
+    } catch (err) {
+      console.warn('Could not persist conversations to localStorage:', err);
+    }
+  }, [conversations, currentUser, activeConvId]);
 
   const activeConversation = conversations.find(c => c.id === activeConvId) || conversations[0];
 
@@ -2390,7 +2465,11 @@ function EpinoiaGeminiApp() {
                   style={{ width: 22, height: 22 }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setConversations(conversations.filter(c => c.id !== conv.id));
+                    const remaining = conversations.filter(c => c.id !== conv.id);
+                    setConversations(remaining);
+                    if (activeConvId === conv.id && remaining.length > 0) {
+                      setActiveConvId(remaining[0].id);
+                    }
                   }}
                   title="Delete thread"
                 >
