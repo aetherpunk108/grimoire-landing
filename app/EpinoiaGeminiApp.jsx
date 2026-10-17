@@ -1082,7 +1082,163 @@ function EpinoiaGeminiApp() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const renderInlineMarkdown = (text, keyPrefix = '') => {
+    if (!text) return null;
+    const regex = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
+    const tokens = text.split(regex);
+
+    return tokens.map((part, idx) => {
+      if (!part) return null;
+      const tokenKey = `${keyPrefix}-tok-${idx}`;
+
+      if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+        return (
+          <code key={tokenKey} className="md-inline-code">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+        return (
+          <strong key={tokenKey} className="md-strong">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
+        return (
+          <em key={tokenKey} className="md-em">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+      const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if (linkMatch) {
+        return (
+          <a key={tokenKey} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="md-link">
+            {linkMatch[1]}
+          </a>
+        );
+      }
+
+      return part;
+    });
+  };
+
+  const renderMarkdownBlock = (rawText, blockKey) => {
+    if (!rawText) return null;
+    const lines = rawText.split('\n');
+    const elements = [];
+    let currentList = null;
+
+    const flushList = () => {
+      if (!currentList) return;
+      const lKey = `${blockKey}-list-${elements.length}`;
+      if (currentList.type === 'ul') {
+        elements.push(
+          <ul key={lKey} className="md-ul">
+            {currentList.items.map((item, idx) => (
+              <li key={`${lKey}-li-${idx}`} className="md-li">
+                <span className="md-bullet-marker" />
+                <div className="md-li-content">{renderInlineMarkdown(item, `${lKey}-lic-${idx}`)}</div>
+              </li>
+            ))}
+          </ul>
+        );
+      } else {
+        elements.push(
+          <ol key={lKey} className="md-ol">
+            {currentList.items.map((item, idx) => (
+              <li key={`${lKey}-oli-${idx}`} className="md-oli">
+                <span className="md-num-marker">{item.num}.</span>
+                <div className="md-li-content">{renderInlineMarkdown(item.text, `${lKey}-olic-${idx}`)}</div>
+              </li>
+            ))}
+          </ol>
+        );
+      }
+      currentList = null;
+    };
+
+    lines.forEach((rawLine, lineIdx) => {
+      const line = rawLine.trim();
+
+      if (!line) {
+        flushList();
+        return;
+      }
+
+      if (line === '---' || line === '***' || line === '___') {
+        flushList();
+        elements.push(<hr key={`${blockKey}-hr-${lineIdx}`} className="md-hr" />);
+        return;
+      }
+
+      if (line.startsWith('# ')) {
+        flushList();
+        elements.push(<h1 key={`${blockKey}-h1-${lineIdx}`} className="md-h1">{renderInlineMarkdown(line.slice(2), `${blockKey}-h1-${lineIdx}`)}</h1>);
+        return;
+      }
+      if (line.startsWith('## ')) {
+        flushList();
+        elements.push(<h2 key={`${blockKey}-h2-${lineIdx}`} className="md-h2">{renderInlineMarkdown(line.slice(3), `${blockKey}-h2-${lineIdx}`)}</h2>);
+        return;
+      }
+      if (line.startsWith('### ')) {
+        flushList();
+        elements.push(<h3 key={`${blockKey}-h3-${lineIdx}`} className="md-h3">{renderInlineMarkdown(line.slice(4), `${blockKey}-h3-${lineIdx}`)}</h3>);
+        return;
+      }
+      if (line.startsWith('#### ')) {
+        flushList();
+        elements.push(<h4 key={`${blockKey}-h4-${lineIdx}`} className="md-h4">{renderInlineMarkdown(line.slice(5), `${blockKey}-h4-${lineIdx}`)}</h4>);
+        return;
+      }
+
+      if (line.startsWith('> ')) {
+        flushList();
+        elements.push(
+          <blockquote key={`${blockKey}-bq-${lineIdx}`} className="md-blockquote">
+            {renderInlineMarkdown(line.slice(2), `${blockKey}-bq-${lineIdx}`)}
+          </blockquote>
+        );
+        return;
+      }
+
+      const bulletMatch = line.match(/^[-*•]\s+(.*)$/);
+      if (bulletMatch) {
+        if (!currentList || currentList.type !== 'ul') {
+          flushList();
+          currentList = { type: 'ul', items: [] };
+        }
+        currentList.items.push(bulletMatch[1]);
+        return;
+      }
+
+      const numMatch = line.match(/^(\d+)\.\s+(.*)$/);
+      if (numMatch) {
+        if (!currentList || currentList.type !== 'ol') {
+          flushList();
+          currentList = { type: 'ol', items: [] };
+        }
+        currentList.items.push({ num: numMatch[1], text: numMatch[2] });
+        return;
+      }
+
+      flushList();
+      elements.push(
+        <p key={`${blockKey}-p-${lineIdx}`} className="md-p">
+          {renderInlineMarkdown(rawLine, `${blockKey}-p-${lineIdx}`)}
+        </p>
+      );
+    });
+
+    flushList();
+    return elements;
+  };
+
   const renderFormattedMessage = (content, msgId) => {
+    if (!content) return null;
     const parts = [];
     const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
     let lastIndex = 0;
@@ -1116,27 +1272,9 @@ function EpinoiaGeminiApp() {
         );
       }
 
-      const paragraphs = part.text.split('\n\n').filter(p => p.trim());
       return (
         <div key={pIdx} className="text-paragraphs-group">
-          {paragraphs.map((para, paraIdx) => {
-            if (para.startsWith('### ')) {
-              return <h3 key={paraIdx} className="md-h3">{para.replace('### ', '')}</h3>;
-            }
-            if (para.startsWith('## ')) {
-              return <h2 key={paraIdx} className="md-h2">{para.replace('## ', '')}</h2>;
-            }
-            const lines = para.split('\n');
-            return (
-              <div key={paraIdx} className="md-p">
-                {lines.map((line, lineIdx) => (
-                  <div key={lineIdx} style={{ marginBottom: line.startsWith('-') || line.match(/^\d+\./) ? '4px' : '6px' }}>
-                    {line}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+          {renderMarkdownBlock(part.text, `${msgId}-blk-${pIdx}`)}
         </div>
       );
     });
@@ -1765,16 +1903,54 @@ function EpinoiaGeminiApp() {
         .step-time { color: var(--dim); font-size: 10.5px; margin-left: 6px; }
         .step-detail { color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
 
-        .text-paragraphs-group { font-size: 14px; line-height: 1.68; color: #e2e8f0; overflow-wrap: anywhere; word-break: break-word; }
-        .md-h3 {
-          font-family: var(--font-heading); font-size: 15.5px; font-weight: 700; color: var(--gold-soft);
-          margin: 14px 0 6px; letter-spacing: 0.04em; text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+        .text-paragraphs-group { font-size: 14px; line-height: 1.7; color: #e2e8f0; overflow-wrap: anywhere; word-break: break-word; }
+        .text-paragraphs-group > *:last-child { margin-bottom: 0 !important; }
+        .md-h1 {
+          font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--gold);
+          margin: 18px 0 8px; letter-spacing: 0.02em; text-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
         }
         .md-h2 {
-          font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold);
-          margin: 18px 0 8px; text-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
+          font-family: var(--font-display); font-size: 17.5px; font-weight: 700; color: var(--gold);
+          margin: 16px 0 8px; text-shadow: 0 0 14px rgba(234, 179, 8, 0.35);
         }
-        .md-p { margin-bottom: 10px; }
+        .md-h3 {
+          font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--gold-soft);
+          margin: 14px 0 6px; letter-spacing: 0.03em; text-shadow: 0 0 10px rgba(234, 179, 8, 0.25);
+        }
+        .md-h4 {
+          font-family: var(--font-heading); font-size: 13.5px; font-weight: 700; color: #f1f5f9;
+          margin: 12px 0 4px;
+        }
+        .md-p { margin: 0 0 11px 0; line-height: 1.68; color: #cbd5e1; font-size: 14px; }
+        .md-strong { color: #fef08a; font-weight: 700; letter-spacing: 0.01em; }
+        .md-em { font-style: italic; color: #e2e8f0; }
+        .md-inline-code {
+          font-family: var(--font-mono); font-size: 12.5px; padding: 2px 7px; border-radius: 6px;
+          background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.28);
+          color: #38bdf8; word-break: break-word; vertical-align: baseline; font-weight: 500;
+        }
+        .md-ul, .md-ol {
+          margin: 8px 0 12px 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;
+        }
+        .md-li, .md-oli {
+          display: flex; align-items: flex-start; gap: 10px; line-height: 1.62; font-size: 14px; color: #cbd5e1;
+        }
+        .md-bullet-marker {
+          width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+          box-shadow: 0 0 8px rgba(250, 204, 21, 0.7); margin-top: 8px; flex-shrink: 0;
+        }
+        .md-num-marker {
+          font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; color: var(--gold-soft);
+          min-width: 20px; flex-shrink: 0; margin-top: 1px;
+        }
+        .md-li-content { flex: 1; min-width: 0; }
+        .md-blockquote {
+          margin: 10px 0 12px; padding: 8px 14px; border-left: 3px solid var(--gold);
+          background: rgba(234, 179, 8, 0.06); border-radius: 0 8px 8px 0; color: #cbd5e1; font-style: italic;
+        }
+        .md-hr { margin: 16px 0; border: none; border-top: 1px solid var(--line-2); }
+        .md-link { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
+        .md-link:hover { color: #fff; }
 
         .code-block-wrap {
           margin: 12px 0; background: rgba(4, 3, 10, 0.96); border: 1px solid var(--line-2);
