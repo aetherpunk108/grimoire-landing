@@ -29,25 +29,34 @@
       <a href="/store/" class="nav-link"><i class="fas fa-store"></i> Live Store</a>
       <a href="/docs/" class="nav-link">Docs</a>
       <a href="/" class="nav-link">Sanctum</a>
+      <button id="btn-lock-admin" onclick="lockAdminSession()" style="display:none;padding:6px 12px;border-radius:999px;background:rgba(239,68,68,0.16);border:1px solid rgba(239,68,68,0.45);color:#fca5a5;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;">
+        <i class="fas fa-lock"></i> Lock Admin
+      </button>
     </nav>
   </div>
 </header>
 
 <main class="store-container">
 
-  <!-- Authentication Gate -->
+  <!-- Authentication Gate (Restricted to Core Development Team) -->
   <div id="auth-gate" class="admin-card" style="text-align:center;max-width:440px;margin:60px auto;">
     <div style="width:60px;height:60px;border-radius:14px;background:rgba(66,32,6,0.6);border:1px solid rgba(234,179,8,0.5);color:var(--gold);font-size:24px;display:grid;place-items:center;margin:0 auto 20px;">
-      <i class="fas fa-lock"></i>
+      <i class="fas fa-user-shield"></i>
     </div>
-    <h2 style="font-family:'Cinzel Decorative',serif;font-size:22px;color:var(--gold);margin-bottom:8px;">Atelier Access Key</h2>
-    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">Enter the Arcane Master Key to manage jewelry, 3D GLBs, and catalog inventory.</p>
-    <div class="form-group">
-      <input type="password" id="auth-passcode" class="form-input" placeholder="Enter key (default: merlin777)" style="text-align:center;letter-spacing:.2em;font-family:'JetBrains Mono',monospace;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px;">Restricted Internal Console</div>
+    <h2 style="font-family:'Cinzel Decorative',serif;font-size:22px;color:var(--gold);margin-bottom:8px;">Development Team Only</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">This console is restricted exclusively to authorized Epinoia Horizon developers. Enter your cryptographic developer key to proceed.</p>
+    <div id="admin-auth-error" style="display:none;margin-bottom:14px;padding:10px 12px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.45);color:#fca5a5;font-size:12px;font-family:'JetBrains Mono',monospace;">
+      Access Denied: Invalid Developer Key.
     </div>
-    <button onclick="checkAuth()" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;">
-      Unlock Atelier
-    </button>
+    <form onsubmit="checkAuth(event)">
+      <div class="form-group">
+        <input type="password" id="auth-passcode" class="form-input" placeholder="••••••••••••••••" autocomplete="off" required style="text-align:center;letter-spacing:.2em;font-family:'JetBrains Mono',monospace;">
+      </div>
+      <button type="submit" style="width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#000;font-family:'Cinzel',serif;font-weight:700;font-size:12px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;">
+        <i class="fas fa-key"></i> Authenticate Developer Session
+      </button>
+    </form>
   </div>
 
   <!-- Admin Panel Content (Protected) -->
@@ -154,30 +163,61 @@
 
 </main>
 
-<script src="/assets/store.js?v=3"></script>
+<script src="/assets/store.js?v=6"></script>
 <script>
-  function checkAuth() {
-    const input = document.getElementById('auth-passcode').value.trim();
-    if (input === 'merlin777' || input === 'admin' || localStorage.getItem('epinoia_admin_auth') === 'true') {
-      localStorage.setItem('epinoia_admin_auth', 'true');
-      document.getElementById('auth-gate').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'block';
-      renderAdminList();
-    } else {
-      alert('Invalid Arcane Key. Access Denied.');
-    }
+  // Purge legacy localStorage admin flag so public browsers are never auto-unlocked
+  try { localStorage.removeItem('epinoia_admin_auth'); } catch (e) {}
+
+  const DEV_TEAM_KEY_HASHES = [
+    'edd3bf122c491799a9154def76936fcef41c0a05881af07828f6d8a52edb0a09',
+    '6d3eb8b2916602747a4a4fb32de98a1b3fb3f8cf8c6758facbede96f34d65285',
+    '065505ccbc297eab8ab9a973806429bdebc39a1abb682bad3ba41d53168ff634'
+  ];
+
+  async function sha256Hex(str) {
+    const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // Check cached auth or URL key parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('key') === 'merlin777' || localStorage.getItem('epinoia_admin_auth') === 'true') {
-    localStorage.setItem('epinoia_admin_auth', 'true');
+  function unlockAdminUI() {
     document.getElementById('auth-gate').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
+    const lockBtn = document.getElementById('btn-lock-admin');
+    if (lockBtn) lockBtn.style.display = 'inline-flex';
+    renderAdminList();
+  }
+
+  function lockAdminSession() {
+    try { sessionStorage.removeItem('epinoia_dev_admin_session'); } catch (e) {}
+    window.location.href = '/store/';
+  }
+
+  async function checkAuth(e) {
+    if (e) e.preventDefault();
+    const errEl = document.getElementById('admin-auth-error');
+    if (errEl) errEl.style.display = 'none';
+    const input = document.getElementById('auth-passcode').value.trim();
+    if (!input) return;
+
+    try {
+      const hash = await sha256Hex(input);
+      if (DEV_TEAM_KEY_HASHES.includes(hash)) {
+        sessionStorage.setItem('epinoia_dev_admin_session', 'verified');
+        unlockAdminUI();
+        return;
+      }
+    } catch (err) {}
+
+    if (errEl) errEl.style.display = 'block';
+    document.getElementById('auth-passcode').value = '';
+  }
+
+  // Check active developer session inside sessionStorage
+  if (sessionStorage.getItem('epinoia_dev_admin_session') === 'verified') {
     if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', renderAdminList);
+      window.addEventListener('DOMContentLoaded', unlockAdminUI);
     } else {
-      renderAdminList();
+      unlockAdminUI();
     }
   }
 
