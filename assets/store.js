@@ -630,6 +630,11 @@
 
   // Init cart badge & header auth buttons on page load
   document.addEventListener('DOMContentLoaded', function() {
+    try { localStorage.removeItem('epinoia_admin_auth'); } catch (e) {}
+    const devLink = document.getElementById('dev-admin-nav-link');
+    if (devLink) {
+      devLink.style.display = (sessionStorage.getItem('epinoia_dev_admin_session') === 'verified') ? 'inline-flex' : 'none';
+    }
     window.EpinoiaStore.updateCartUI();
     window.EpinoiaStore.renderHeaderAuthButtons();
   });
