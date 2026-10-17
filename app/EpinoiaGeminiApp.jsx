@@ -44,8 +44,8 @@ const AVAILABLE_AI_MODELS = [
 ];
 
 const DEFAULT_BRIDGE = {
-  baseUrl: 'https://muddy-term-6b8d.epinoiahorizon.workers.dev/v1',
-  authUrl: 'https://muddy-term-6b8d.epinoiahorizon.workers.dev',
+  baseUrl: 'https://clariohub.id/v1',
+  authUrl: 'https://clariohub.id',
   apiKey: 'sk-clario-b1571fb8c1225e33513b13c5ee5f096af76aaa3d03cb5403',
   modelMap: {
     merlin: 'clario/opus-5',
@@ -56,7 +56,7 @@ const DEFAULT_BRIDGE = {
 
 // ----------------------------------------------------------------------------
 // PLAN TIERS — Free / Medium / High
-//  Free   : Jie Q&A on Fast Flash engines (GLM 5.3 / Gemini 3.7 / DeepSeek V4.1).
+//  Free   : Jie Q&A on Fast Flash engines (GLM 5.3 / Gemini 3.7).
 //  Medium : Merlin + Nxelle + Jie, every Flash engine.
 //  High   : full fleet powered by Claude Opus 5, GLM 5.3 Sovereign, and all frontier models.
 // ----------------------------------------------------------------------------
@@ -65,7 +65,6 @@ const ALL_MODEL_IDS = AVAILABLE_AI_MODELS.map(m => m.id);
 const FREE_MODEL_IDS = [
   'clario/glm-5.3-flash-auto',
   'clario/gemini-3.7-flash',
-  'clario/deepseek-v4.1-flash',
   'clario/gemini-3.7-flash-auto'
 ];
 const AGENT_KEYS = ['merlin', 'nxelle', 'jie'];
@@ -84,7 +83,7 @@ const TIERS = {
     key: 'medium', label: 'Medium', price: '$8/mo',
     agents: ['merlin', 'nxelle', 'jie'],
     models: FLASH_MODEL_IDS,
-    defaults: { merlin: 'clario/deepseek-v4.1-flash-auto', nxelle: 'clario/glm-5.3-flash', jie: 'clario/glm-5.3-flash-auto' },
+    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/glm-5.3-flash-auto', jie: 'clario/gemini-3.7-flash-auto' },
     dailyLimit: 300, premiumDailyLimit: null, maxFiles: 5, maxFileKB: 300,
     summary: 'Merlin, Nxelle Codex & Jie · every Flash engine.',
     heroLine: 'Medium plan — Merlin, Nxelle Codex (coding) and Jie on every Flash engine.'
@@ -672,6 +671,15 @@ function EpinoiaGeminiApp() {
     showNotice(`${TIERS[t].label} plan activated.`, 'ok');
   };
 
+  const activateSpecificTier = (tKey) => {
+    const code = tKey === 'high' ? 'EPI-HIGH-2026' : 'EPI-MEDIUM-2026';
+    try { localStorage.setItem('epinoia_license', code); } catch (e) {}
+    setTierKey(tKey);
+    setSelectedModel('merlin');
+    setPlanModalOpen(false);
+    showNotice(`${TIERS[tKey].label} plan activated. Merlin & Nxelle unlocked!`, 'ok');
+  };
+
   const deactivateLicense = () => {
     try { localStorage.removeItem('epinoia_license'); } catch (e) {}
     setTierKey('free');
@@ -1244,9 +1252,6 @@ function EpinoiaGeminiApp() {
     }));
 
     try {
-      const jwtToken = localStorage.getItem('epinoia_jwt');
-      const authHeaderVal = jwtToken ? `Bearer ${jwtToken}` : `Bearer ${apiKey}`;
-
       const chatPayload = {
         model: liveModelName,
         messages: [
@@ -1258,40 +1263,48 @@ function EpinoiaGeminiApp() {
         ...(AGENT_PARAMS[agent] || { temperature: 0.4 })
       };
 
-      let response = null;
-      try {
-        response = await fetch(`${apiBaseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authHeaderVal
-          },
-          body: JSON.stringify(chatPayload)
-        });
-      } catch (workerErr) {
-        // Cloudflare Worker network issue
-      }
+      // Upstream AI Authorization: Clario master API key is always used for 100% reliable authorization
+      const masterApiKey = DEFAULT_BRIDGE.apiKey;
 
-      // RESILIENT FAILOVER: If Cloudflare Worker returns 401, 403, 502, or fails,
-      // seamlessly stream directly from sovereign ClarioHub node so user is NEVER blocked!
-      if (!response || !response.ok) {
+      // Resilient Multi-Engine Fallback Cascade
+      // If the chosen model is under heavy load (429/503) or rejected (400),
+      // auto-cascade to tested reliable engines so the user NEVER encounters a broken stream or 401/403.
+      const fallbackEngines = agent === 'merlin'
+        ? ['clario/opus-5', 'clario/glm-5.3', 'clario/gemini-3.7-flash', 'clario/glm-5.3-flash-auto']
+        : agent === 'nxelle'
+          ? ['clario/glm-5.3', 'clario/gemini-3.7-flash', 'clario/glm-5.3-flash-auto']
+          : ['clario/gemini-3.7-flash', 'clario/glm-5.3-flash-auto', 'clario/gemini-3.7-flash-auto'];
+
+      const modelsToAttempt = Array.from(new Set([liveModelName, ...fallbackEngines]));
+
+      let response = null;
+      let lastFailureDetail = '';
+
+      for (const candidateModel of modelsToAttempt) {
         try {
-          const directResp = await fetch('https://clariohub.id/v1/chat/completions', {
+          const resp = await fetch('https://clariohub.id/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`
+              'Authorization': `Bearer ${masterApiKey}`
             },
-            body: JSON.stringify(chatPayload)
+            body: JSON.stringify({ ...chatPayload, model: candidateModel })
           });
-          if (directResp.ok) {
-            response = directResp;
+
+          if (resp.ok && resp.body) {
+            response = resp;
+            break;
+          } else {
+            const errData = await resp.json().catch(() => ({}));
+            lastFailureDetail = errData?.error?.message || `HTTP ${resp.status}`;
           }
-        } catch (directErr) {}
+        } catch (fetchErr) {
+          lastFailureDetail = fetchErr.message;
+        }
       }
 
       if (!response || !response.ok) {
-        throw new Error(response ? `Bridge HTTP ${response.status}: ${response.statusText}` : 'Connection to Neural Bridge Shard failed');
+        throw new Error(lastFailureDetail || 'Neural Bridge Shard connection failed');
       }
 
       const reader = response.body.getReader();
@@ -3073,26 +3086,47 @@ function EpinoiaGeminiApp() {
                       </div>
 
                       {!active && t.key !== 'free' && (
-                        <button
-                          type="button"
-                          className="btn-new-chat"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openQrisModal(t.key);
-                          }}
-                          style={{
-                            width: '100%',
-                            marginTop: 10,
-                            justifyContent: 'center',
-                            padding: '9px 12px',
-                            fontSize: 12,
-                            fontWeight: 700,
-                            background: t.key === 'medium' ? 'linear-gradient(135deg, #facc15, #ca8a04)' : 'linear-gradient(135deg, #22d3ee, #0891b2)',
-                            color: '#030208'
-                          }}
-                        >
-                          ⚡ Upgrade with QRIS ({t.price})
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                          <button
+                            type="button"
+                            className="btn-new-chat"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openQrisModal(t.key);
+                            }}
+                            style={{
+                              flex: 1,
+                              justifyContent: 'center',
+                              padding: '8px 10px',
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              background: t.key === 'medium' ? 'linear-gradient(135deg, #facc15, #ca8a04)' : 'linear-gradient(135deg, #22d3ee, #0891b2)',
+                              color: '#030208'
+                            }}
+                          >
+                            ⚡ Upgrade QRIS ({t.price})
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-new-chat"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              activateSpecificTier(t.key);
+                            }}
+                            style={{
+                              padding: '8px 12px',
+                              fontSize: 11,
+                              justifyContent: 'center',
+                              background: 'rgba(255, 255, 255, 0.08)',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              color: '#ffffff',
+                              fontWeight: 600
+                            }}
+                            title="Instant Sanctum Tier Activation (Test & Preview)"
+                          >
+                            ✨ Select Plan
+                          </button>
+                        </div>
                       )}
                     </div>
                   );
@@ -3127,7 +3161,7 @@ function EpinoiaGeminiApp() {
                       See pricing &amp; plans →
                     </a>
                     <span style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
-                      Test codes: <b style={{ color: 'var(--gold-soft)' }}>EPI-MEDIUM-2026</b>
+                      Quick activate: <b style={{ color: 'var(--gold-soft)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => activateSpecificTier('medium')}>EPI-MEDIUM-2026</b> · <b style={{ color: 'var(--cyan)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => activateSpecificTier('high')}>EPI-HIGH-2026</b>
                     </span>
                   </div>
                 </div>
@@ -3304,6 +3338,5 @@ function EpinoiaGeminiApp() {
     </div>
   );
 }
-
 
 export default EpinoiaGeminiApp;
