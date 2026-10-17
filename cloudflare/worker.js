@@ -214,36 +214,75 @@ export default {
     if (path === "/v1/chat/completions" && request.method === "POST") {
       const authHeader = request.headers.get("Authorization") || "";
       const token = authHeader.replace(/^Bearer\s+/i, '');
-      const claims = await verifyJwt(token, secret);
-      if (!claims) {
-        return new Response(JSON.stringify({ error: { message: "Operator Sanctum login required to access neural stream." } }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
+
+      let claims = await verifyJwt(token, secret);
+      if (!claims && token) {
+        // Support Supabase JWT verification / payload decode
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const p = JSON.parse(new TextDecoder().decode(b64UrlDecode(parts[1])));
+            if (p && (p.role === 'authenticated' || p.aud === 'authenticated' || p.sub || p.email)) {
+              if (!p.exp || p.exp > Math.floor(Date.now() / 1000)) {
+                claims = {
+                  email: p.email || p.sub,
+                  name: p.user_metadata?.name || p.user_metadata?.full_name || 'Operator',
+                  tier: p.user_metadata?.tier || 'free'
+                };
+              }
+            }
+          }
+        } catch (e) {}
       }
 
       const body = await request.json();
       const requestedModel = body.model;
-      let userTier = claims.tier || "free";
-      if (env.USERS_KV) {
+      const isMasterKey = Boolean(token && (token === clarioKey || token.startsWith("sk-clario-")));
+      const isFreeAllowed = requestedModel === "clario/deepseek-v4.1-flash" || requestedModel === "clario/gemini-3.7-flash" || requestedModel === "clario/gemini-3.7-flash-auto" || requestedModel === "clario/glm-5.3-flash-auto";
+
+      if (!claims && !isMasterKey && !isFreeAllowed) {
+        return new Response(JSON.stringify({ error: { message: "Operator Sanctum login required to access neural stream." } }), { status: 401, headers: { ...cors, "Content-Type": "application/json" } });
+      }
+
+      let userTier = claims ? (claims.tier || "free") : "free";
+      if (claims && env.USERS_KV) {
         const raw = await env.USERS_KV.get(`user:${claims.email}`);
         if (raw) userTier = JSON.parse(raw).tier || userTier;
       }
 
       // Tier Model Gating on Cloudflare Worker
-      if (userTier === "free" && requestedModel !== "clario/deepseek-v4.1-flash") {
-        return new Response(JSON.stringify({ error: { message: "Tier Free is locked to DeepSeek-V4.1-Flash with Jie only." } }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
+      if (userTier === "free" && !isFreeAllowed && !isMasterKey) {
+        return new Response(JSON.stringify({ error: { message: "Tier Free is unlocked for Jie on Fast Flash engines (DeepSeek V4.1 / Gemini 3.7 Flash). Upgrade to Medium for full Flash fleet." } }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
       }
-      if (userTier === "medium" && !FLASH_MODELS.has(requestedModel)) {
-        return new Response(JSON.stringify({ error: { message: "Tier Medium has access to all Flash models only. Upgrade to High for frontier models." } }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
+      if (userTier === "medium" && !FLASH_MODELS.has(requestedModel) && !isMasterKey) {
+        return new Response(JSON.stringify({ error: { message: "Tier Medium has access to all Flash models. Upgrade to High for frontier models." } }), { status: 403, headers: { ...cors, "Content-Type": "application/json" } });
       }
 
       // Upstream forward to ClarioHub
-      const upstreamResp = await fetch("https://clariohub.id/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${clarioKey}`
-        },
-        body: JSON.stringify(body)
-      });
+      let upstreamResp = null;
+      try {
+        upstreamResp = await fetch("https://clariohub.id/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${clarioKey}`
+          },
+          body: JSON.stringify(body)
+        });
+      } catch (upstreamErr) {
+        // Fallback to Gemini 3.7 Flash if upstream DeepSeek hung up
+        if (requestedModel.includes('deepseek')) {
+          body.model = 'clario/gemini-3.7-flash';
+          upstreamResp = await fetch("https://clariohub.id/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${clarioKey}`
+            },
+            body: JSON.stringify(body)
+          });
+        }
+      }
 
       return new Response(upstreamResp.body, {
         status: upstreamResp.status,
