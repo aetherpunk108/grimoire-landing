@@ -2,13 +2,13 @@
 (function() {
   'use strict';
 
-  // Default Seed Catalog (4 Core Sovereign Items + Artisan Handmade Jewelry)
+  // Default Seed Catalog (Merlin Sovereign Pass + Artisan Handmade Pendants + 3D Animation & CAD Studio)
   const DEFAULT_PRODUCTS = [
     {
       id: 'merlin-harness',
       title: 'Merlin Sovereign High Pass',
       category: 'sovereign',
-      categoryLabel: 'High Plan',
+      categoryLabel: 'AI Workspace',
       price: 29,
       badge: 'HIGH PLAN · FULL FLEET',
       shortDesc: 'Full-tier Sanctum Workspace access unlocking Merlin (Claude Opus 5), Nxelle Codex (GLM 5.3), and Jie with 1,000 msgs/day and 10 file uploads.',
@@ -24,90 +24,33 @@
       }
     },
     {
-      id: 'scrying-orb',
-      title: 'Sanctum Medium Operator Pass',
-      category: 'sovereign',
-      categoryLabel: 'Medium Plan',
-      price: 8,
-      badge: 'MEDIUM PLAN · POPULAR',
-      shortDesc: 'High-speed daily driver unlocking all 3 personas (Merlin, Nxelle Codex & Jie) across high-throughput Flash engines with 300 msgs/day.',
-      fullDesc: 'Designed for daily software development, research, and rapid iteration. The Sanctum Medium Operator Pass unlocks all three sovereign personas (Merlin, Nxelle Codex, and Jie) across GLM 5.3 Flash, Gemini 3.7 Flash, and DeepSeek V4.1 Flash with 300 messages per day and multi-file code/document uploads.',
-      modelUrl: '/assets/models/crystal.glb',
-      has3D: true,
-      specs: {
-        'Unlocked Personas': 'All 3 Personas (Merlin, Nxelle Codex, Jie)',
-        'Neural Engines': 'GLM 5.3 Flash, Gemini 3.7 Flash & DeepSeek V4.1 Flash',
-        'Daily Message Quota': '300 High-Speed Messages / Day',
-        'File Attachments': 'Up to 5 Files per Prompt (Max 512 KB per file)',
-        'Billing & Activation': '$8 USD / Month (Rp 129.000) · Instant License Key'
-      }
-    },
-    {
-      id: 'arcanum-sdk',
-      title: 'Arcane Grimoire Developer SDK',
-      category: 'sovereign',
-      categoryLabel: 'SDK Suite',
-      price: 39,
-      badge: 'SDK & CLI SUITE',
-      shortDesc: 'Complete TypeScript & Python developer kit for embedding Merlin Agent harnesses into local terminals, web apps, and CI/CD pipelines.',
-      fullDesc: 'The complete programmatic developer kit for Epinoia Horizon. Provides type-safe bindings for TypeScript/Node.js and Python 3.11+. Includes pre-built streaming SSE connectors, multi-model fallback routers, custom system prompt compilers, and WebGL spatial canvas hooks.',
-      modelUrl: '/assets/models/open-book.glb',
-      has3D: true,
-      specs: {
-        'Supported Languages': 'TypeScript / Node.js 20+ & Python 3.11+',
-        'Streaming & Routing': 'Native SSE Streaming + Automatic Multi-Engine Failover',
-        'Graphics Hooks': 'WebGL 2.0 / Three.js Spatial Status Adapters',
-        'Updates': 'Lifetime Repository Access & Version Releases',
-        'License Term': '$39 USD One-Time (Rp 625.000) · Commercial Permit'
-      }
-    },
-    {
-      id: 'previs-pack',
-      title: 'Previs 3D WebGL & Shader Pack',
-      category: 'sovereign',
-      categoryLabel: '3D Asset Suite',
-      price: 19,
-      badge: '3D ASSET SUITE',
-      shortDesc: 'Production-ready collection of 50+ procedural PBR materials, custom GLSL shaders, and optimized GLTF/GLB 3D arcane artifacts.',
-      fullDesc: 'Over 50 production-grade procedural materials, GLSL raymarching shaders, and optimized GLTF/GLB 3D geometries pre-configured for Three.js, React Three Fiber, Babylon.js, and Unreal Engine. Features custom vertex-displacement spell shaders and interactive GPU particle systems.',
-      modelUrl: '/assets/models/chest.glb',
-      has3D: true,
-      specs: {
-        'Geometries': 'Optimized Low/High Poly GLTF & GLB 3D Models',
-        'Materials & Shaders': '50+ PBR Procedural Materials & Custom GLSL Shaders',
-        'Texture Maps': '4K Albedo, Normal, Roughness & Emissive Channels',
-        'Engine Compatibility': 'Three.js, React Three Fiber, Babylon.js & Blender',
-        'License Term': '$19 USD One-Time (Rp 299.000) · Royalty-Free Commercial'
-      }
-    },
-    {
       id: 'solstice-pendant',
-      title: 'Solstice Rune Talisman Pendant',
+      title: 'Solstice Crystal Talisman Pendant',
       category: 'jewelry',
       categoryLabel: 'Handmade Pendant',
       price: 45,
       badge: 'HANDMADE · 925 SILVER',
-      shortDesc: 'Hand-forged sterling silver pendant featuring a natural raw quartz crystal core and hand-engraved protection bindrunes.',
-      fullDesc: 'Artisan handcrafted talisman created using traditional lost-wax casting and hand-finishing techniques. The centerpiece holds a high-clarity natural raw quartz crystal nestled in organic 925 sterling silver rootwork. Each bindrune is engraved by hand with cold chisel tools.',
+      shortDesc: 'Hand-forged 925 sterling silver pendant featuring a natural raw double-terminated quartz crystal core and hand-engraved bindrunes.',
+      fullDesc: 'Artisan handcrafted talisman created using traditional lost-wax casting and hand-finishing techniques by Epinoia Horizon Atelier. The centerpiece holds a high-clarity natural raw quartz crystal nestled in organic 925 sterling silver rootwork. Each bindrune is engraved by hand with cold chisel tools.',
       modelUrl: '/assets/models/crystal.glb',
       has3D: true,
       specs: {
         'Metal': 'Solid Sterling Silver 925 (Oxidized Antique Finish)',
         'Stone': 'Natural Raw Double-Terminated Quartz Crystal',
         'Pendant Size': '48mm x 22mm x 16mm',
-        'Chain': '60cm Handcrafted Wheat Chain Included',
-        'Crafted By': 'Epinoia Atelier Artisan Goldsmith'
+        'Chain': '60cm Handcrafted Wheat Chain (925 Silver) Included',
+        'Crafted By': 'Epinoia Horizon Artisan Jewelry Atelier'
       }
     },
     {
       id: 'aetherial-lantern',
       title: 'Aetherial Relic Cage Pendant',
       category: 'jewelry',
-      categoryLabel: 'Handmade Jewelry',
+      categoryLabel: 'Artisan Jewelry',
       price: 55,
-      badge: 'HANDMADE · ARTISAN',
-      shortDesc: 'Artisan filigree lantern cage pendant with 18K gold vermeil accents encapsulating natural tourmaline crystal shards.',
-      fullDesc: 'Constructed from layered filigree wirework, this relic lantern cage captures ambient light through raw multi-color tourmaline crystal shards. Features a screw-lock vault bale with custom celestial inscriptions along the circumference.',
+      badge: 'HANDMADE · 18K VERMEIL',
+      shortDesc: 'Handcrafted filigree lantern cage pendant in 18K gold vermeil over 925 silver encapsulating natural tourmaline crystal shards.',
+      fullDesc: 'Constructed from layered filigree wirework and 3D lost-wax precision casting, this relic lantern cage captures ambient light through raw multi-color tourmaline crystal shards. Features a screw-lock vault bale with custom celestial inscriptions along the circumference.',
       modelUrl: '/assets/models/lantern.glb',
       has3D: true,
       specs: {
@@ -115,18 +58,18 @@
         'Gemstone': 'Untreated Bi-Color Tourmaline Shards',
         'Mechanism': 'Threaded Miniature Vault Bale Lock',
         'Dimensions': '38mm x 18mm',
-        'Edition': 'Limited Artisan Run (Signed & Numbered)'
+        'Edition': 'Signed & Numbered Artisan Run'
       }
     },
     {
       id: 'gold-ingot-pendant',
-      title: 'Alchemist Pure Ingot Bar',
+      title: 'Alchemist Pure Ingot Bar Pendant',
       category: 'jewelry',
-      categoryLabel: 'Handmade Jewelry',
-      price: 35,
+      categoryLabel: 'Handmade Pendant',
+      price: 38,
       badge: 'HANDMADE · SIGNATURE',
-      shortDesc: 'Heavy tactile hand-poured solid bar pendant stamped with arcane alchemy weights and Epinoia eye hallmark.',
-      fullDesc: 'Poured directly into hand-carved soapstone molds to create authentic rustic textures. Each ingot pendant has unique natural surface ripples and is stamped with the Epinoia all-seeing eye hallmark and 925 purity insignia.',
+      shortDesc: 'Heavy tactile hand-poured solid silver/bronze fusion bar pendant stamped with arcane alchemy weights and Epinoia eye hallmark.',
+      fullDesc: 'Poured directly into hand-carved soapstone molds to create authentic organic surface ripples. Each ingot bar pendant is hand-stamped with the Epinoia all-seeing eye hallmark, alchemical weight sigils, and 925 purity insignia.',
       modelUrl: '/assets/models/gold-ingots.glb',
       has3D: true,
       specs: {
@@ -136,6 +79,44 @@
         'Bale': 'Heavy Duty 5mm Round Rope Bale',
         'Packaging': 'Wax-Sealed Leather Grimoire Box'
       }
+    },
+    {
+      id: 'previs-pack',
+      title: '3D Character & Cinematic Animation',
+      category: 'studio3d',
+      categoryLabel: '3D Animation Studio',
+      price: 150,
+      badge: '3D ANIMATOR · CUSTOM RIG',
+      shortDesc: 'Bespoke 3D character sculpting, kinematic skeletal rigging, and 120 FPS cinematic animation sequences by Epinoia 3D Studio.',
+      fullDesc: 'Commission the Epinoia Horizon 3D Animation Studio for custom 3D character modeling, biomechanical & organic skeletal rigging (IK/FK + facial blendshapes), and high-framerate cinematic animation sequences ready for Blender, Unreal Engine 5, Unity, or WebGL.',
+      modelUrl: '/assets/models/chest.glb',
+      has3D: true,
+      specs: {
+        'Deliverables': 'Rigged 3D Mesh + Keyframe/Motion Animation Sequence',
+        'Formats': '.BLEND, .FBX, .GLTF / .GLB, Unreal & Unity Ready',
+        'Rigging': 'Full IK/FK Skeletal Hierarchy + Weight Painting',
+        'Textures': '4K PBR Texture Maps (Albedo, Normal, Roughness, Metallic)',
+        'Revisions': 'Includes 3 Interactive 3D Previs Review Rounds'
+      }
+    },
+    {
+      id: 'arcanum-sdk',
+      title: 'Custom 3D Jewelry CAD & Wax Sculpt',
+      category: 'studio3d',
+      categoryLabel: '3D Jewelry Design',
+      price: 85,
+      badge: '3D CAD · LOST-WAX READY',
+      shortDesc: 'Custom 3D ZBrush/MatrixGold jewelry sculpting and print-ready STL/OBJ files engineered for lost-wax metal casting.',
+      fullDesc: 'Turn your custom pendant, signet ring, or talisman concept into a production-ready 3D sculpt. Engineered with precise wall thickness, stone-setting prongs, and sprue tolerances for high-resolution resin 3D printing and direct lost-wax casting in silver or gold.',
+      modelUrl: '/assets/models/open-book.glb',
+      has3D: true,
+      specs: {
+        'Sculpting': 'High-Detail Organic & Geometric 3D Jewelry Sculpt',
+        'Print Readiness': 'Manifold Watertight .STL & .OBJ for Wax 3D Printing',
+        'Gemstone Seats': 'Calibrated Prong / Bezel / Channel Cutouts',
+        'Visuals': 'Includes 4K Photorealistic Raytraced Turntable Render',
+        'Option': 'Can be cast directly in 925 Silver by Epinoia Atelier'
+      }
     }
   ];
 
@@ -143,7 +124,7 @@
   window.EpinoiaStore = {
     getProducts: function() {
       try {
-        const custom = localStorage.getItem('epinoia_custom_products_v2');
+        const custom = localStorage.getItem('epinoia_custom_products_v3');
         if (custom) {
           const parsed = JSON.parse(custom);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -153,7 +134,7 @@
     },
 
     saveProducts: function(products) {
-      localStorage.setItem('epinoia_custom_products_v2', JSON.stringify(products));
+      localStorage.setItem('epinoia_custom_products_v3', JSON.stringify(products));
     },
 
     getProductById: function(id) {
