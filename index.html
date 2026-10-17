@@ -219,13 +219,6 @@
                     Unify real-time 3D spatial rendering, autonomous multi-agent swarm orchestration, and generative neural spells under Epinoia Horizon's luxury intelligence ecosystem.
                 </p>
 
-                <!-- Install command (dari situs lama) -->
-                <div class="pt-4 inline-flex flex-wrap justify-center items-center gap-3 px-5 py-3 rounded-xl glass-panel border border-cyan-500/40 font-mono text-xs sm:text-sm text-gray-300">
-                    <span class="text-cyan-400 font-bold">$</span>
-                    <code id="install-cmd">curl -fsSL https://epinoiahorizon.com/install.sh | bash</code>
-                    <button id="copy-install" class="ml-2 px-3 py-1.5 rounded-lg border border-gold-500/40 text-gold-300 hover:bg-gold-500 hover:text-horizon-bg transition-all text-[11px] uppercase tracking-wider">copy</button>
-                </div>
-
                 <div class="pt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <a href="#store" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-purple-900 via-indigo-900 to-horizon-card border border-gold-500/60 text-gold-300 font-heading text-xs uppercase tracking-widest hover:from-purple-800 hover:to-indigo-800 transition-all shadow-[0_0_25px_rgba(234,179,8,0.35)] hover:shadow-[0_0_35px_rgba(234,179,8,0.55)] transform hover:-translate-y-0.5 flex items-center gap-2">
                         <i class="fas fa-cube text-cyan-400"></i> Explore Vault
@@ -690,14 +683,6 @@
                 icon.className = 'fas fa-volume-mute text-base';
                 showToast("Audio Feed Muted");
             }
-        });
-
-        // Copy install command (menu lama)
-        document.getElementById('copy-install').addEventListener('click', async () => {
-            try { await navigator.clipboard.writeText(document.getElementById('install-cmd').textContent); } catch(e) {}
-            const b = document.getElementById('copy-install');
-            b.textContent = 'copied ✓';
-            setTimeout(() => b.textContent = 'copy', 1400);
         });
 
         function showToast(msg) {
