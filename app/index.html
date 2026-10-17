@@ -844,37 +844,109 @@ function EpinoiaGeminiApp() {
   const removeAttachedFile = (id) => setAttachedFiles(prev => prev.filter(f => f.id !== id));
 
 
-  // Background Starfield Canvas
+  // Background Canvas — Tiny Glowing Colorful Circular Orbs
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animationId;
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    const syncSize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    syncSize();
+
+    // Pre-render offscreen glowing circular orb sprites for each arcane color
+    const orbPalette = [
+      { r: 250, g: 204, b: 21 },  // Sovereign Gold (#facc15)
+      { r: 34,  g: 211, b: 238 }, // Electric Cyan (#22d3ee)
+      { r: 168, g: 85,  b: 247 }, // Arcane Violet (#a855f7)
+      { r: 244, g: 114, b: 182 }, // Nebula Rose (#f472b6)
+      { r: 56,  g: 189, b: 248 }, // Celestial Sky Blue (#38bdf8)
+      { r: 52,  g: 211, b: 153 }, // Aether Emerald (#34d399)
+      { r: 251, g: 146, b: 60 }   // Solar Amber (#fb923c)
+    ];
+
+    const spriteSize = 64;
+    const orbSprites = orbPalette.map(col => {
+      const off = document.createElement('canvas');
+      off.width = spriteSize;
+      off.height = spriteSize;
+      const octx = off.getContext('2d');
+      const half = spriteSize / 2;
+      const grad = octx.createRadialGradient(half, half, 0, half, half, half);
+      grad.addColorStop(0.0,  `rgba(255, 255, 255, 1.0)`);
+      grad.addColorStop(0.15, `rgba(${Math.min(255, col.r + 45)}, ${Math.min(255, col.g + 45)}, ${Math.min(255, col.b + 45)}, 0.95)`);
+      grad.addColorStop(0.34, `rgba(${col.r}, ${col.g}, ${col.b}, 0.72)`);
+      grad.addColorStop(0.62, `rgba(${col.r}, ${col.g}, ${col.b}, 0.24)`);
+      grad.addColorStop(0.86, `rgba(${col.r}, ${col.g}, ${col.b}, 0.05)`);
+      grad.addColorStop(1.0,  `rgba(${col.r}, ${col.g}, ${col.b}, 0.0)`);
+      octx.fillStyle = grad;
+      octx.beginPath();
+      octx.arc(half, half, half, 0, Math.PI * 2);
+      octx.fill();
+      return off;
+    });
+
+    const orbCount = Math.min(240, Math.max(130, Math.round((width * height) / 7500)));
+    const orbs = Array.from({ length: orbCount }, () => {
+      const radius = Math.random() * 5.2 + 3.2; // outer glow radius (tiny bright core ~1-2px)
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius,
+        sprite: orbSprites[Math.floor(Math.random() * orbSprites.length)],
+        baseAlpha: Math.random() * 0.55 + 0.38,
+        phase: Math.random() * Math.PI * 2,
+        pulseSpeed: Math.random() * 0.028 + 0.012,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: (Math.random() - 0.5) * 0.22 - 0.06
+      };
+    });
 
     const onResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      const prevW = width || 1;
+      const prevH = height || 1;
+      syncSize();
+      orbs.forEach(o => {
+        o.x = (o.x / prevW) * width;
+        o.y = (o.y / prevH) * height;
+      });
     };
     window.addEventListener('resize', onResize);
 
-    const stars = Array.from({ length: 75 }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      size: Math.random() * 1.5 + 0.5,
-      alpha: Math.random() * 0.8 + 0.2,
-      velocity: (Math.random() * 0.2 + 0.05) * (Math.random() > 0.5 ? 1 : -1)
-    }));
-
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
-      stars.forEach(s => {
-        s.alpha += s.velocity * 0.02;
-        if (s.alpha > 0.9 || s.alpha < 0.15) s.velocity = -s.velocity;
-        ctx.fillStyle = `rgba(254, 240, 138, ${Math.max(0.1, Math.min(0.9, s.alpha))})`;
-        ctx.fillRect(s.x, s.y, s.size, s.size);
-      });
+      ctx.globalCompositeOperation = 'lighter';
+
+      for (let i = 0; i < orbs.length; i++) {
+        const o = orbs[i];
+        o.x += o.vx;
+        o.y += o.vy;
+        o.phase += o.pulseSpeed;
+
+        if (o.x < -12) o.x = width + 12;
+        else if (o.x > width + 12) o.x = -12;
+        if (o.y < -12) o.y = height + 12;
+        else if (o.y > height + 12) o.y = -12;
+
+        const twinkle = 0.72 + 0.28 * Math.sin(o.phase);
+        ctx.globalAlpha = Math.max(0.12, Math.min(1.0, o.baseAlpha * twinkle));
+        const d = o.radius * 2;
+        ctx.drawImage(o.sprite, o.x - o.radius, o.y - o.radius, d, d);
+      }
+
+      ctx.globalAlpha = 1.0;
+      ctx.globalCompositeOperation = 'source-over';
       animationId = requestAnimationFrame(draw);
     };
     draw();
@@ -1836,6 +1908,7 @@ function EpinoiaGeminiApp() {
           overflow: hidden;
           background: transparent;
           position: relative;
+          z-index: 2;
         }
 
         .workspace-header {
