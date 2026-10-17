@@ -125,16 +125,16 @@ const sanitizeModelMap = (map, tierKey) => {
   return out;
 };
 
-// Activation codes are stored as SHA-256 hashes (uppercase, trimmed input).
+// Activation codes are stored strictly as SHA-256 hashes (uppercase, trimmed input).
 const LICENSE_HASHES = {
   '5cd564800d24ea9370479486df134ad9e33155f47bd2ad00754c80f21f1550d5': 'medium',
-  '867c5944d14f4f59c162fd856244039b71975e4fdb4d6b5ecbaeb3249dc75d7a': 'high'
+  '867c5944d14f4f59c162fd856244039b71975e4fdb4d6b5ecbaeb3249dc75d7a': 'high',
+  'ba1d27d376eb51f1de6c36d01aeef0b57b6128c49954fde625821daa4863c3f4': 'medium',
+  '48e6892e696c34d101d3b9c155fc92ab211b2d80700c0ea9536c2971fb3d471e': 'high'
 };
 
 const resolveLicenseTier = async (code) => {
   const clean = String(code).trim().toUpperCase();
-  if (clean === 'EPI-MEDIUM-2026' || clean === 'MEDIUM' || clean === 'SOVEREIGN-MEDIUM' || clean === 'TEST-MEDIUM') return 'medium';
-  if (clean === 'EPI-HIGH-2026' || clean === 'HIGH' || clean === 'SOVEREIGN-HIGH' || clean === 'TEST-HIGH' || clean === 'EPI-SOVEREIGN') return 'high';
   try {
     if (!(window.crypto && window.crypto.subtle)) return null;
     const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(clean));
@@ -669,15 +669,6 @@ function EpinoiaGeminiApp() {
     setLicenseInput('');
     setSelectedModel('merlin');
     showNotice(`${TIERS[t].label} plan activated.`, 'ok');
-  };
-
-  const activateSpecificTier = (tKey) => {
-    const code = tKey === 'high' ? 'EPI-HIGH-2026' : 'EPI-MEDIUM-2026';
-    try { localStorage.setItem('epinoia_license', code); } catch (e) {}
-    setTierKey(tKey);
-    setSelectedModel('merlin');
-    setPlanModalOpen(false);
-    showNotice(`${TIERS[tKey].label} plan activated. Merlin & Nxelle unlocked!`, 'ok');
   };
 
   const deactivateLicense = () => {
@@ -3341,47 +3332,35 @@ function EpinoiaGeminiApp() {
                       </div>
 
                       {!active && t.key !== 'free' && (
-                        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                          <button
-                            type="button"
-                            className="btn-new-chat"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openQrisModal(t.key);
-                            }}
-                            style={{
-                              flex: 1,
-                              justifyContent: 'center',
-                              padding: '8px 10px',
-                              fontSize: 11.5,
-                              fontWeight: 700,
-                              background: t.key === 'medium' ? 'linear-gradient(135deg, #facc15, #ca8a04)' : 'linear-gradient(135deg, #22d3ee, #0891b2)',
-                              color: '#030208'
-                            }}
-                          >
-                            ⚡ Upgrade QRIS ({t.price})
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-new-chat"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              activateSpecificTier(t.key);
-                            }}
-                            style={{
-                              padding: '8px 12px',
-                              fontSize: 11,
-                              justifyContent: 'center',
-                              background: 'rgba(255, 255, 255, 0.08)',
-                              border: '1px solid rgba(255, 255, 255, 0.2)',
-                              color: '#ffffff',
-                              fontWeight: 600
-                            }}
-                            title="Instant Sanctum Tier Activation (Test & Preview)"
-                          >
-                            ✨ Select Plan
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openQrisModal(t.key);
+                          }}
+                          style={{
+                            width: '100%',
+                            marginTop: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 8,
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: 12.5,
+                            fontWeight: 700,
+                            letterSpacing: '0.04em',
+                            background: t.key === 'medium' ? 'linear-gradient(135deg, #facc15, #ca8a04)' : 'linear-gradient(135deg, #22d3ee, #0891b2)',
+                            color: '#030208',
+                            boxShadow: t.key === 'medium' ? '0 4px 16px rgba(250, 204, 21, 0.25)' : '0 4px 16px rgba(34, 211, 238, 0.25)',
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <span>⚡ Upgrade with QRIS ({t.price})</span>
+                        </button>
                       )}
                     </div>
                   );
@@ -3389,24 +3368,49 @@ function EpinoiaGeminiApp() {
               </div>
 
               {tierKey === 'free' ? (
-                <div style={{ marginBottom: 14 }}>
+                <div style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 6, fontFamily: 'var(--font-mono)' }}>Have an activation code?</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'stretch', gap: 8 }}>
                     <input
                       value={licenseInput}
                       onChange={e => setLicenseInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') activateLicense(); }}
-                      placeholder="e.g. EPI-MEDIUM-2026"
+                      placeholder="Enter Sanctum Activation Code..."
                       spellCheck={false}
                       autoCapitalize="characters"
-                      className="mapping-select"
-                      style={{ cursor: 'text', flex: 1, minWidth: 0 }}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        padding: '10px 14px',
+                        borderRadius: 10,
+                        background: 'rgba(4, 3, 10, 0.85)',
+                        border: '1px solid var(--line-2)',
+                        color: '#f8fafc',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 12.5,
+                        outline: 'none'
+                      }}
                     />
                     <button
-                      className="btn-new-chat"
+                      type="button"
                       disabled={licenseBusy || !licenseInput.trim()}
                       onClick={activateLicense}
-                      style={{ padding: '9px 16px', fontSize: 11, justifyContent: 'center', opacity: licenseBusy || !licenseInput.trim() ? 0.55 : 1 }}
+                      style={{
+                        flexShrink: 0,
+                        padding: '10px 20px',
+                        borderRadius: 10,
+                        border: '1px solid var(--gold)',
+                        background: 'rgba(250, 204, 21, 0.14)',
+                        color: 'var(--gold-soft)',
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                        cursor: licenseBusy || !licenseInput.trim() ? 'not-allowed' : 'pointer',
+                        opacity: licenseBusy || !licenseInput.trim() ? 0.5 : 1,
+                        transition: 'all 0.2s ease'
+                      }}
                     >
                       {licenseBusy ? '...' : 'Activate'}
                     </button>
@@ -3416,7 +3420,7 @@ function EpinoiaGeminiApp() {
                       See pricing &amp; plans →
                     </a>
                     <span style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
-                      Quick activate: <b style={{ color: 'var(--gold-soft)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => activateSpecificTier('medium')}>EPI-MEDIUM-2026</b> · <b style={{ color: 'var(--cyan)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => activateSpecificTier('high')}>EPI-HIGH-2026</b>
+                      Code issued via WhatsApp after payment
                     </span>
                   </div>
                 </div>
@@ -3435,8 +3439,20 @@ function EpinoiaGeminiApp() {
               )}
 
               <button
-                className="btn-new-chat"
-                style={{ justifyContent: 'center', background: 'linear-gradient(135deg, #facc15, #ca8a04)', color: '#030208', fontWeight: 700 }}
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '11px 16px',
+                  borderRadius: 10,
+                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  color: '#e2e8f0',
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: '0.05em',
+                  cursor: 'pointer'
+                }}
                 onClick={() => setPlanModalOpen(false)}
               >
                 Close
