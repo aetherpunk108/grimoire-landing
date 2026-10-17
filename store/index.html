@@ -30,7 +30,8 @@
     </a>
     <nav class="nav-links">
       <a href="/#hero" class="nav-link">Sanctum</a>
-      <a href="/#architecture" class="nav-link">Architecture</a>
+      <a href="/app/" class="nav-link">App</a>
+      <a href="/pricing/" class="nav-link">Pricing</a>
       <a href="/docs/" class="nav-link">Docs</a>
       <a href="/store/" class="nav-link active">Store</a>
       <a href="/store/admin.html" class="nav-link" style="color:var(--gold);"><i class="fas fa-screwdriver-wrench"></i> Admin</a>
@@ -50,16 +51,16 @@
 
   <div class="store-hero">
     <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;background:rgba(8,47,73,0.6);border:1px solid var(--line-c);color:var(--cyan-soft);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;">
-      <i class="fas fa-gem" style="color:var(--gold);"></i> Sovereign Hardware &amp; Handmade Atelier
+      <i class="fas fa-gem" style="color:var(--gold);"></i> Sovereign Licenses &amp; Handmade Atelier
     </div>
     <h1>THE HORIZON VAULT</h1>
-    <p>Explore high-performance neural compute nodes, sovereign agent orchestrator licenses, and handcrafted artisan jewelry with real-time 3D spatial inspection.</p>
+    <p>Explore official Sanctum Workspace passes, developer SDK toolkits, 3D WebGL shader packs, and handcrafted artisan jewelry with real-time 3D spatial inspection.</p>
   </div>
 
   <!-- Category Filter Tabs -->
   <div class="filter-tabs">
     <button class="tab-btn active" onclick="filterCategory('all', this)">All Artifacts</button>
-    <button class="tab-btn" onclick="filterCategory('sovereign', this)">Sovereign Tech (4 Core)</button>
+    <button class="tab-btn" onclick="filterCategory('sovereign', this)">Sanctum Passes &amp; SDKs</button>
     <button class="tab-btn" onclick="filterCategory('jewelry', this)">Handmade Jewelry &amp; Pendants</button>
   </div>
 
@@ -97,6 +98,8 @@
 <footer style="position:relative;z-index:10;border-top:1px solid rgba(234,179,8,0.18);background:rgba(3,2,8,0.85);padding:30px 24px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);">
   <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 28px;margin-bottom:10px;">
     <a href="/" style="color:var(--muted);">SANCTUM</a>
+    <a href="/app/" style="color:var(--muted);">APP</a>
+    <a href="/pricing/" style="color:var(--muted);">PRICING</a>
     <a href="/store/" style="color:var(--muted);">VAULT STORE</a>
     <a href="/docs/" style="color:var(--muted);">DOCS</a>
     <a href="https://github.com/epinoiahorizon/Merlin-Agent" style="color:var(--muted);">GITHUB</a>
@@ -104,7 +107,7 @@
   <p>© 2026 EPINOIA HORIZON INC. ARTISAN ATELIER &amp; HARNESS VAULT.</p>
 </footer>
 
-<script src="/assets/store.js?v=1"></script>
+<script src="/assets/store.js?v=2"></script>
 <script>
   let currentFilter = 'all';
 
@@ -163,8 +166,8 @@
     }
     const lines = cart.map(i => `- ${i.title} ($${i.price} x ${i.qty || 1})`).join('\n');
     const total = cart.reduce((s, i) => s + (i.price * (i.qty || 1)), 0);
-    const msg = encodeURIComponent(`Greetings Epinoia Horizon Sanctum,\n\nI wish to acquire the following relics from the Vault:\n${lines}\n\nTotal: $${total}\n\nPlease advise on payment and shipment.`);
-    window.open(`https://wa.me/?text=${msg}`, '_blank');
+    const msg = encodeURIComponent(`Halo Epinoia Horizon Sanctum,\n\nSaya ingin memesan item berikut dari The Horizon Vault:\n${lines}\n\nTotal: $${total} USD\n\nMohon info pembayaran (QRIS / Bank Transfer) dan aktivasi.`);
+    window.open(`https://wa.me/6281776349779?text=${msg}`, '_blank');
   }
 
   if (document.readyState === 'loading') {

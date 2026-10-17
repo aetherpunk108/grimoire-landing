@@ -6,78 +6,78 @@
   const DEFAULT_PRODUCTS = [
     {
       id: 'merlin-harness',
-      title: 'Merlin Harness Core Access',
+      title: 'Merlin Sovereign High Pass',
       category: 'sovereign',
-      categoryLabel: 'License',
-      price: 1499,
-      badge: 'SOVEREIGN · TIER 3',
-      shortDesc: 'Unlimited autonomous agent orchestration tier with dedicated high-priority neural pipeline access.',
-      fullDesc: 'Merlin Harness Core Access delivers deep architectural orchestration for agent fleets. Integrates triple-pulse cognitive routing (Cerebras instant pulse, Mamba selective SSM state scan, GLM deep audit) with automated self-healing daemons, cross-session synaptic preservation, and vector memory palaces.',
+      categoryLabel: 'High Plan',
+      price: 29,
+      badge: 'HIGH PLAN · FULL FLEET',
+      shortDesc: 'Full-tier Sanctum Workspace access unlocking Merlin (Claude Opus 5), Nxelle Codex (GLM 5.3), and Jie with 1,000 msgs/day and 10 file uploads.',
+      fullDesc: 'Merlin Sovereign High Pass delivers unrestricted access to our flagship frontier engines inside the Epinoia Sanctum Workspace (/app/). Unlock Merlin on Claude Opus 5 for deep architectural synthesis, Nxelle Codex on GLM 5.3 Sovereign for surgical code generation, and Jie for rapid multi-disciplinary operations—backed by 1,000 messages per day (including 100 frontier Opus/GLM messages) and 10 document/code file attachments up to 1 MB each.',
       modelUrl: '/assets/models/wizard.glb',
       has3D: true,
       specs: {
-        'Agent Slots': '100 Concurrent Autonomous Swarms',
-        'Runtime': 'Linux / WSL2 / Windows Native',
-        'Previs Engine': 'Real-Time Three.js & WebGPU Viewports',
-        'Memory Palace': 'Unified Vector Store + SQLite WAL',
-        'License Term': 'Perpetual Commercial Deployment'
+        'Primary Personas': 'Merlin (Claude Opus 5), Nxelle Codex (GLM 5.3), Jie',
+        'Daily Message Quota': '1,000 Total Msgs/Day (100 Frontier Opus 5 / GLM 5.3)',
+        'File Attachments': 'Up to 10 Files per Prompt (Max 1 MB per file)',
+        'Workspace Features': 'Cloud Auth, Persistent Chat History & Full Markdown HUD',
+        'Billing & Activation': '$29 USD / Month (Rp 465.000) · Instant License Key'
       }
     },
     {
       id: 'scrying-orb',
-      title: 'Scrying Orb Neural Server',
+      title: 'Sanctum Medium Operator Pass',
       category: 'sovereign',
-      categoryLabel: 'Hardware Node',
-      price: 3850,
-      badge: 'HARDWARE NODE',
-      shortDesc: 'Dedicated edge hardware rig or isolated cloud cluster with built-in quantum-resistant hardware security module.',
-      fullDesc: 'Precision-milled obsidian and aerospace-grade anodized aluminum chassis. Encapsulates a dedicated high-throughput NPU edge inference unit with cold-storage HSM enclaves for sovereign private keys and continuous offline agent execution.',
+      categoryLabel: 'Medium Plan',
+      price: 8,
+      badge: 'MEDIUM PLAN · POPULAR',
+      shortDesc: 'High-speed daily driver unlocking all 3 personas (Merlin, Nxelle Codex & Jie) across high-throughput Flash engines with 300 msgs/day.',
+      fullDesc: 'Designed for daily software development, research, and rapid iteration. The Sanctum Medium Operator Pass unlocks all three sovereign personas (Merlin, Nxelle Codex, and Jie) across GLM 5.3 Flash, Gemini 3.7 Flash, and DeepSeek V4.1 Flash with 300 messages per day and multi-file code/document uploads.',
       modelUrl: '/assets/models/crystal.glb',
       has3D: true,
       specs: {
-        'Chassis': 'Obsidian Glass & Anodized Aerospace Alloy',
-        'Security Module': 'Hardware RoT & Cold HSM Enclave',
-        'Uplink': 'Wi-Fi 7 / Dual 10GbE SFP+ Fiber',
-        'Cooling': 'Silent Vapor Chamber Cryo-Loop',
-        'Included': 'Dual Tactile Brass Cognitive Encoders'
+        'Unlocked Personas': 'All 3 Personas (Merlin, Nxelle Codex, Jie)',
+        'Neural Engines': 'GLM 5.3 Flash, Gemini 3.7 Flash & DeepSeek V4.1 Flash',
+        'Daily Message Quota': '300 High-Speed Messages / Day',
+        'File Attachments': 'Up to 5 Files per Prompt (Max 512 KB per file)',
+        'Billing & Activation': '$8 USD / Month (Rp 129.000) · Instant License Key'
       }
     },
     {
       id: 'arcanum-sdk',
-      title: 'Arcane Grimoire SDK',
+      title: 'Arcane Grimoire Developer SDK',
       category: 'sovereign',
       categoryLabel: 'SDK Suite',
-      price: 799,
-      badge: 'SDK SUITE',
-      shortDesc: 'Complete TypeScript & Python bindings for constructing custom agent spell compilers and webhooks.',
-      fullDesc: 'The complete programmatic developer kit for Epinoia Horizon. Provides type-safe bindings for TypeScript, Python 3.11+, and Go. Includes pre-built AST compiler utilities, WebGL spatial canvas connectors, and adaptive token budget governors.',
+      price: 39,
+      badge: 'SDK & CLI SUITE',
+      shortDesc: 'Complete TypeScript & Python developer kit for embedding Merlin Agent harnesses into local terminals, web apps, and CI/CD pipelines.',
+      fullDesc: 'The complete programmatic developer kit for Epinoia Horizon. Provides type-safe bindings for TypeScript/Node.js and Python 3.11+. Includes pre-built streaming SSE connectors, multi-model fallback routers, custom system prompt compilers, and WebGL spatial canvas hooks.',
       modelUrl: '/assets/models/open-book.glb',
       has3D: true,
       specs: {
-        'Languages': 'TypeScript, Python, Rust, Go',
-        'Graphics Hooks': 'WebGL 2.0 / WebGPU Canvas Adapters',
-        'Token Governor': 'Automated Context Compaction AST',
-        'Updates': 'Continuous Lifetime Private Git Access',
-        'Documentation': 'Full Interactive OpenAPI & Typedocs'
+        'Supported Languages': 'TypeScript / Node.js 20+ & Python 3.11+',
+        'Streaming & Routing': 'Native SSE Streaming + Automatic Multi-Engine Failover',
+        'Graphics Hooks': 'WebGL 2.0 / Three.js Spatial Status Adapters',
+        'Updates': 'Lifetime Repository Access & Version Releases',
+        'License Term': '$39 USD One-Time (Rp 625.000) · Commercial Permit'
       }
     },
     {
       id: 'previs-pack',
-      title: 'Previs 3D Artifact Pack',
+      title: 'Previs 3D WebGL & Shader Pack',
       category: 'sovereign',
-      categoryLabel: 'Asset Suite',
-      price: 450,
-      badge: 'ASSET SUITE',
-      shortDesc: 'High-poly procedural 3D magical artifacts, shaders, and particle FX tailored for WebGL viewports.',
-      fullDesc: 'Over 50 production-grade procedural materials and optimized GLTF/GLB geometries. Pre-configured for Three.js, Babylon.js, and Unreal Engine. Features custom vertex-displacement spell shaders and GPU particle systems.',
+      categoryLabel: '3D Asset Suite',
+      price: 19,
+      badge: '3D ASSET SUITE',
+      shortDesc: 'Production-ready collection of 50+ procedural PBR materials, custom GLSL shaders, and optimized GLTF/GLB 3D arcane artifacts.',
+      fullDesc: 'Over 50 production-grade procedural materials, GLSL raymarching shaders, and optimized GLTF/GLB 3D geometries pre-configured for Three.js, React Three Fiber, Babylon.js, and Unreal Engine. Features custom vertex-displacement spell shaders and interactive GPU particle systems.',
       modelUrl: '/assets/models/chest.glb',
       has3D: true,
       specs: {
-        'Geometries': 'Optimized Low/High Poly GLTF & GLB',
-        'Materials': '50+ PBR Procedural Shader Graph Assets',
-        'Texture Maps': '4K Albedo, Normal, Roughness, Emissive',
-        'Rigging': 'Pre-rigged Three.js / Babylon Components',
-        'Commercial SLA': 'Royalty-Free Commercial Production Permit'
+        'Geometries': 'Optimized Low/High Poly GLTF & GLB 3D Models',
+        'Materials & Shaders': '50+ PBR Procedural Materials & Custom GLSL Shaders',
+        'Texture Maps': '4K Albedo, Normal, Roughness & Emissive Channels',
+        'Engine Compatibility': 'Three.js, React Three Fiber, Babylon.js & Blender',
+        'License Term': '$19 USD One-Time (Rp 299.000) · Royalty-Free Commercial'
       }
     },
     {
@@ -85,18 +85,18 @@
       title: 'Solstice Rune Talisman Pendant',
       category: 'jewelry',
       categoryLabel: 'Handmade Pendant',
-      price: 320,
-      badge: 'HANDMADE · 1 OF 1',
-      shortDesc: 'Hand-forged sterling silver pendant featuring raw natural crystal core with hand-engraved protection bindrunes.',
-      fullDesc: 'Artisan handcrafted talisman created using traditional lost-wax casting and hand-finishing techniques. The centerpiece holds a high-clarity natural raw crystal nestled in organic sterling silver rootwork. Each bindrune is engraved by hand with cold chisel tools.',
+      price: 45,
+      badge: 'HANDMADE · 925 SILVER',
+      shortDesc: 'Hand-forged sterling silver pendant featuring a natural raw quartz crystal core and hand-engraved protection bindrunes.',
+      fullDesc: 'Artisan handcrafted talisman created using traditional lost-wax casting and hand-finishing techniques. The centerpiece holds a high-clarity natural raw quartz crystal nestled in organic 925 sterling silver rootwork. Each bindrune is engraved by hand with cold chisel tools.',
       modelUrl: '/assets/models/crystal.glb',
       has3D: true,
       specs: {
         'Metal': 'Solid Sterling Silver 925 (Oxidized Antique Finish)',
         'Stone': 'Natural Raw Double-Terminated Quartz Crystal',
         'Pendant Size': '48mm x 22mm x 16mm',
-        'Chain': '60cm Handcrafted Wheat Chain (Silver 925)',
-        'Crafted By': 'Epinoia Atelier Master Goldsmith'
+        'Chain': '60cm Handcrafted Wheat Chain Included',
+        'Crafted By': 'Epinoia Atelier Artisan Goldsmith'
       }
     },
     {
@@ -104,9 +104,9 @@
       title: 'Aetherial Relic Cage Pendant',
       category: 'jewelry',
       categoryLabel: 'Handmade Jewelry',
-      price: 460,
+      price: 55,
       badge: 'HANDMADE · ARTISAN',
-      shortDesc: 'Artisan filigree lantern cage pendant with 18K gold vermeil accents encapsulating tourmaline shards.',
+      shortDesc: 'Artisan filigree lantern cage pendant with 18K gold vermeil accents encapsulating natural tourmaline crystal shards.',
       fullDesc: 'Constructed from layered filigree wirework, this relic lantern cage captures ambient light through raw multi-color tourmaline crystal shards. Features a screw-lock vault bale with custom celestial inscriptions along the circumference.',
       modelUrl: '/assets/models/lantern.glb',
       has3D: true,
@@ -123,10 +123,10 @@
       title: 'Alchemist Pure Ingot Bar',
       category: 'jewelry',
       categoryLabel: 'Handmade Jewelry',
-      price: 290,
+      price: 35,
       badge: 'HANDMADE · SIGNATURE',
-      shortDesc: 'Heavy tactile hand-poured solid bar pendant stamped with arcane alchemy weights and runes.',
-      fullDesc: 'Poured directly into hand-carved soapstone molds to create authentic rustic textures. Each ingot pendant has unique natural surface cools and is stamped with the Epinoia eye hallmark and 925 purity insignia.',
+      shortDesc: 'Heavy tactile hand-poured solid bar pendant stamped with arcane alchemy weights and Epinoia eye hallmark.',
+      fullDesc: 'Poured directly into hand-carved soapstone molds to create authentic rustic textures. Each ingot pendant has unique natural surface ripples and is stamped with the Epinoia all-seeing eye hallmark and 925 purity insignia.',
       modelUrl: '/assets/models/gold-ingots.glb',
       has3D: true,
       specs: {
@@ -143,7 +143,7 @@
   window.EpinoiaStore = {
     getProducts: function() {
       try {
-        const custom = localStorage.getItem('epinoia_custom_products');
+        const custom = localStorage.getItem('epinoia_custom_products_v2');
         if (custom) {
           const parsed = JSON.parse(custom);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -153,7 +153,7 @@
     },
 
     saveProducts: function(products) {
-      localStorage.setItem('epinoia_custom_products', JSON.stringify(products));
+      localStorage.setItem('epinoia_custom_products_v2', JSON.stringify(products));
     },
 
     getProductById: function(id) {
