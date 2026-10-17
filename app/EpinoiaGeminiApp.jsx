@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+const SUPABASE_CONFIG = {
+  url: 'REMOVED_CREDENTIAL',
+  anonKey: 'REMOVED_CREDENTIAL'
+};
+
+const supabaseClient = (typeof window !== 'undefined' && window.supabase)
+  ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+  : null;
+
 // ============================================================================
 // EPINOIA HORIZON · MERLIN ARCANE FLEET
 // Sovereign Neural Architecture
@@ -541,6 +550,64 @@ function EpinoiaGeminiApp() {
     return () => { cancelled = true; };
   }, []);
 
+  // Supabase Auth Session Synchronizer & Realtime Listener
+  useEffect(() => {
+    if (!supabaseClient) return;
+
+    // 1. Check existing Supabase session on startup
+    supabaseClient.auth.getSession().then(({ data }) => {
+      const session = data?.session;
+      if (session?.user) {
+        const u = {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+          tier: session.user.user_metadata?.tier || 'free',
+          authenticated: true,
+          mode: 'Supabase Sovereign Auth'
+        };
+        setCurrentUser(u);
+        try {
+          localStorage.setItem('epinoia_user', JSON.stringify(u));
+          localStorage.setItem('epinoia_jwt', session.access_token);
+        } catch (e) {}
+        if (u.tier && u.tier !== 'free') setTierKey(u.tier);
+      }
+    }).catch(() => {});
+
+    // 2. Listen to Supabase auth events (login, logout, refresh)
+    const { data: authListener } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const u = {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+          tier: session.user.user_metadata?.tier || 'free',
+          authenticated: true,
+          mode: 'Supabase Sovereign Auth'
+        };
+        setCurrentUser(u);
+        try {
+          localStorage.setItem('epinoia_user', JSON.stringify(u));
+          localStorage.setItem('epinoia_jwt', session.access_token);
+        } catch (e) {}
+        if (u.tier && u.tier !== 'free') setTierKey(u.tier);
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+        try {
+          localStorage.removeItem('epinoia_user');
+          localStorage.removeItem('epinoia_jwt');
+        } catch (e) {}
+      }
+    });
+
+    return () => {
+      if (authListener?.subscription?.unsubscribe) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, []);
+
   // Keep the active agent inside what the plan allows
   useEffect(() => {
     if (!tier.agents.includes(selectedModel)) setSelectedModel(tier.agents[0]);
@@ -743,39 +810,108 @@ function EpinoiaGeminiApp() {
     if (e) e.preventDefault();
     setAuthBusy(true);
     setAuthError('');
-    const authBase = DEFAULT_BRIDGE.authUrl || '';
-    const endpoint = `${authBase}${authMode === 'register' ? '/api/auth/register' : '/api/auth/login'}`;
+
+    const cleanEmail = authEmail.trim().toLowerCase();
+    if (!cleanEmail || !authPassword || authPassword.length < 6) {
+      setAuthError('Valid email and password (minimum 6 characters) required.');
+      setAuthBusy(false);
+      return;
+    }
 
     try {
-      // Direct call to Cloudflare Worker endpoint if active, with graceful fallback
+      // 1. Primary: Direct Supabase Authentication
+      if (supabaseClient) {
+        if (authMode === 'register') {
+          const { data, error } = await supabaseClient.auth.signUp({
+            email: cleanEmail,
+            password: authPassword,
+            options: {
+              data: {
+                name: authName.trim() || cleanEmail.split('@')[0],
+                tier: tierKey || 'free'
+              }
+            }
+          });
+
+          if (error) throw error;
+
+          if (data?.session) {
+            const userObj = {
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.user_metadata?.name || cleanEmail.split('@')[0],
+              tier: data.user.user_metadata?.tier || tierKey || 'free',
+              authenticated: true,
+              mode: 'Supabase Sovereign Auth'
+            };
+            setCurrentUser(userObj);
+            try {
+              localStorage.setItem('epinoia_user', JSON.stringify(userObj));
+              localStorage.setItem('epinoia_jwt', data.session.access_token);
+            } catch (e) {}
+            setAuthModalOpen(false);
+            showNotice(`Welcome to Epinoia Sanctum, ${userObj.name}!`, 'ok');
+          } else if (data?.user) {
+            // Confirmation email dispatched
+            setAuthModalOpen(false);
+            showNotice('Account registered! If confirmation is required, check your email before signing in.', 'ok');
+            setAuthMode('login');
+          }
+          return;
+        } else {
+          // Login
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: cleanEmail,
+            password: authPassword
+          });
+
+          if (error) throw error;
+
+          if (data?.session) {
+            const userObj = {
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.user_metadata?.name || cleanEmail.split('@')[0],
+              tier: data.user.user_metadata?.tier || tierKey || 'free',
+              authenticated: true,
+              mode: 'Supabase Sovereign Auth'
+            };
+            setCurrentUser(userObj);
+            try {
+              localStorage.setItem('epinoia_user', JSON.stringify(userObj));
+              localStorage.setItem('epinoia_jwt', data.session.access_token);
+            } catch (e) {}
+            if (userObj.tier && userObj.tier !== 'free') setTierKey(userObj.tier);
+            setAuthModalOpen(false);
+            showNotice(`Operator session verified: ${userObj.name}`, 'ok');
+          }
+          return;
+        }
+      }
+
+      // 2. Fallback: Cloudflare Sovereign Bridge if Supabase CDN is unreachable
+      const authBase = DEFAULT_BRIDGE.authUrl || '';
+      const endpoint = `${authBase}${authMode === 'register' ? '/api/auth/register' : '/api/auth/login'}`;
       let res = null;
       try {
         res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: authEmail, password: authPassword, name: authName })
+          body: JSON.stringify({ email: cleanEmail, password: authPassword, name: authName })
         });
-      } catch (networkErr) {
-        // Fallback to local sovereign gatekeeper if Worker is not yet routed
-      }
+      } catch (networkErr) {}
 
       if (res && res.ok) {
         const data = await res.json();
-        localStorage.setItem('epinoia_jwt', data.token);
-        localStorage.setItem('epinoia_user', JSON.stringify(data.user));
+        try {
+          localStorage.setItem('epinoia_jwt', data.token);
+          localStorage.setItem('epinoia_user', JSON.stringify(data.user));
+        } catch (e) {}
         setCurrentUser(data.user);
         if (data.user.tier) setTierKey(data.user.tier);
         setAuthModalOpen(false);
         showNotice(`Welcome to Epinoia Sanctum, ${data.user.name || data.user.email}!`, 'ok');
       } else {
-        // Local edge gatekeeper fallback
-        const cleanEmail = authEmail.trim().toLowerCase();
-        if (!cleanEmail || !authPassword || authPassword.length < 6) {
-          setAuthError('Valid email and password (min 6 characters) required.');
-          setAuthBusy(false);
-          return;
-        }
-
         const fallbackUser = {
           email: cleanEmail,
           name: authName.trim() || cleanEmail.split('@')[0],
@@ -783,22 +919,30 @@ function EpinoiaGeminiApp() {
           authenticated: true,
           mode: 'Cloudflare Sovereign Gate'
         };
-
-        localStorage.setItem('epinoia_user', JSON.stringify(fallbackUser));
+        try {
+          localStorage.setItem('epinoia_user', JSON.stringify(fallbackUser));
+        } catch (e) {}
         setCurrentUser(fallbackUser);
         setAuthModalOpen(false);
         showNotice(`Operator session verified: ${fallbackUser.name}`, 'ok');
       }
     } catch (err) {
-      setAuthError('Authentication error. Please retry.');
+      setAuthError(err.message || 'Authentication error. Please retry.');
     } finally {
       setAuthBusy(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('epinoia_user');
-    localStorage.removeItem('epinoia_jwt');
+  const handleLogout = async () => {
+    if (supabaseClient) {
+      try {
+        await supabaseClient.auth.signOut();
+      } catch (e) {}
+    }
+    try {
+      localStorage.removeItem('epinoia_user');
+      localStorage.removeItem('epinoia_jwt');
+    } catch (e) {}
     setCurrentUser(null);
     setTierKey('free');
     showNotice('Sanctum session closed.', 'ok');
@@ -2589,7 +2733,7 @@ function EpinoiaGeminiApp() {
                       <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--cyan)' }}>
                         Operator Sanctum Profile
                       </h2>
-                      <div style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>Cloudflare Sovereign Identity</div>
+                      <div style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>Supabase Sovereign Identity</div>
                     </div>
                   </div>
 
@@ -2634,7 +2778,7 @@ function EpinoiaGeminiApp() {
                   </div>
 
                   <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5 }}>
-                    Cloudflare Sovereign Auth Gateway. Authenticate to unlock autonomous AI synthesis and manage your neural tier.
+                    Supabase Sovereign Auth Gateway. Authenticate to unlock autonomous AI synthesis and manage your neural tier.
                   </p>
 
                   {authError && (
@@ -2832,3 +2976,6 @@ function EpinoiaGeminiApp() {
     </div>
   );
 }
+
+
+export default EpinoiaGeminiApp;
