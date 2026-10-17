@@ -207,8 +207,8 @@
                     Open Source · Linux / WSL / Windows · One Command
                 </div>
 
-                <h1 class="font-title text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-purple-400 glow-gold leading-tight tracking-wide">
-                    MERLIN
+                <h1 style="display: flex; justify-content: center; align-items: center; margin: 8px 0;">
+                    <img src="/assets/epinoia-horizon-logo.png" alt="Epinoia Horizon" style="width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 0 28px rgba(234, 179, 8, 0.32));" />
                 </h1>
 
                 <p class="font-heading text-base sm:text-2xl text-purple-200/90 tracking-widest uppercase max-w-3xl mx-auto">
@@ -744,46 +744,35 @@
 
         // --- 3. 3D ARTIFACT GEOMETRIES ---
 
-        // SCRYING ORB GROUP
+        // TRIANGLE PYRAMID ARTIFACT (Matches Floating Cube Skin)
         const orbGroup = new THREE.Group();
 
-        // Inner Core
-        const orbGeo = new THREE.SphereGeometry(1.2, 64, 64);
-        const orbMat = new THREE.MeshPhongMaterial({
-            color: 0x06b6d4,
-            emissive: 0x0284c7,
-            emissiveIntensity: 0.7,
-            shininess: 100,
-            transparent: true,
-            opacity: 0.9,
+        // Inner Solid Triangle Core (Same dark metallic indigo skin as the floating cube)
+        const orbGeo = new THREE.TetrahedronGeometry(1.9, 0);
+        const orbMat = new THREE.MeshStandardMaterial({
+            color: 0x1e1b4b,
+            emissive: 0x0f0b2e,
+            emissiveIntensity: 0.25,
+            roughness: 0.2,
+            metalness: 0.8,
         });
         const orbMesh = new THREE.Mesh(orbGeo, orbMat);
         orbGroup.add(orbMesh);
 
-        // Outer Rune Wire Shell
-        const shellGeo = new THREE.IcosahedronGeometry(1.65, 2);
+        // Outer Wireframe Triangle Shell (Same glowing purple wireframe skin as the floating cube)
+        const shellGeo = new THREE.TetrahedronGeometry(2.1, 0);
         const shellMat = new THREE.MeshBasicMaterial({
-            color: 0x38bdf8,
+            color: 0x8b5cf6,
             wireframe: true,
             transparent: true,
-            opacity: 0.35
+            opacity: 0.45
         });
         const shellMesh = new THREE.Mesh(shellGeo, shellMat);
         orbGroup.add(shellMesh);
 
-        // Gyro Rings
-        const ringGeo = new THREE.TorusGeometry(2.1, 0.02, 16, 100);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0xeab308, transparent: true, opacity: 0.6 });
-        const ringMesh1 = new THREE.Mesh(ringGeo, ringMat);
-        const ringMesh2 = new THREE.Mesh(ringGeo, ringMat);
-        ringMesh1.rotation.x = Math.PI / 3;
-        ringMesh2.rotation.y = Math.PI / 4;
-        orbGroup.add(ringMesh1);
-        orbGroup.add(ringMesh2);
-
         scene.add(orbGroup);
         orbGroup.position.set(2.8, 0.3, -1.0);
-        orbGroup.scale.setScalar(0.85);
+        orbGroup.scale.setScalar(0.9);
 
         // NEURAL CUBE ARTIFACT
         const cubeGroup = new THREE.Group();
@@ -939,26 +928,29 @@
         window.castSpell = function(type) {
             initAudio();
             if(type === 'fire') {
-                gsap.to(orbMat.color, { r: 0.96, g: 0.62, b: 0.04, duration: 1 });
+                gsap.to(orbMat.color, { r: 0.35, g: 0.15, b: 0.05, duration: 1 });
                 gsap.to(orbMat.emissive, { r: 0.85, g: 0.25, b: 0.05, duration: 1 });
+                gsap.to(shellMat.color, { r: 0.96, g: 0.62, b: 0.04, duration: 1 });
                 gsap.to(orbLight.color, { r: 0.96, g: 0.62, b: 0.04, duration: 1 });
                 showToast("🔥 Ignis Neural Net Activated");
                 playSpellSound(320, 'sawtooth', 0.5);
             } else if(type === 'frost') {
-                gsap.to(orbMat.color, { r: 0.02, g: 0.71, b: 0.83, duration: 1 });
+                gsap.to(orbMat.color, { r: 0.05, g: 0.22, b: 0.38, duration: 1 });
                 gsap.to(orbMat.emissive, { r: 0.02, g: 0.5, b: 0.8, duration: 1 });
+                gsap.to(shellMat.color, { r: 0.02, g: 0.71, b: 0.83, duration: 1 });
                 gsap.to(orbLight.color, { r: 0.02, g: 0.71, b: 0.83, duration: 1 });
                 showToast("❄️ Cryo-Lock Protocol Initiated");
                 playSpellSound(920, 'sine', 0.4);
             } else if(type === 'void') {
-                gsap.to(orbMat.color, { r: 0.54, g: 0.36, b: 0.96, duration: 1 });
-                gsap.to(orbMat.emissive, { r: 0.35, g: 0.1, b: 0.7, duration: 1 });
+                gsap.to(orbMat.color, { r: 0.12, g: 0.11, b: 0.29, duration: 1 });
+                gsap.to(orbMat.emissive, { r: 0.25, g: 0.08, b: 0.5, duration: 1 });
+                gsap.to(shellMat.color, { r: 0.54, g: 0.36, b: 0.96, duration: 1 });
                 gsap.to(orbLight.color, { r: 0.54, g: 0.36, b: 0.96, duration: 1 });
                 showToast("🔮 Aether Void Vector Synthesized");
                 playSpellSound(480, 'square', 0.6);
             }
 
-            gsap.to(orbGroup.scale, { x: 1.35, y: 1.35, z: 1.35, duration: 0.35, yoyo: true, repeat: 1 });
+            gsap.to(orbGroup.scale, { x: 1.25, y: 1.25, z: 1.25, duration: 0.35, yoyo: true, repeat: 1 });
         }
 
         // --- 6. STORE & CART LOGIC ---
@@ -1083,11 +1075,10 @@
 
             const elapsedTime = clock.getElapsedTime();
 
-            orbMesh.rotation.y = elapsedTime * 0.4;
-            shellMesh.rotation.y = -elapsedTime * 0.25;
-            shellMesh.rotation.x = elapsedTime * 0.15;
-            ringMesh1.rotation.z = elapsedTime * 0.3;
-            ringMesh2.rotation.z = -elapsedTime * 0.3;
+            orbMesh.rotation.y = elapsedTime * 0.25;
+            orbMesh.rotation.x = elapsedTime * 0.18;
+            shellMesh.rotation.y = elapsedTime * 0.25;
+            shellMesh.rotation.x = elapsedTime * 0.18;
 
             cubeGroup.rotation.y = elapsedTime * 0.2;
             cubeGroup.rotation.x = elapsedTime * 0.15;
