@@ -48,25 +48,25 @@ const DEFAULT_BRIDGE = {
   authUrl: 'https://muddy-term-6b8d.epinoiahorizon.workers.dev',
   apiKey: 'sk-clario-b1571fb8c1225e33513b13c5ee5f096af76aaa3d03cb5403',
   modelMap: {
-    merlin: 'clario/gemini-3.7-flash',
-    nxelle: 'clario/deepseek-v4.1-flash',
-    jie: 'clario/gemini-3.7-flash'
+    merlin: 'clario/opus-5',
+    nxelle: 'clario/glm-5.3',
+    jie: 'clario/glm-5.3-flash-auto'
   }
 };
 
 // ----------------------------------------------------------------------------
 // PLAN TIERS — Free / Medium / High
-//  Free   : Jie Q&A on Fast Flash engines (Gemini 3.7 / DeepSeek V4.1).
+//  Free   : Jie Q&A on Fast Flash engines (GLM 5.3 / Gemini 3.7 / DeepSeek V4.1).
 //  Medium : Merlin + Nxelle + Jie, every Flash engine.
-//  High   : full fleet, every engine (frontier engines are fair-use capped).
+//  High   : full fleet powered by Claude Opus 5, GLM 5.3 Sovereign, and all frontier models.
 // ----------------------------------------------------------------------------
 const FLASH_MODEL_IDS = AVAILABLE_AI_MODELS.filter(m => /flash/i.test(m.id)).map(m => m.id);
 const ALL_MODEL_IDS = AVAILABLE_AI_MODELS.map(m => m.id);
 const FREE_MODEL_IDS = [
+  'clario/glm-5.3-flash-auto',
   'clario/gemini-3.7-flash',
   'clario/deepseek-v4.1-flash',
-  'clario/gemini-3.7-flash-auto',
-  'clario/glm-5.3-flash-auto'
+  'clario/gemini-3.7-flash-auto'
 ];
 const AGENT_KEYS = ['merlin', 'nxelle', 'jie'];
 
@@ -75,16 +75,16 @@ const TIERS = {
     key: 'free', label: 'Free', price: '$0',
     agents: ['jie'],
     models: FREE_MODEL_IDS,
-    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/deepseek-v4.1-flash', jie: 'clario/gemini-3.7-flash' },
+    defaults: { merlin: 'clario/opus-5', nxelle: 'clario/glm-5.3', jie: 'clario/glm-5.3-flash-auto' },
     dailyLimit: 30, premiumDailyLimit: null, maxFiles: 2, maxFileKB: 100,
-    summary: 'Jie only · Fast Flash engines (Gemini 3.7 / DeepSeek V4.1). Merlin & Nxelle unlocked on Medium.',
-    heroLine: 'Free plan — Jie answers fast, short and substantive. Upgrade to unlock Merlin and Nxelle Codex.'
+    summary: 'Jie only · Fast Flash engines (GLM 5.3 / Gemini 3.7). Merlin (Claude Opus) & Nxelle (GLM 5.3) unlocked on Medium+.',
+    heroLine: 'Free plan — Jie answers fast, short and substantive. Upgrade to unlock Merlin (Claude Opus) and Nxelle Codex (GLM 5.3).'
   },
   medium: {
     key: 'medium', label: 'Medium', price: '$8/mo',
     agents: ['merlin', 'nxelle', 'jie'],
     models: FLASH_MODEL_IDS,
-    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/deepseek-v4.1-flash', jie: 'clario/gemini-3.7-flash' },
+    defaults: { merlin: 'clario/deepseek-v4.1-flash-auto', nxelle: 'clario/glm-5.3-flash', jie: 'clario/glm-5.3-flash-auto' },
     dailyLimit: 300, premiumDailyLimit: null, maxFiles: 5, maxFileKB: 300,
     summary: 'Merlin, Nxelle Codex & Jie · every Flash engine.',
     heroLine: 'Medium plan — Merlin, Nxelle Codex (coding) and Jie on every Flash engine.'
@@ -93,10 +93,10 @@ const TIERS = {
     key: 'high', label: 'High', price: '$29/mo',
     agents: ['merlin', 'nxelle', 'jie'],
     models: ALL_MODEL_IDS,
-    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/deepseek-v4-pro', jie: 'clario/gemini-3.7-flash' },
+    defaults: { merlin: 'clario/opus-5', nxelle: 'clario/glm-5.3', jie: 'clario/glm-5.3-flash-auto' },
     dailyLimit: 1000, premiumDailyLimit: 100, maxFiles: 10, maxFileKB: 1024,
-    summary: 'Full fleet · every AI engine incl. Opus, GPT, Gemini Pro (100 frontier msgs/day).',
-    heroLine: 'High plan — the full fleet on every engine, frontier models included.'
+    summary: 'Full fleet · every AI engine incl. Claude Opus 5, GLM 5.3 Sovereign, GPT, Gemini Pro (100 frontier msgs/day).',
+    heroLine: 'High plan — the full fleet powered by Claude Opus 5, GLM 5.3 Sovereign, and all frontier models.'
   }
 };
 
@@ -115,8 +115,13 @@ const sanitizeModelMap = (map, tierKey) => {
   const t = TIERS[tierKey] || TIERS.free;
   const out = {};
   AGENT_KEYS.forEach(a => {
-    const id = map && map[a];
-    out[a] = t.models.includes(id) ? id : (t.defaults[a] || t.models[0]);
+    const rawId = (map && map[a]) || DEFAULT_BRIDGE.modelMap[a];
+    if (!t.agents.includes(a)) {
+      // Locked agents are showcased with their true sovereign flagship models (Merlin -> Claude Opus 5, Nxelle -> GLM 5.3)
+      out[a] = DEFAULT_BRIDGE.modelMap[a] || rawId;
+    } else {
+      out[a] = t.models.includes(rawId) ? rawId : (t.defaults[a] || t.models[0]);
+    }
   });
   return out;
 };
@@ -484,7 +489,14 @@ function EpinoiaGeminiApp() {
     try {
       const saved = localStorage.getItem('epinoia_model_map');
       if (saved) {
-        return { ...DEFAULT_BRIDGE.modelMap, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        if (parsed.merlin && /flash/i.test(parsed.merlin)) {
+          parsed.merlin = DEFAULT_BRIDGE.modelMap.merlin;
+        }
+        if (parsed.nxelle && /flash/i.test(parsed.nxelle)) {
+          parsed.nxelle = DEFAULT_BRIDGE.modelMap.nxelle;
+        }
+        return { ...DEFAULT_BRIDGE.modelMap, ...parsed };
       }
     } catch (e) {}
     return DEFAULT_BRIDGE.modelMap;
