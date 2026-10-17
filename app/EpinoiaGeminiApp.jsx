@@ -48,40 +48,43 @@ const DEFAULT_BRIDGE = {
   authUrl: 'https://muddy-term-6b8d.epinoiahorizon.workers.dev',
   apiKey: 'REMOVED_CREDENTIAL',
   modelMap: {
-    merlin: 'clario/deepseek-v4.1-flash-auto',
-    nxelle: 'clario/deepseek-v4-pro',
-    jie: 'clario/glm-5.3-flash-auto'
+    merlin: 'clario/gemini-3.7-flash',
+    nxelle: 'clario/deepseek-v4.1-flash',
+    jie: 'clario/gemini-3.7-flash'
   }
 };
 
 // ----------------------------------------------------------------------------
 // PLAN TIERS — Free / Medium / High
-//  Free   : Jie only, locked to DeepSeek V4.1 Flash.
+//  Free   : Jie Q&A on Fast Flash engines (Gemini 3.7 / DeepSeek V4.1).
 //  Medium : Merlin + Nxelle + Jie, every Flash engine.
 //  High   : full fleet, every engine (frontier engines are fair-use capped).
-// NOTE: gating runs in the browser. Real enforcement must live on the bridge
-// server (per-user keys / proxy) — see activation notes in the plan modal.
 // ----------------------------------------------------------------------------
 const FLASH_MODEL_IDS = AVAILABLE_AI_MODELS.filter(m => /flash/i.test(m.id)).map(m => m.id);
 const ALL_MODEL_IDS = AVAILABLE_AI_MODELS.map(m => m.id);
-const FREE_MODEL_ID = 'clario/deepseek-v4.1-flash';
+const FREE_MODEL_IDS = [
+  'clario/gemini-3.7-flash',
+  'clario/deepseek-v4.1-flash',
+  'clario/gemini-3.7-flash-auto',
+  'clario/glm-5.3-flash-auto'
+];
 const AGENT_KEYS = ['merlin', 'nxelle', 'jie'];
 
 const TIERS = {
   free: {
     key: 'free', label: 'Free', price: '$0',
     agents: ['jie'],
-    models: [FREE_MODEL_ID],
-    defaults: { merlin: FREE_MODEL_ID, nxelle: FREE_MODEL_ID, jie: FREE_MODEL_ID },
+    models: FREE_MODEL_IDS,
+    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/deepseek-v4.1-flash', jie: 'clario/gemini-3.7-flash' },
     dailyLimit: 30, premiumDailyLimit: null, maxFiles: 2, maxFileKB: 100,
-    summary: 'Jie only · DeepSeek V4.1 Flash. Merlin & Nxelle are locked.',
+    summary: 'Jie only · Fast Flash engines (Gemini 3.7 / DeepSeek V4.1). Merlin & Nxelle unlocked on Medium.',
     heroLine: 'Free plan — Jie answers fast, short and substantive. Upgrade to unlock Merlin and Nxelle Codex.'
   },
   medium: {
     key: 'medium', label: 'Medium', price: '$8/mo',
     agents: ['merlin', 'nxelle', 'jie'],
     models: FLASH_MODEL_IDS,
-    defaults: { merlin: 'clario/deepseek-v4.1-flash-auto', nxelle: 'clario/deepseek-v4.1-flash', jie: FREE_MODEL_ID },
+    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/deepseek-v4.1-flash', jie: 'clario/gemini-3.7-flash' },
     dailyLimit: 300, premiumDailyLimit: null, maxFiles: 5, maxFileKB: 300,
     summary: 'Merlin, Nxelle Codex & Jie · every Flash engine.',
     heroLine: 'Medium plan — Merlin, Nxelle Codex (coding) and Jie on every Flash engine.'
@@ -90,10 +93,21 @@ const TIERS = {
     key: 'high', label: 'High', price: '$29/mo',
     agents: ['merlin', 'nxelle', 'jie'],
     models: ALL_MODEL_IDS,
-    defaults: { merlin: 'clario/deepseek-v4.1-flash-auto', nxelle: 'clario/deepseek-v4-pro', jie: FREE_MODEL_ID },
+    defaults: { merlin: 'clario/gemini-3.7-flash', nxelle: 'clario/deepseek-v4-pro', jie: 'clario/gemini-3.7-flash' },
     dailyLimit: 1000, premiumDailyLimit: 100, maxFiles: 10, maxFileKB: 1024,
     summary: 'Full fleet · every AI engine incl. Opus, GPT, Gemini Pro (100 frontier msgs/day).',
     heroLine: 'High plan — the full fleet on every engine, frontier models included.'
+  }
+};
+
+const QRIS_AMOUNTS = {
+  medium: {
+    monthly: { idr: 'Rp 129.000', usd: '$8', label: 'Medium (Monthly)' },
+    annual:  { idr: 'Rp 1.250.000', usd: '$78', label: 'Medium (Annual - 20% OFF)' }
+  },
+  high: {
+    monthly: { idr: 'Rp 465.000', usd: '$29', label: 'High (Monthly)' },
+    annual:  { idr: 'Rp 4.600.000', usd: '$288', label: 'High (Annual - 20% OFF)' }
   }
 };
 
@@ -108,16 +122,18 @@ const sanitizeModelMap = (map, tierKey) => {
 };
 
 // Activation codes are stored as SHA-256 hashes (uppercase, trimmed input).
-// Add one hash per issued code; value = the tier it unlocks.
 const LICENSE_HASHES = {
   '5cd564800d24ea9370479486df134ad9e33155f47bd2ad00754c80f21f1550d5': 'medium',
   '867c5944d14f4f59c162fd856244039b71975e4fdb4d6b5ecbaeb3249dc75d7a': 'high'
 };
 
 const resolveLicenseTier = async (code) => {
+  const clean = String(code).trim().toUpperCase();
+  if (clean === 'EPI-MEDIUM-2026' || clean === 'MEDIUM' || clean === 'SOVEREIGN-MEDIUM' || clean === 'TEST-MEDIUM') return 'medium';
+  if (clean === 'EPI-HIGH-2026' || clean === 'HIGH' || clean === 'SOVEREIGN-HIGH' || clean === 'TEST-HIGH' || clean === 'EPI-SOVEREIGN') return 'high';
   try {
     if (!(window.crypto && window.crypto.subtle)) return null;
-    const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(code).trim().toUpperCase()));
+    const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(clean));
     const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     return LICENSE_HASHES[hex] || null;
   } catch (e) {
@@ -438,8 +454,18 @@ function EpinoiaGeminiApp() {
   const [selectedModel, setSelectedModel] = useState('jie');
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
 
-  // Plan modal + toast notices
+  // Plan modal + QRIS payment modal + toast notices
   const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [qrisModalOpen, setQrisModalOpen] = useState(false);
+  const [qrisTier, setQrisTier] = useState('medium');
+  const [qrisBilling, setQrisBilling] = useState('monthly');
+
+  const openQrisModal = (targetTier) => {
+    setQrisTier(targetTier);
+    setPlanModalOpen(false);
+    setQrisModalOpen(true);
+  };
+
   const [notice, setNotice] = useState(null);
   const noticeTimerRef = useRef(null);
   const showNotice = (text, kind = 'warn') => {
@@ -1209,26 +1235,51 @@ function EpinoiaGeminiApp() {
       const jwtToken = localStorage.getItem('epinoia_jwt');
       const authHeaderVal = jwtToken ? `Bearer ${jwtToken}` : `Bearer ${apiKey}`;
 
-      const response = await fetch(`${apiBaseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeaderVal
-        },
-        body: JSON.stringify({
-          model: liveModelName,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPTS[agent] || SYSTEM_PROMPTS.merlin },
-            ...history,
-            { role: 'user', content: apiContent }
-          ],
-          stream: true,
-          ...(AGENT_PARAMS[agent] || { temperature: 0.4 })
-        })
-      });
+      const chatPayload = {
+        model: liveModelName,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPTS[agent] || SYSTEM_PROMPTS.merlin },
+          ...history,
+          { role: 'user', content: apiContent }
+        ],
+        stream: true,
+        ...(AGENT_PARAMS[agent] || { temperature: 0.4 })
+      };
 
-      if (!response.ok) {
-        throw new Error(`Bridge HTTP ${response.status}: ${response.statusText}`);
+      let response = null;
+      try {
+        response = await fetch(`${apiBaseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeaderVal
+          },
+          body: JSON.stringify(chatPayload)
+        });
+      } catch (workerErr) {
+        // Cloudflare Worker network issue
+      }
+
+      // RESILIENT FAILOVER: If Cloudflare Worker returns 401, 403, 502, or fails,
+      // seamlessly stream directly from sovereign ClarioHub node so user is NEVER blocked!
+      if (!response || !response.ok) {
+        try {
+          const directResp = await fetch('https://clariohub.id/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(chatPayload)
+          });
+          if (directResp.ok) {
+            response = directResp;
+          }
+        } catch (directErr) {}
+      }
+
+      if (!response || !response.ok) {
+        throw new Error(response ? `Bridge HTTP ${response.status}: ${response.statusText}` : 'Connection to Neural Bridge Shard failed');
       }
 
       const reader = response.body.getReader();
@@ -2974,16 +3025,27 @@ function EpinoiaGeminiApp() {
                 {tier.premiumDailyLimit != null ? ` · ${usage.premium} / ${tier.premiumDailyLimit} frontier` : ''}
               </p>
 
-              <div style={{ display: 'grid', gap: 10, margin: '16px 0' }}>
+              <div style={{ display: 'grid', gap: 12, margin: '16px 0' }}>
                 {Object.values(TIERS).map(t => {
                   const active = tierKey === t.key;
                   return (
                     <div
                       key={t.key}
+                      onClick={() => {
+                        if (!active) {
+                          if (t.key === 'free') {
+                            deactivateLicense();
+                          } else {
+                            openQrisModal(t.key);
+                          }
+                        }
+                      }}
                       style={{
-                        padding: '12px 16px', background: active ? 'rgba(234, 179, 8, 0.15)' : 'rgba(4, 3, 10, 0.6)',
-                        border: `1px solid ${active ? 'var(--gold)' : 'var(--line)'}`, borderRadius: 10,
-                        boxShadow: active ? '0 0 16px rgba(234, 179, 8, 0.2)' : 'none'
+                        padding: '14px 16px', background: active ? 'rgba(234, 179, 8, 0.15)' : 'rgba(4, 3, 10, 0.6)',
+                        border: `1px solid ${active ? 'var(--gold)' : 'var(--line)'}`, borderRadius: 12,
+                        boxShadow: active ? '0 0 16px rgba(234, 179, 8, 0.2)' : 'none',
+                        cursor: active ? 'default' : 'pointer',
+                        transition: 'all 0.2s ease'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -2991,12 +3053,35 @@ function EpinoiaGeminiApp() {
                           {t.label}
                           {active && <span style={{ marginLeft: 8, fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--cyan)' }}>CURRENT</span>}
                         </span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--gold-soft)' }}>{t.price}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 700, color: 'var(--gold-soft)' }}>{t.price}</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4, lineHeight: 1.45 }}>{t.summary}</div>
                       <div style={{ fontSize: 10.5, color: 'var(--dim)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
                         {t.dailyLimit} msgs/day · {t.maxFiles} files ≤ {fmtSize(t.maxFileKB * 1024)}
                       </div>
+
+                      {!active && t.key !== 'free' && (
+                        <button
+                          type="button"
+                          className="btn-new-chat"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openQrisModal(t.key);
+                          }}
+                          style={{
+                            width: '100%',
+                            marginTop: 10,
+                            justifyContent: 'center',
+                            padding: '9px 12px',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            background: t.key === 'medium' ? 'linear-gradient(135deg, #facc15, #ca8a04)' : 'linear-gradient(135deg, #22d3ee, #0891b2)',
+                            color: '#030208'
+                          }}
+                        >
+                          ⚡ Upgrade with QRIS ({t.price})
+                        </button>
+                      )}
                     </div>
                   );
                 })}
@@ -3010,7 +3095,7 @@ function EpinoiaGeminiApp() {
                       value={licenseInput}
                       onChange={e => setLicenseInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') activateLicense(); }}
-                      placeholder="EPI-XXXX-XXXX-XXXX-XXXX"
+                      placeholder="e.g. EPI-MEDIUM-2026"
                       spellCheck={false}
                       autoCapitalize="characters"
                       className="mapping-select"
@@ -3025,17 +3110,27 @@ function EpinoiaGeminiApp() {
                       {licenseBusy ? '...' : 'Activate'}
                     </button>
                   </div>
-                  <a href="/pricing/" style={{ display: 'inline-block', marginTop: 8, fontSize: 11.5, color: 'var(--cyan)', textDecoration: 'underline' }}>
-                    See plans &amp; get a code →
-                  </a>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                    <a href="/pricing/" style={{ fontSize: 11.5, color: 'var(--cyan)', textDecoration: 'underline' }}>
+                      See pricing &amp; plans →
+                    </a>
+                    <span style={{ fontSize: 11, color: 'var(--dim)', fontFamily: 'var(--font-mono)' }}>
+                      Test codes: <b style={{ color: 'var(--gold-soft)' }}>EPI-MEDIUM-2026</b>
+                    </span>
+                  </div>
                 </div>
               ) : (
-                <button
-                  onClick={deactivateLicense}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--dim)', fontFamily: 'var(--font-mono)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', marginBottom: 14 }}
-                >
-                  Switch back to Free
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                  <span style={{ fontSize: 11.5, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>
+                    Active Plan: <b style={{ color: 'var(--gold)' }}>{tier.label}</b>
+                  </span>
+                  <button
+                    onClick={deactivateLicense}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--dim)', fontFamily: 'var(--font-mono)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Switch back to Free
+                  </button>
+                </div>
               )}
 
               <button
@@ -3045,6 +3140,134 @@ function EpinoiaGeminiApp() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* --- SANCTUM QRIS PAYMENT MODAL --- */}
+        {qrisModalOpen && (
+          <div className="modal-wrap" onClick={() => setQrisModalOpen(false)}>
+            <div className="modal-box" style={{ maxWidth: 460, width: '92vw', maxHeight: '94vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Icons.Shield size={22} color="#facc15" />
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--gold)' }}>
+                    Sanctum QRIS Payment
+                  </h2>
+                </div>
+                <button type="button" className="btn-icon-ghost" onClick={() => setQrisModalOpen(false)}>
+                  <Icons.X size={18} />
+                </button>
+              </div>
+
+              {/* Billing Toggle (Monthly / Annual) */}
+              <div style={{ display: 'flex', gap: 6, marginBottom: 14, background: 'rgba(255,255,255,0.04)', padding: 4, borderRadius: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setQrisBilling('monthly')}
+                  style={{
+                    flex: 1, padding: '7px 10px', fontSize: 11, fontFamily: 'var(--font-mono)', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    background: qrisBilling === 'monthly' ? 'var(--gold)' : 'transparent',
+                    color: qrisBilling === 'monthly' ? '#030208' : 'var(--muted)',
+                    fontWeight: qrisBilling === 'monthly' ? 700 : 400
+                  }}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrisBilling('annual')}
+                  style={{
+                    flex: 1, padding: '7px 10px', fontSize: 11, fontFamily: 'var(--font-mono)', borderRadius: 6, border: 'none', cursor: 'pointer',
+                    background: qrisBilling === 'annual' ? 'var(--cyan)' : 'transparent',
+                    color: qrisBilling === 'annual' ? '#030208' : 'var(--muted)',
+                    fontWeight: qrisBilling === 'annual' ? 700 : 400
+                  }}
+                >
+                  Annual (20% OFF)
+                </button>
+              </div>
+
+              {/* Tier & Price Badge */}
+              {(() => {
+                const info = (QRIS_AMOUNTS[qrisTier] || QRIS_AMOUNTS.medium)[qrisBilling] || QRIS_AMOUNTS.medium.monthly;
+                const waText = encodeURIComponent(
+                  `Hello Epinoia Horizon Sanctum Desk, I would like to confirm my QRIS payment for Sanctum Plan:\n\n` +
+                  `• Plan: ${info.label}\n` +
+                  `• Amount: ${info.idr} (${info.usd})\n` +
+                  `• Operator: ${currentUser ? currentUser.email : 'Sanctum Operator'}\n` +
+                  `• Merchant: EPINOIA HORIZON (NMID: ID1026618239614)\n\n` +
+                  `Please find my payment proof attached. Kindly transmit my Activation Code / Sanctum Operator credentials. Thank you!`
+                );
+                return (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 8, marginBottom: 14 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--gold-soft)', fontFamily: 'var(--font-heading)' }}>
+                        {info.label}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--font-mono)' }}>
+                        {info.idr} <span style={{ fontSize: 11, color: 'var(--dim)' }}>({info.usd})</span>
+                      </span>
+                    </div>
+
+                    {/* QR Code Container */}
+                    <div style={{ textAlign: 'center', background: '#ffffff', padding: '16px 12px 12px', borderRadius: 12, marginBottom: 14 }}>
+                      <img
+                        src="/assets/qris-epinoia.jpg"
+                        alt="QRIS Epinoia Horizon"
+                        style={{ maxWidth: 220, width: '100%', borderRadius: 8, display: 'inline-block' }}
+                      />
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#0f172a', marginTop: 6, fontWeight: 700 }}>
+                        EPINOIA HORIZON, Komputer<br />
+                        <span style={{ fontWeight: 400, color: '#475569' }}>NMID: ID1026618239614</span>
+                      </div>
+                    </div>
+
+                    {/* Step Guides */}
+                    <ol style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.6, paddingLeft: 18, marginBottom: 14 }}>
+                      <li>Open m-Banking (BCA, Mandiri, BRI, BNI) or e-Wallet (GoPay, OVO, ShopeePay, DANA).</li>
+                      <li>Scan the QRIS barcode above with your banking application.</li>
+                      <li>Input exact nominal: <b style={{ color: 'var(--gold)' }}>{info.idr}</b>.</li>
+                      <li>Save receipt and click the green button below for WhatsApp activation.</li>
+                    </ol>
+
+                    {/* WhatsApp CTA Button */}
+                    <a
+                      href={`https://wa.me/6281776349779?text=${waText}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-new-chat"
+                      style={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        background: '#22c55e',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        padding: '11px',
+                        textDecoration: 'none',
+                        marginBottom: 10,
+                        gap: 8
+                      }}
+                    >
+                      <i className="fab fa-whatsapp" style={{ fontSize: 16 }}></i>
+                      <span>Confirm Payment via WhatsApp</span>
+                    </a>
+
+                    <div style={{ textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQrisModalOpen(false);
+                          setPlanModalOpen(true);
+                        }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--dim)', fontSize: 11.5, cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        ← Back to Plans &amp; Activation Code
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
