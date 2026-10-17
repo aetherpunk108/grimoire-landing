@@ -88,7 +88,8 @@
           <label class="form-label">Category</label>
           <select id="p-category" class="form-select">
             <option value="jewelry">Handmade Jewelry &amp; Pendants</option>
-            <option value="sovereign">Sovereign Hardware &amp; License</option>
+            <option value="studio3d">3D Animation &amp; CAD Studio</option>
+            <option value="sovereign">Merlin Sovereign Pass</option>
           </select>
         </div>
         <div class="form-group">
@@ -153,7 +154,7 @@
 
 </main>
 
-<script src="/assets/store.js?v=2"></script>
+<script src="/assets/store.js?v=3"></script>
 <script>
   function checkAuth() {
     const input = document.getElementById('auth-passcode').value.trim();
@@ -213,7 +214,7 @@
     const title = document.getElementById('p-title').value.trim();
     const price = parseFloat(document.getElementById('p-price').value) || 0;
     const category = document.getElementById('p-category').value;
-    const badge = document.getElementById('p-badge').value.trim() || (category === 'jewelry' ? 'HANDMADE · ARTISAN' : 'SOVEREIGN NODE');
+    const badge = document.getElementById('p-badge').value.trim() || (category === 'jewelry' ? 'HANDMADE · ARTISAN' : category === 'studio3d' ? '3D ANIMATOR STUDIO' : 'SOVEREIGN PASS');
     const shortDesc = document.getElementById('p-short').value.trim();
     const fullDesc = document.getElementById('p-full').value.trim();
     const modelUrl = document.getElementById('p-model-url').value.trim() || '/assets/models/crystal.glb';
@@ -228,7 +229,7 @@
 
     const newProduct = {
       id, title, price, category,
-      categoryLabel: category === 'jewelry' ? 'Handmade Jewelry' : 'Sovereign Node',
+      categoryLabel: category === 'jewelry' ? 'Handmade Jewelry' : category === 'studio3d' ? '3D Animation Studio' : 'AI Workspace',
       badge, shortDesc, fullDesc,
       modelUrl, has3D: Boolean(modelUrl), specs
     };
@@ -325,6 +326,7 @@
     if (!confirm('Reset catalog to factory default sovereign & handmade specimens?')) return;
     localStorage.removeItem('epinoia_custom_products');
     localStorage.removeItem('epinoia_custom_products_v2');
+    localStorage.removeItem('epinoia_custom_products_v3');
     renderAdminList();
     alert('Catalog reset to sovereign defaults.');
   }
