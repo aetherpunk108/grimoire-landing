@@ -1,0 +1,24 @@
+# Epinoia Horizon
+
+> Epinoia Horizon builds Merlin, an open-source AI agent harness that lives in your terminal:
+> persistent memory, loadable skills, tool execution, and 3D/WebGL capabilities, installable with one command.
+
+## Product
+- [Merlin Agent](https://epinoiahorizon.com/): the harness — install, memory, skills, tools, model routing.
+- [Pricing](https://epinoiahorizon.com/pricing/): tiers and what each unlocks.
+- [Documentation](https://epinoiahorizon.com/docs/): install and usage guides.
+- [Terminal tutorial](https://epinoiahorizon.com/docs/tutorial-merlin-terminal.html): step-by-step walkthrough.
+- [Install script](https://epinoiahorizon.com/install.sh): one-command installer.
+
+## Writing
+- [What is an AI agent harness?](https://epinoiahorizon.com/blog/what-is-an-ai-agent-harness.html)
+- [Make money with open-source AI agents](https://epinoiahorizon.com/blog/make-money-with-open-source-ai-agents.html)
+
+## Source
+- [GitHub repository](https://github.com/epinoiahorizon/Merlin-Agent)
+- [Landing site source](https://github.com/epinoiahorizon/grimoire-landing)
+
+## Facts
+- License: MIT. Free to self-host.
+- Runs on Linux, macOS and Windows (WSL).
+- Merlin is model-agnostic: OpenAI-compatible providers, local models, or hosted gateways.
