@@ -1,14 +1,14 @@
-# robots.txt — welcoming classic crawlers and the new AI answer engines
-# (GPTBot, ClaudeBot, PerplexityBot, Google-Extended for AI training/answers)
-
+# robots.txt — welcoming classic crawlers and AI answer engines
 User-agent: *
 Allow: /
 
-# AI answer engines — explicitly welcome so Merlin gets cited in AI answers
 User-agent: GPTBot
 Allow: /
 
 User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
 Allow: /
 
 User-agent: ClaudeBot
@@ -20,4 +20,8 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+User-agent: Bingbot
+Allow: /
+
 Sitemap: https://epinoiahorizon.com/sitemap.xml
+# llms.txt: https://epinoiahorizon.com/llms.txt
