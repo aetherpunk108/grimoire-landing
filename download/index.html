@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Merlin Agent — Windows portable | Epinoia Horizon</title>
+    <link rel="canonical" href="https://epinoiahorizon.com/download/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="description" content="Download Merlin Agent for Windows x64. Portable build — unzip and run Merlin.exe. The agent runtime is bundled: no installer, no Python, no admin rights.">
+    <meta property="og:title" content="Download Merlin Agent — Windows portable">
+    <meta property="og:description" content="1.49 GB portable build. Unzip, run Merlin.exe. Agent runtime bundled.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/assets/tw2.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #030208;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; }
+        .wrap { max-width: 62rem; margin: 0 auto; padding: 0 1.5rem; }
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem 0; border-bottom: 1px solid rgba(250, 204, 21, 0.12);
+        }
+        .brand {
+            font-family: 'Cinzel Decorative', serif; font-weight: 700;
+            color: #facc15; letter-spacing: 0.04em; font-size: 1.05rem;
+        }
+        .nav a { color: #cbd5e1; font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; margin-left: 1.5rem; }
+        .nav a:hover { color: #facc15; }
+        h1 {
+            font-family: 'Cinzel', serif; font-weight: 700; line-height: 1.05;
+            font-size: clamp(2rem, 5vw, 3.25rem); margin: 3rem 0 0.75rem;
+            background: linear-gradient(92deg, #fef3c7 0%, #facc15 45%, #eab308 70%, #c4b5fd 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .lede { color: #94a3b8; font-size: 1rem; max-width: 44rem; line-height: 1.65; }
+        .cta {
+            display: inline-flex; align-items: center; gap: 0.65rem;
+            margin: 2rem 0 0.75rem; padding: 1rem 2rem; border-radius: 0.6rem;
+            background: linear-gradient(135deg, #facc15, #ca8a04);
+            color: #130f04; font-weight: 700; font-size: 0.95rem;
+            letter-spacing: 0.06em; text-transform: uppercase;
+            box-shadow: 0 12px 40px rgba(250, 204, 21, 0.22);
+        }
+        .cta:hover { filter: brightness(1.07); }
+        .meta { color: #64748b; font-size: 0.8rem; letter-spacing: 0.04em; }
+        .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); margin: 2.5rem 0; }
+        .card {
+            background: rgba(8, 6, 20, 0.72); border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 0.75rem; padding: 1.25rem 1.35rem;
+        }
+        .card h3 {
+            font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.16em;
+            text-transform: uppercase; color: #facc15; margin: 0 0 0.75rem;
+        }
+        .card p, .card li { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin: 0.35rem 0; }
+        .card ul { padding-left: 1.1rem; margin: 0; }
+        .warn {
+            border-left: 3px solid #eab308; background: rgba(234, 179, 8, 0.07);
+            padding: 1rem 1.25rem; border-radius: 0 0.6rem 0.6rem 0; margin: 2rem 0;
+            color: #cbd5e1; font-size: 0.85rem; line-height: 1.6;
+        }
+        code, .mono {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            color: #a5b4fc; word-break: break-all;
+        }
+        footer { border-top: 1px solid rgba(148, 163, 184, 0.12); margin-top: 3.5rem; padding: 1.75rem 0 3rem; }
+        footer a { color: #94a3b8; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; margin-right: 1.5rem; }
+        footer a:hover { color: #facc15; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <nav class="nav">
+            <a class="brand" href="/">Epinoia</a>
+            <div>
+                <a href="/docs/">Docs</a>
+                <a href="/app/">App</a>
+                <a href="/pricing/">Pricing</a>
+                <a href="https://github.com/epinoiahorizon/Merlin-Agent">GitHub</a>
+            </div>
+        </nav>
+
+        <h1>Download Merlin Agent</h1>
+        <p class="lede">
+            Windows x64 portable build. Unzip the folder and run <strong>Merlin.exe</strong> — the agent
+            runtime ships inside it, so there is no installer, no Python to set up, and no admin rights required.
+            Put it on a USB stick and it still runs.
+        </p>
+
+        <a class="cta" href="https://github.com/epinoiahorizon/Merlin-Agent/releases/download/v0.1.0-win-preview/Merlin-Agent-win-x64.zip">
+            <i class="fa-solid fa-download"></i> Download for Windows · 1.49 GB
+        </a>
+        <p class="meta">
+            v0.1.0-win-preview · Windows 10/11 x64 · SHA-256 below ·
+            <a href="https://github.com/epinoiahorizon/Merlin-Agent/releases/tag/v0.1.0-win-preview" style="color:#a5b4fc">release notes</a>
+        </p>
+
+        <div class="warn">
+            <strong>Unsigned build.</strong> Windows SmartScreen will show “Unknown publisher”. Click
+            <em>More info → Run anyway</em>. This build is unsigned because a code-signing certificate is not
+            set up yet; the SHA-256 sum below lets you verify the download yourself.
+        </div>
+
+        <div class="card">
+            <h3>Verify the download</h3>
+            <p>Windows PowerShell:</p>
+            <p class="mono">Get-FileHash .\Merlin-Agent-win-x64.zip -Algorithm SHA256</p>
+            <p>Expected:</p>
+            <p class="mono">EE4377140CF1AA1AC90705E7A188E9C4A4FFA761D5E5AC1F815C58B58CC7B7FE</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>What is inside</h3>
+                <ul>
+                    <li>Electron desktop app</li>
+                    <li>Agent runtime — CPython 3.14.7 + venv with 49 extras</li>
+                    <li>git, ffmpeg, chromium (browser tool)</li>
+                    <li>Skills, memory, cron, gateway</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>What was trimmed</h3>
+                <ul>
+                    <li>llama.cpp CUDA/HIP builds (~1.8 GB) — local GPU inference only</li>
+                    <li>uv cache (~1 GB) — only for offline plugin installs</li>
+                    <li>Daytona backend — no CPython 3.14 wheel for its dependency</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Requirements</h3>
+                <ul>
+                    <li>Windows 10 or 11, x64</li>
+                    <li>~4 GB free disk after unzip</li>
+                    <li>An API key for any model provider</li>
+                    <li>No admin rights needed</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <a href="https://github.com/epinoiahorizon/Merlin-Agent">Source</a>
+            <a href="https://github.com/epinoiahorizon/Merlin-Agent/releases">All releases</a>
+            <a href="/docs/">Documentation</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>
