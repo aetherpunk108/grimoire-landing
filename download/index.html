@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Merlin Agent — Windows portable | Epinoia Horizon</title>
+    <title>Download Merlin Agent — Windows installer or portable | Epinoia Horizon</title>
     <link rel="canonical" href="https://epinoiahorizon.com/download/">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="description" content="Download Merlin Agent for Windows x64. Portable build — unzip and run Merlin.exe. The agent runtime is bundled: no installer, no Python, no admin rights.">
-    <meta property="og:title" content="Download Merlin Agent — Windows portable">
-    <meta property="og:description" content="1.49 GB portable build. Unzip, run Merlin.exe. Agent runtime bundled.">
+    <meta name="description" content="Download Merlin Agent for Windows x64: an installer that adds Merlin to Program Files with Start Menu and uninstaller entries, or a portable ZIP that carries the whole agent runtime and needs no admin rights.">
+    <meta property="og:title" content="Download Merlin Agent — Windows installer or portable">
+    <meta property="og:description" content="Installer (.exe, 104 MB) for Program Files, or portable ZIP (1.49 GB) with the agent runtime bundled.">
     <meta property="og:type" content="website">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/tw2.min.css">
@@ -43,6 +43,7 @@
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
         .lede { color: #94a3b8; font-size: 1rem; max-width: 44rem; line-height: 1.65; }
+        .lede strong { color: #e2e8f0; }
         .cta {
             display: inline-flex; align-items: center; gap: 0.65rem;
             margin: 2rem 0 0.75rem; padding: 1rem 2rem; border-radius: 0.6rem;
@@ -64,6 +65,31 @@
         }
         .card p, .card li { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin: 0.35rem 0; }
         .card ul { padding-left: 1.1rem; margin: 0; }
+        /* two download lanes: installer and portable */
+        .picks {
+            display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+            margin: 2.25rem 0 0.75rem;
+        }
+        .pick {
+            background: rgba(8, 6, 20, 0.72); border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: 0.75rem; padding: 1.5rem 1.5rem 1.35rem;
+            display: flex; flex-direction: column;
+        }
+        .pick-t {
+            font-family: 'Cinzel', serif; font-size: 0.82rem; letter-spacing: 0.16em;
+            text-transform: uppercase; color: #facc15;
+        }
+        .pick-d { color: #94a3b8; font-size: 0.85rem; line-height: 1.65; margin: 0.7rem 0 1.2rem; }
+        .pick-d strong { color: #e2e8f0; }
+        .pick .cta {
+            margin: auto 0 0; padding: 0.85rem 1.1rem; font-size: 0.78rem;
+            justify-content: center; text-align: center; box-shadow: none;
+        }
+        .cta-ghost {
+            background: transparent; border: 1px solid rgba(250, 204, 21, 0.42); color: #facc15;
+            box-shadow: none;
+        }
+        .cta-ghost:hover { background: rgba(250, 204, 21, 0.08); filter: none; }
         .warn {
             border-left: 3px solid #eab308; background: rgba(234, 179, 8, 0.07);
             padding: 1rem 1.25rem; border-radius: 0 0.6rem 0.6rem 0; margin: 2rem 0;
@@ -92,30 +118,54 @@
 
         <h1>Download Merlin Agent</h1>
         <p class="lede">
-            Windows x64 portable build. Unzip the folder and run <strong>Merlin.exe</strong> — the agent
-            runtime ships inside it, so there is no installer, no Python to set up, and no admin rights required.
-            Put it on a USB stick and it still runs.
+            Windows 10/11 x64, two ways. The <strong>installer</strong> puts Merlin in
+            <code>C:\Program Files\Merlin</code> with Start Menu, desktop and Apps &amp; Features entries
+            plus an uninstaller. The <strong>portable ZIP</strong> carries the entire agent runtime and
+            needs no admin rights — unzip anywhere, including a USB stick.
         </p>
 
-        <a class="cta" href="https://github.com/epinoiahorizon/Merlin-Agent/releases/download/v0.1.0-win-preview/Merlin-Agent-win-x64.zip">
-            <i class="fa-solid fa-download"></i> Download for Windows · 1.49 GB
-        </a>
+        <div class="picks">
+            <div class="pick">
+                <div class="pick-t">Installer · 104 MB</div>
+                <p class="pick-d">
+                    Installs per-machine into <code>C:\Program Files\Merlin</code>, adds shortcuts and an
+                    uninstaller. First launch sets up the agent runtime (internet required) or connects to
+                    a Merlin install already on the machine. Asks for administrator approval once.
+                </p>
+                <a class="cta" href="https://github.com/epinoiahorizon/Merlin-Agent/releases/download/v0.1.0-win-preview/Merlin-Setup-0.1.0-x64.exe">
+                    <i class="fa-solid fa-download"></i> Merlin-Setup-0.1.0-x64.exe
+                </a>
+            </div>
+            <div class="pick">
+                <div class="pick-t">Portable · 1.49 GB</div>
+                <p class="pick-d">
+                    Everything inside: Electron, CPython 3.14.7 with 49 extras, git, ffmpeg, chromium,
+                    skills, memory, cron and gateway. Unzip and run <strong>Merlin.exe</strong>. No
+                    installer, no Python to set up, no admin rights.
+                </p>
+                <a class="cta cta-ghost" href="https://github.com/epinoiahorizon/Merlin-Agent/releases/download/v0.1.0-win-preview/Merlin-Agent-win-x64.zip">
+                    <i class="fa-solid fa-file-zipper"></i> Merlin-Agent-win-x64.zip
+                </a>
+            </div>
+        </div>
         <p class="meta">
             v0.1.0-win-preview · Windows 10/11 x64 · SHA-256 below ·
             <a href="https://github.com/epinoiahorizon/Merlin-Agent/releases/tag/v0.1.0-win-preview" style="color:#a5b4fc">release notes</a>
         </p>
 
         <div class="warn">
-            <strong>Unsigned build.</strong> Windows SmartScreen will show “Unknown publisher”. Click
-            <em>More info → Run anyway</em>. This build is unsigned because a code-signing certificate is not
-            set up yet; the SHA-256 sum below lets you verify the download yourself.
+            <strong>Unsigned builds.</strong> Windows SmartScreen will show “Unknown publisher” for both
+            downloads. Click <em>More info → Run anyway</em>. They are unsigned because a code-signing
+            certificate is not set up yet; the SHA-256 sums below let you verify what you downloaded.
         </div>
 
         <div class="card">
             <h3>Verify the download</h3>
-            <p>Windows PowerShell:</p>
+            <p>Windows PowerShell — installer (<span class="mono">Merlin-Setup-0.1.0-x64.exe</span>):</p>
+            <p class="mono">Get-FileHash .\Merlin-Setup-0.1.0-x64.exe -Algorithm SHA256</p>
+            <p class="mono">2F3C736E4D3F0A76666FC0104D41BEBA1A3C7D5CE25C3575EEA0E676CC4094AA</p>
+            <p>Portable ZIP (<span class="mono">Merlin-Agent-win-x64.zip</span>):</p>
             <p class="mono">Get-FileHash .\Merlin-Agent-win-x64.zip -Algorithm SHA256</p>
-            <p>Expected:</p>
             <p class="mono">EE4377140CF1AA1AC90705E7A188E9C4A4FFA761D5E5AC1F815C58B58CC7B7FE</p>
         </div>
 
@@ -141,9 +191,9 @@
                 <h3>Requirements</h3>
                 <ul>
                     <li>Windows 10 or 11, x64</li>
-                    <li>~4 GB free disk after unzip</li>
+                    <li>Installer: ~400 MB in Program Files, admin approval once</li>
+                    <li>Portable: ~4 GB free disk, no admin rights</li>
                     <li>An API key for any model provider</li>
-                    <li>No admin rights needed</li>
                 </ul>
             </div>
         </div>
