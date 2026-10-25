@@ -75,7 +75,9 @@
 </main>
 
 <script src="/assets/account.js"></script>
-<script>
+<script type="module">
+import { distribute, DEFAULT_SPLIT } from '/assets/split.js';
+
 (function () {
   const host = document.getElementById('eh-account-host');
   const view = document.getElementById('view');
@@ -96,6 +98,42 @@
 
   function money(cents) {
     return '$' + (Number(cents) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // studio publishes `price` in dollars; older records carry `priceCents`. Normalise once.
+  function priceCentsOf(p) {
+    if (!p) return 0;
+    if (typeof p.priceCents === 'number') return p.priceCents;
+    return Math.round(Number(p.price || 0) * 100);
+  }
+
+  /**
+   * What this maker has actually earned, from the orders recorded on this device.
+   * Only lines owned by this account count, and only the maker share of each line — the platform,
+   * well and storyteller shares are not the maker's money and must not be presented as such.
+   */
+  function earningsFor(user, orders) {
+    const perListing = new Map();
+    let gross = 0, makerTotal = 0, units = 0, skipped = 0;
+    for (const o of orders || []) {
+      for (const item of o.items || []) {
+        const proof = (o.proofs || []).find((p) => p && p.id === item.id);
+        const owner = item.owner || (proof && proof.listing && proof.listing.owner);
+        if (owner !== user.id) { skipped++; continue; }
+        const qty = Number(item.qty || 1);
+        const line = priceCentsOf(item) * qty;
+        let maker = 0;
+        try {
+          const sheet = distribute(line, (item.split && item.split.length) ? item.split : DEFAULT_SPLIT);
+          maker = (sheet.rows.find((r) => r.key === 'maker') || {}).amount || 0;
+        } catch (e) { maker = 0; }
+        gross += line; makerTotal += maker; units += qty;
+        const cur = perListing.get(item.id) || { id: item.id, title: item.title || item.id, units: 0, gross: 0, maker: 0 };
+        cur.units += qty; cur.gross += line; cur.maker += maker;
+        perListing.set(item.id, cur);
+      }
+    }
+    return { gross, makerTotal, units, skipped, rows: [...perListing.values()] };
   }
 
   function notSignedIn() {
@@ -152,7 +190,7 @@
         }
         rows +=
           '<tr><td><strong>' + (p.name || p.title || 'untitled') + '</strong><div class="did">' + (p.id || '') + '</div></td>' +
-          '<td>' + (p.priceCents ? money(p.priceCents) : '—') + '</td>' +
+          '<td>' + (priceCentsOf(p) ? money(priceCentsOf(p)) : '—') + '</td>' +
           '<td>' + (p.category || '—') + '</td>' +
           '<td>' + verdict + '</td>' +
           '<td><a class="btn ghost" style="padding:.35rem .7rem;font-size:.6rem" href="/store/product.html?id=' + encodeURIComponent(p.id) + '">View</a></td></tr>';
@@ -169,6 +207,28 @@
       '<div class="stat"><b>' + orders.length + '</b><span>your orders</span></div>' +
       '<div class="stat"><b>' + money(revenue) + '</b><span>catalogue value</span></div>' +
       '</div></div>' +
+
+      '<div class="panel"><h2>Your earnings</h2>' +
+      (() => {
+        const e = earningsFor(user, orders);
+        if (!e.units) {
+          return '<p class="empty">No sales recorded on this device yet. Earnings appear here after an order ' +
+            'containing one of your listings is placed in this browser.</p>' +
+            '<p class="note">This dashboard reads orders from this browser only — there is no server ledger yet.</p>';
+        }
+        const rowsHtml = e.rows.map((r) =>
+          '<tr><td>' + r.title + '</td><td>' + r.units + '</td><td>' + money(r.gross) + '</td><td><strong>' + money(r.maker) + '</strong></td></tr>').join('');
+        return '<div class="stats">' +
+          '<div class="stat"><b>' + money(e.makerTotal) + '</b><span>your share</span></div>' +
+          '<div class="stat"><b>' + money(e.gross) + '</b><span>gross sales</span></div>' +
+          '<div class="stat"><b>' + e.units + '</b><span>units sold</span></div>' +
+          '</div>' +
+          '<table style="margin-top:.8rem"><thead><tr><th>listing</th><th>units</th><th>gross</th><th>your share</th></tr></thead><tbody>' +
+          rowsHtml + '</tbody></table>' +
+          '<p class="note">Maker share only — platform, well and storyteller shares are not yours. ' +
+          'Orders are read from this browser; a server ledger will replace this.</p>';
+      })() +
+      '</div>' +
 
       '<div class="panel"><h2>Your listings</h2>' +
       (products.length
