@@ -56,6 +56,8 @@ if (!location.search.includes('run=1')) {
   check('foreign listing excluded', !h.includes('Not Mine'), '');
   check('listings show a price (price vs priceCents)', h.includes('$45.00') && h.includes('$30.00'), '');
   check('honest about browser-local orders', /browser/i.test(h) && /server ledger/i.test(h), '');
+  check('catalogue value is the sum of listing prices ($75.00)', h.includes('$75.00'), '45 + 30');
+  check('order count is labelled as device-local', /orders on device/i.test(h), '');
 
   out.innerHTML=lines.map(l=>'<div class="'+(l.startsWith('PASS')?'pass':'fail')+'">'+l.replace(/</g,'&lt;')+'</div>').join('')
     +'<div class="'+(fail?'fail':'dim')+'" style="margin-top:.6rem">'+pass+' passed, '+fail+' failed</div>';

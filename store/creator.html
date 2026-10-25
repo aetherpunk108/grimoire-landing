@@ -177,7 +177,7 @@ import { distribute, DEFAULT_SPLIT } from '/assets/split.js';
   async function dashboard(user) {
     const products = window.EpinoiaAccount.myProducts();
     const orders = window.EpinoiaAccount.myOrders();
-    const revenue = products.reduce((n, p) => n + (Number(p.priceCents) || 0), 0);
+    const revenue = products.reduce((n, p) => n + priceCentsOf(p), 0);
 
     let rows = '';
     if (products.length) {
@@ -204,7 +204,7 @@ import { distribute, DEFAULT_SPLIT } from '/assets/split.js';
       '<p class="did" id="did" style="margin-top:.6rem">' + (user.did || 'no key yet') + '</p>' +
       '<div class="stats">' +
       '<div class="stat"><b>' + products.length + '</b><span>listings</span></div>' +
-      '<div class="stat"><b>' + orders.length + '</b><span>your orders</span></div>' +
+      '<div class="stat"><b>' + orders.length + '</b><span>orders on device</span></div>' +
       '<div class="stat"><b>' + money(revenue) + '</b><span>catalogue value</span></div>' +
       '</div></div>' +
 
